@@ -81,7 +81,7 @@ def process_text_with_gpt(ocr_text):
 }}
 정보가 누락되면 null로 설정하세요. 나이 정보가 없으면 기존 값은 유지해야 하므로 `age` 필드는 반환하지 마세요. 오직 JSON 형식만 반환하고 다른 문장은 포함하지 마세요."""}
         ],
-        "max_tokens": 300,
+        "max_tokens": 700,
         "temperature": 0.0
     }
 
@@ -166,8 +166,8 @@ def update_database(ocr_data):
 
 # 5. 실행 코드
 if __name__ == "__main__":
-    mpo_image_path = "images/집에가고싶다.jpg"
-    converted_image_path = "images/집에가고싶다_변환.png"
+    mpo_image_path = "images/처방전템플릿.jpg"
+    converted_image_path = "images/처방전템플릿_변환.png"
 
     convert_mpo_to_png(mpo_image_path, converted_image_path)
     ocr_text = extract_text(converted_image_path)
