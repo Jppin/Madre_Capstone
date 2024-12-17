@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Shorts Recommendations</title>
+</head>
+<body>
+    <h1>YouTube Shorts 추천 영상</h1>
+
+    {% for keyword, videos in video_results.items() %}
+        <h2>키워드: {{ keyword }}</h2>
+        {% for video in videos %}
+            <div style="margin-bottom: 20px;">
+                <h3>{{ video.title }}</h3>
+                <p>길이: {{ video.duration }}</p>
+                {{ video.embedHtml | safe }} <!-- embedHtml 그대로 삽입 -->
+                <p><a href="{{ video.link }}" target="_blank">YouTube에서 보기</a></p>
+            </div>
+        {% endfor %}
+    {% endfor %}
+</body>
+</html>

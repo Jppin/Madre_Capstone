@@ -9,6 +9,7 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 openai_api_url = os.getenv("OPENAI_API_URL")
 mongo_uri = os.getenv("MONGO_URI")
 db_name = os.getenv("DB_NAME")
+youtube_api_key = os.getenv("YOUTUBE_API_KEY")
 
 
 # mongoDB와 연결

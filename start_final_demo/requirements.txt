@@ -11,3 +11,6 @@ langgraph
 typing_extensions
 pytesseract
 pillow
+google-api-python-client
+isodate
+jinja2
