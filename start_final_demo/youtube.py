@@ -2,7 +2,6 @@ from googleapiclient.discovery import build
 from config.config import youtube_api_key
 import isodate
 from jinja2 import Environment, FileSystemLoader
-import requests
 from utils.keyword_prompt import youtube_keyword_chain
 from services.user_service import get_health_interests_byname
 
@@ -13,11 +12,11 @@ def generate_youtube_keywords(health_interests):
     health_interests를 기반으로 LLM을 통해 키워드를 생성합니다.
     """
     interests_text = ", ".join(health_interests)
-    response = youtube_keyword_chain.run(health_interests=interests_text)
-    keywords = [line.strip('- ').strip() for line in response.splitlines() if line.startswith('-')]
+    response = youtube_keyword_chain.invoke({"health_interests": interests_text})
+    response_text = response.content
+    keywords = [line.strip('- ').strip() for line in response_text.splitlines() if line.startswith('-')]
     return keywords
 
-# 관심사 키워드 필터링 함수
 def is_relevant_video(title, description):
     """
     제목과 설명이 광고성 키워드를 포함하지 않는지 검사
@@ -30,7 +29,6 @@ def is_relevant_video(title, description):
         return False
     return True
 
-# YouTube API 검색 함수
 def search_youtube_videos(keywords, max_results=5):
     youtube = build("youtube", "v3", developerKey=youtube_api_key)
     results = {}
@@ -78,7 +76,6 @@ def search_youtube_videos(keywords, max_results=5):
         results[keyword] = videos
     return results
 
-# HTML 파일 렌더링 함수
 def render_html_template(video_results, template_path="templates", output_file="youtube_shorts_results.html"):
     env = Environment(loader=FileSystemLoader(template_path))
     template = env.get_template("youtube_results.html")
@@ -88,22 +85,19 @@ def render_html_template(video_results, template_path="templates", output_file="
         file.write(rendered_html)
     print(f"\nHTML 파일이 생성되었습니다: {output_file}")
 
-# 메인 실행 블록
 if __name__ == "__main__":
-    user_name = "이영훈"  # 예시 사용자 이름
+    user_name = "이영훈"
     health_interests = get_health_interests_byname(user_name)
     
     if not health_interests:
         print(f"사용자 '{user_name}'의 health_interests 정보를 찾을 수 없습니다.")
     else:
-        # LLM을 통해 키워드 생성
         keywords = generate_youtube_keywords(health_interests)
     
     for keyword in keywords:
         print(keyword)
         
-    #video_results = search_youtube_videos(keywords)
+    video_results = search_youtube_videos(keywords)
 
-    # HTML 파일에 데이터 전달
-    #render_html_template(video_results)
+    render_html_template(video_results)
 

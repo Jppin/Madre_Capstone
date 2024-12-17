@@ -1,5 +1,5 @@
 from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
+from langchain.schema.runnable import RunnableSequence
 from config.config import llm
 
 # YouTube 키워드 생성 프롬프트
@@ -10,7 +10,7 @@ youtube_keyword_prompt = PromptTemplate(
     사용자는 YouTube Shorts 영상을 검색하려고 하며, 핵심 키워드는 짧고 명확해야 합니다.
     불필요한 단어나 장황한 표현을 제거하고 핵심 주제만 남기세요.
 
-    긴 검색 키워드:
+    검색 키워드:
     {health_interests}
 
     반환 형식:
@@ -21,4 +21,4 @@ youtube_keyword_prompt = PromptTemplate(
 )
 
 # LLMChain 설정
-youtube_keyword_chain = LLMChain(prompt=youtube_keyword_prompt, llm=llm)
+youtube_keyword_chain = youtube_keyword_prompt | llm

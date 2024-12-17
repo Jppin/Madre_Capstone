@@ -2,15 +2,15 @@ from services.user_service import get_user_info_byname
 from services.graph_service import graph
 
 def main():
-    # 사용자 정보 준비
-    user_name = "이영훈"
+
+    user_name = "김수현"
     user_info = get_user_info_byname(user_name)
 
     if not user_info:
         print(f"User '{user_name}' not found in the database.")
         return
+    
 
-    # State 초기화
     initial_state = {
         "question": "Are there any supplements that interact negatively with my medications or health condition?",
         "user_info": user_info
