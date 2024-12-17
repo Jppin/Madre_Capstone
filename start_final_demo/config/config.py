@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 
-# .env 파일 로드
 load_dotenv()
 
 langchain_tracing_v2 = os.getenv("LANGCHAIN_TRACING_V2")
