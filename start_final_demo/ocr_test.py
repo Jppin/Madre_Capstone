@@ -9,14 +9,14 @@ from config.config import db, openai_api_key, openai_api_url
 # Tesseract 설정 (Windows 경로)
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-# MongoDB 연결 설정
+# MongoDB 연결
 user_info_col = db["UserInfo"]
 medication_col = db["medication"]
 prescriptions_col = db["prescriptions"]
 
-# OpenAI API 키 및 URL 설정
+# OpenAI API 키 / URL 설정
 
-# 1. MPO를 PNG로 변환
+# 1. MPO -> PNG로
 def convert_mpo_to_png(image_path, output_path):
     try:
         image = Image.open(image_path)
@@ -37,7 +37,7 @@ def extract_text(image_path):
         print("OCR 처리 중 오류 발생:", e)
         return None
 
-# 3. GPT API 호출 및 JSON 처리 함수
+# 3. GPT API 호출 / JSON 처리 함수
 def process_text_with_gpt(ocr_text):
     headers = {
         "Authorization": f"Bearer {openai_api_key}",
@@ -51,15 +51,15 @@ def process_text_with_gpt(ocr_text):
 다음은 OCR로 추출된 텍스트입니다:
 '{ocr_text}'
 
-주어진 텍스트에서 다음 정보를 **반드시 JSON 형식**으로만 추출하세요. 다른 설명이나 문장은 절대 추가하지 마세요. 또한 단어 내의 불필요한 띄어쓰기는 제거해주세요.
-약물 정보는 **여러 개**가 있을 수 있으므로 **반드시 모든 약물을 인식**하여 반환해야 합니다.
+주어진 텍스트에서 다음 정보를 반드시 JSON 형식으로만 추출하세요. 또한 단어 내의 불필요한 띄어쓰기는 제거해주세요.
+약물 정보는 여러 개가 있을 수 있으므로 반드시 모든 약물을 인식하여 반환해야 합니다.
 
 {{
     "name": "환자 이름 (없으면 null)",
     "age": "나이 (없으면 기존 값 유지)",
     "prescription_info": {{
         "medical_institution": "처방 의료기관 (없으면 null)",
-        "dispensing_date": "2023-12-12",
+        "dispensing_date": "처방 날짜(없으면 null)",
     }},
     "medications": [
         {{
@@ -73,9 +73,9 @@ def process_text_with_gpt(ocr_text):
         }},
     "cost": 
         {{
-        "total": 8450,
-        "covered_by_insurance": true,
-        "patient_share": 3750
+        "total": "총 금액(없으면 null)",
+        "covered_by_insurance": "보험 처리 금액(없으면 null)",
+        "patient_share": "환자 부담 금액(없으면 null)"
         }}
     ]
 }}
@@ -88,7 +88,7 @@ def process_text_with_gpt(ocr_text):
     response = requests.post(openai_api_url, headers=headers, json=data)
     if response.status_code == 200:
         gpt_response = response.json()["choices"][0]["message"]["content"].strip()
-        # 백틱 코드 블록 제거
+        # 백틱 제거해
         cleaned_response = re.sub(r'```json\s*|\s*```', '', gpt_response)
         print("GPT API 응답 (정제):", cleaned_response)
         return cleaned_response
@@ -96,9 +96,9 @@ def process_text_with_gpt(ocr_text):
         print("OpenAI API 요청 실패:", response.status_code, response.text)
         return None
 
-# 4. 데이터베이스 업데이트 함수
+# 4. DB 업데이트
 def update_database(ocr_data):
-    # UserInfo에서 사용자 정보 조회
+    # 먼저 UserInfo에서 사용자 존재하는지
     user = user_info_col.find_one({"name": ocr_data.get("name", None)})
     if not user:
         print("Error: 해당 사용자가 존재하지 않습니다.")
@@ -108,14 +108,13 @@ def update_database(ocr_data):
     updated_age = ocr_data.get("age", None)
     medication_ids = []
 
-    # medications 컬렉션에 약물 정보 확인 및 추가
+    # medications 컬렉션에 약물 정보 있는지 / 없으면 추가
     for med in ocr_data.get("medications", []):
         med_name = med.get("medication_name", None)
-        if med_name:  # 약물 이름이 있을 경우에만 처리
-            # medications 컬렉션에서 약물이 이미 존재하는지 확인
+        if med_name:
             existing_med = medication_col.find_one({"medication_name": med_name})
             if not existing_med:
-                # 존재하지 않는 약물이라면 새로 추가
+                # 새로 추가
                 new_med = {
                     "medication_name": med_name,
                     "dosage": med.get("dosage", None),
@@ -126,13 +125,13 @@ def update_database(ocr_data):
                     "conflicting_ingredients": med.get("conflicting_ingredients", [])
                 }
                 insert_result = medication_col.insert_one(new_med)
-                medication_ids.append(insert_result.inserted_id)  # 새로 추가된 약물의 ID 저장
+                medication_ids.append(insert_result.inserted_id)  # 새로 추가된 약 ID
             else:
-                medication_ids.append(existing_med["_id"])  # 기존 약물의 ID 저장
+                medication_ids.append(existing_med["_id"])  # 기존 약 ID
 
-    # UserInfo 업데이트: 나이가 있을 때만 업데이트
+    # UserInfo: 나이가 있을 때만 업데이트
     update_fields = {"current_medications": medication_ids}
-    if updated_age is not None:  # 나이 값이 None이 아닐 경우만 업데이트
+    if updated_age is not None:
         update_fields["age"] = updated_age
 
     user_info_col.update_one(
@@ -140,11 +139,11 @@ def update_database(ocr_data):
         {"$set": update_fields}
     )
 
-    # prescriptions 컬렉션에 새로운 처방전 추가
+    # prescriptions
     new_prescription = {
         "patient": {
             "name": ocr_data.get("name", None),
-            "age": updated_age if updated_age is not None else user.get("age")  # 나이가 없으면 기존 값을 유지
+            "age": updated_age if updated_age is not None else user.get("age")  # 나이가 없으면 기존 값 유지
         },
         "prescription_info": {
             "medical_institution": ocr_data.get("prescription_info", {}).get("medical_institution", None),
@@ -159,15 +158,14 @@ def update_database(ocr_data):
         "created_at": datetime.datetime.now()
     }
 
-    # prescriptions 컬렉션에 데이터 삽입
     prescriptions_col.insert_one(new_prescription)
     print("데이터베이스에 처방전이 성공적으로 저장되었습니다.")
 
 
 # 5. 실행 코드
 if __name__ == "__main__":
-    mpo_image_path = "images/처방전템플릿.jpg"
-    converted_image_path = "images/처방전템플릿_변환.png"
+    mpo_image_path = "images/집에가고싶다.jpg"
+    converted_image_path = "images/집에가고싶다_변환.png"
 
     convert_mpo_to_png(mpo_image_path, converted_image_path)
     ocr_text = extract_text(converted_image_path)
