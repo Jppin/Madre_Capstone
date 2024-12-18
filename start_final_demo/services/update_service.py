@@ -3,9 +3,6 @@ from services.text_splitter_service import split_documents
 from services.vector_service import init_vector_store
 
 def run_update_process():
-    """
-    크롤링 및 벡터 임베딩 생성 작업.
-    """
     print("Starting update process: Crawling and vector embedding...")
 
     # Step 1: 웹 데이터 크롤링

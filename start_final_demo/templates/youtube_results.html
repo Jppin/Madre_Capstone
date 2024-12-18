@@ -14,7 +14,7 @@
             <div style="margin-bottom: 20px;">
                 <h3>{{ video.title }}</h3>
                 <p>길이: {{ video.duration }}</p>
-                {{ video.embedHtml | safe }} <!-- embedHtml 그대로 삽입 -->
+                {{ video.embedHtml | safe }}
                 <p><a href="{{ video.link }}" target="_blank">YouTube에서 보기</a></p>
             </div>
         {% endfor %}

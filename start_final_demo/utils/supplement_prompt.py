@@ -95,6 +95,6 @@ recommendation_prompt = PromptTemplate(
 """
 )
 
-# **LLMChain 설정**
+# LLMChain 설정
 warning_chain = warning_prompt | llm
 recommendation_chain = recommendation_prompt | llm
