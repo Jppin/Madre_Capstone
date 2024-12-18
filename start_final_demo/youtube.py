@@ -5,7 +5,8 @@ from jinja2 import Environment, FileSystemLoader
 from utils.keyword_prompt import youtube_keyword_chain
 from services.user_service import get_health_interests_byname
 
-EXCLUDE_KEYWORDS=["판매", "중고", "문의", "의료기", "매입", "프로모션", "특가", "공동구매", "장비", "렌탈", "컨설팅", "A/S", "협찬", "질병" ]
+EXCLUDE_KEYWORDS=["판매", "중고", "문의", "의료기", "매입", "프로모션", 
+                  "특가", "공동구매", "장비", "렌탈", "컨설팅", "A/S", "협찬", "질병" ]
 
 def generate_youtube_keywords(health_interests):
     """
