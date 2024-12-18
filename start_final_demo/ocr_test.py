@@ -1,3 +1,4 @@
+# 기말 시연 핵심 요소기술 1: ocr->텍스트 처리
 import re
 import datetime
 import pytesseract

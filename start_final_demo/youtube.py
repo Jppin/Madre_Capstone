@@ -1,3 +1,4 @@
+# 기말 시연 핵심 요소기술 3: Youtube shorts 키워드 생성 및 보여주기
 from googleapiclient.discovery import build
 import isodate
 from jinja2 import Environment, FileSystemLoader
