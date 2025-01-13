@@ -1,0 +1,50 @@
+# Virtual environment
+venv/
+.env/
+demoenv/
+myenv/
+
+# Environment variables
+*.env
+
+# IDE specific files
+.vscode/
+.idea/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Cache files
+*.egg-info/
+.eggs/
+
+# Streamlit specific files
+.streamlit/
+
+# MongoDB Data
+data/
+
+# Temporary editor files
+*.swp
+*.bak
+*.tmp
+
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# IPython
+profile_default/
+ipython_config.py
+
+# Dependency directories
+node_modules/
+

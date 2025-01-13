@@ -1,6 +1,0 @@
-pymongo
-streamlit
-langchain
-python-dotenv
-openai
-bson

@@ -1,0 +1,16 @@
+python-dotenv 
+pymongo 
+requests 
+langchain 
+langchain-text-splitters 
+langchain-community 
+langchain-openai 
+langchain-mongodb 
+bs4
+langgraph
+typing_extensions
+pytesseract
+pillow
+google-api-python-client
+isodate
+jinja2
