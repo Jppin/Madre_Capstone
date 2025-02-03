@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     },
 
     loginButton: { 
-        backgroundColor: '#7D4EFF', 
+        backgroundColor: '#FBAF8B', 
         padding: 15, 
         borderRadius: 5, 
         width: '80%', 
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
 
     linkText: {
         fontSize: 14,
-        color: '#7D4EFF',
+        color: '#000000',
     },
 
     divider: {
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
 
     skipText: {
         fontSize: 14,
-        color: '#7D4EFF',
+        color: '#FBAF8B',
         textDecorationLine: 'underline',
     },
 });
