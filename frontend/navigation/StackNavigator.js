@@ -4,6 +4,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoginScreen from '../screens/LoginScreen';
+import SignupScreen from '../screens/SignupScreen';
+import UserInfoScreen from '../screens/UserInfoScreen';
 import TabNavigator from './TabNavigator';
 
 const Stack = createStackNavigator();
@@ -36,6 +38,8 @@ const StackNavigator = () => {
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 {/* 항상 로그인 화면부터 시작 */}
                 <Stack.Screen name="Login" component={LoginScreen} />
+                <Stack.Screen name="Signup" component={SignupScreen} />
+                <Stack.Screen name="UserInfo" component={UserInfoScreen} />
                 <Stack.Screen name="Main" component={TabNavigator} />
             </Stack.Navigator>
         </NavigationContainer>
