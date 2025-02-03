@@ -25,6 +25,11 @@ const LoginScreen = () => {
         });
     };
 
+    // ✅ "회원가입" 버튼 클릭 시 회원가입 페이지로 이동
+    const handleSignup = () => {
+        navigation.navigate('Signup'); // SignupScreen으로 이동
+    };
+
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.container}>
@@ -63,7 +68,9 @@ const LoginScreen = () => {
                     <Text style={styles.divider}> | </Text>
                     <TouchableOpacity><Text style={styles.linkText}>아이디 찾기</Text></TouchableOpacity>
                     <Text style={styles.divider}> | </Text>
-                    <TouchableOpacity><Text style={styles.linkText}>회원가입하기</Text></TouchableOpacity>
+                    <TouchableOpacity onPress={handleSignup}>
+                        <Text style={styles.linkText}>회원가입하기</Text>
+                    </TouchableOpacity>
                 </View>
 
                 {/* ✅ SNS 로그인 버튼 */}
@@ -78,7 +85,7 @@ const LoginScreen = () => {
                     </TouchableOpacity>
                 </View>
 
-                {/* ✅ 건너뛰기 버튼 (이제 확실히 보일 것!) */}
+                {/* ✅ 건너뛰기 버튼 */}
                 <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
                     <Text style={styles.skipText}>건너뛰기</Text>
                 </TouchableOpacity>
@@ -101,11 +108,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
 
-    // ✅ 로고 크기 강제 조정 (최적화 제거)
+    // ✅ 로고 크기 강제 조정
     logo: { 
-        width: 270,   // 기존보다 더 크게 지정 (기기별 크기 차이 감안)
-        height: 120,  // 비율 조정
-        marginBottom: 40, // 간격 확보
+        width: 270,
+        height: 120,
+        marginBottom: 40,
     },
 
     // ✅ 입력 필드와 "e-mail 주소로 로그인"을 좌측 정렬
@@ -190,7 +197,7 @@ const styles = StyleSheet.create({
 
     // ✅ "건너뛰기" 버튼 스타일
     skipButton: {
-        marginTop: 20,  // 여유 공간 확보
+        marginTop: 20,
         padding: 10,
     },
 
