@@ -11,7 +11,7 @@ import MyPageScreen from '../screens/MyPageScreen';
 
 const Tab = createBottomTabNavigator();
 
-// 커스텀 하단 탭 바 컴포넌트
+// 커스텀 하단 탭 바 컴포넌트///으으 다시시
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   return (
     <View style={styles.tabBarContainer}>
