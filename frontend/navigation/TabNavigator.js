@@ -26,7 +26,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
 
         const isFocused = state.index === index;
 
-        // 각 탭별 단일 아이콘 이미지 사용
+        // 각 탭별 단일 아이콘 이미지 사용////으아아아아아아
         let iconSource;
         switch (route.name) {
           case 'Home':
