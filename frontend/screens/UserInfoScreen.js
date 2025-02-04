@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import RNPickerSelect from 'react-native-picker-select';
@@ -19,10 +19,11 @@ const UserInfoScreen = () => {
     const [selectedGender, setSelectedGender] = useState(null);
     const [errors, setErrors] = useState({});
     const [modalVisible, setModalVisible] = useState(false);
+    const [confirmationModal, setConfirmationModal] = useState(false);
 
     const validateAndProceed = () => {
         let newErrors = {};
-        if (!nickname.trim()) newErrors.nickname = '원하시는 닉네임을 입력해주세요.';
+        if (!nickname.trim()) newErrors.nickname = '닉네임을 입력해주세요.';
         if (!birthYear) newErrors.birthYear = '태어난 연도를 선택해주세요.';
         if (!selectedGender) newErrors.selectedGender = '성별을 선택해주세요.';
         
@@ -31,6 +32,15 @@ const UserInfoScreen = () => {
         if (Object.keys(newErrors).length === 0) {
             setModalVisible(true);
         }
+    };
+
+    const handleConfirm = () => {
+        setModalVisible(false);
+        navigation.navigate('SignupComplete', {
+            nickname: nickname,
+            birthYear: birthYear,
+            selectedGender: selectedGender,
+        }); // 가입 완료 페이지로 이동하면서 데이터 전달
     };
 
     return (
@@ -104,7 +114,6 @@ const UserInfoScreen = () => {
                 <Text style={styles.nextText}>회원 가입 완료하기</Text>
             </TouchableOpacity>
 
-            {/* 확인용 모달 */}
             <Modal visible={modalVisible} transparent animationType="slide">
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
@@ -116,7 +125,7 @@ const UserInfoScreen = () => {
                             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalButton}>
                                 <Text style={styles.modalButtonText}>수정하기</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setModalVisible(false)} style={[styles.modalButton, styles.confirmButton]}>
+                            <TouchableOpacity onPress={handleConfirm} style={[styles.modalButton, styles.confirmButton]}>
                                 <Text style={styles.modalButtonText}>확인했어요!</Text>
                             </TouchableOpacity>
                         </View>
