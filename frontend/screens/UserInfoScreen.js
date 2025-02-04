@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import RNPickerSelect from 'react-native-picker-select';
 
@@ -15,42 +15,72 @@ const generateYearOptions = () => {
 const UserInfoScreen = () => {
     const navigation = useNavigation();
     const [nickname, setNickname] = useState('');
-    const [birthYear, setBirthYear] = useState(new Date().getFullYear());
+    const [birthYear, setBirthYear] = useState(null);
     const [selectedGender, setSelectedGender] = useState(null);
+    const [errors, setErrors] = useState({});
+    const [modalVisible, setModalVisible] = useState(false);
+    const [confirmationModal, setConfirmationModal] = useState(false);
+
+    const validateAndProceed = () => {
+        let newErrors = {};
+        if (!nickname.trim()) newErrors.nickname = '닉네임을 입력해주세요.';
+        if (!birthYear) newErrors.birthYear = '태어난 연도를 선택해주세요.';
+        if (!selectedGender) newErrors.selectedGender = '성별을 선택해주세요.';
+        
+        setErrors(newErrors);
+        
+        if (Object.keys(newErrors).length === 0) {
+            setModalVisible(true);
+        }
+    };
+
+    const handleConfirm = () => {
+        setModalVisible(false);
+        navigation.navigate('SignupComplete', {
+            nickname: nickname,
+            birthYear: birthYear,
+            selectedGender: selectedGender,
+        }); // 가입 완료 페이지로 이동하면서 데이터 전달
+    };
 
     return (
         <View style={styles.container}>
-            {/* ✅ 뒤로가기 버튼은 맨 위 (화면 최상단) */}
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                 <Text style={styles.backText}>←</Text>
             </TouchableOpacity>
 
             <ScrollView contentContainerStyle={styles.scrollContainer}>
-                {/* ✅ "내 정보 입력" 제목 (여백 확보) */}
                 <Text style={styles.headerText}>내 정보 입력</Text>
 
-                {/* ✅ 각 문항 간 충분한 여백 추가 */}
                 <View style={styles.section}>
                     <Text style={styles.label}>원하는 닉네임을 입력해주세요.</Text>
                     <TextInput 
-                        style={styles.input} 
+                        style={[styles.input, errors.nickname && styles.errorInput]} 
                         placeholder="어떻게 불러드릴까요? (예: 건강마스터)"
                         value={nickname}
-                        onChangeText={setNickname}
+                        onChangeText={(text) => {
+                            setNickname(text);
+                            setErrors((prev) => ({ ...prev, nickname: '' }));
+                        }}
                     />
+                    {errors.nickname && <Text style={styles.errorText}>{errors.nickname}</Text>}
                 </View>
 
                 <View style={styles.section}>
                     <Text style={styles.label}>태어난 연도를 선택해주세요.</Text>
-                    <View style={styles.pickerContainer}>
+                    <View style={[styles.pickerContainer, errors.birthYear && styles.errorInput]}>
                         <RNPickerSelect
                             placeholder={{ label: "클릭해 연도를 선택하세요.", value: null }}
-                            onValueChange={(value) => setBirthYear(value)}
+                            onValueChange={(value) => {
+                                setBirthYear(value);
+                                setErrors((prev) => ({ ...prev, birthYear: '' }));
+                            }}
                             items={generateYearOptions()}
                             useNativeAndroidPickerStyle={false}  
                             style={pickerSelectStyles}
                         />
                     </View>
+                    {errors.birthYear && <Text style={styles.errorText}>{errors.birthYear}</Text>}
                 </View>
 
                 <View style={styles.section}>
@@ -58,28 +88,54 @@ const UserInfoScreen = () => {
                     <View style={styles.genderContainer}>
                         <TouchableOpacity 
                             style={[styles.genderButton, selectedGender === '남성' && styles.selectedGender]}
-                            onPress={() => setSelectedGender('남성')}
+                            onPress={() => {
+                                setSelectedGender('남성');
+                                setErrors((prev) => ({ ...prev, selectedGender: '' }));
+                            }}
                         >
                             <Text style={[styles.genderText, selectedGender === '남성' && styles.selectedGenderText]}>남성</Text>
                         </TouchableOpacity>
                         
                         <TouchableOpacity 
                             style={[styles.genderButton, selectedGender === '여성' && styles.selectedGender]}
-                            onPress={() => setSelectedGender('여성')}
+                            onPress={() => {
+                                setSelectedGender('여성');
+                                setErrors((prev) => ({ ...prev, selectedGender: '' }));
+                            }}
                         >
                             <Text style={[styles.genderText, selectedGender === '여성' && styles.selectedGenderText]}>여성</Text>
                         </TouchableOpacity>
                     </View>
+                    {errors.selectedGender && <Text style={styles.errorText}>{errors.selectedGender}</Text>}
                 </View>
             </ScrollView>
 
-            {/* ✅ 회원 가입 완료하기 버튼 하단 고정 */}
-            <TouchableOpacity style={styles.nextButton}>
+            <TouchableOpacity style={styles.nextButton} onPress={validateAndProceed}>
                 <Text style={styles.nextText}>회원 가입 완료하기</Text>
             </TouchableOpacity>
+
+            <Modal visible={modalVisible} transparent animationType="slide">
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>입력하신 정보를 확인해주세요!</Text>
+                        <Text style={styles.modalText}>닉네임: {nickname}</Text>
+                        <Text style={styles.modalText}>태어난 연도: {birthYear}년</Text>
+                        <Text style={styles.modalText}>성별: {selectedGender}</Text>
+                        <View style={styles.modalButtonContainer}>
+                            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalButton}>
+                                <Text style={styles.modalButtonText}>수정하기</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleConfirm} style={[styles.modalButton, styles.confirmButton]}>
+                                <Text style={styles.modalButtonText}>확인했어요!</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {
@@ -187,6 +243,57 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
     },
+
+    errorText: {
+        color: 'red',
+        fontSize: 14,
+        marginTop: 5,
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalContent: {
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 10,
+        width: '80%',
+        alignItems: 'center',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 15,
+    },
+    modalText: {
+        fontSize: 16,
+        marginBottom: 10,
+    },
+    modalButtonContainer: {
+        flexDirection: 'row',
+        marginTop: 20,
+    },
+    modalButton: {
+        flex: 1,
+        padding: 10,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+        marginHorizontal: 5,
+    },
+    confirmButton: {
+        backgroundColor: '#FBAF8B',
+    },
+    modalButtonText: {
+        fontSize: 16,
+    },
+
+
+
+
 });
 
 const pickerSelectStyles = {
