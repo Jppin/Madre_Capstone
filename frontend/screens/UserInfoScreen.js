@@ -53,7 +53,7 @@ const UserInfoScreen = () => {
                 <Text style={styles.headerText}>내 정보 입력</Text>
 
                 <View style={styles.section}>
-                    <Text style={styles.label}>원하는 닉네임을 입력해주세요.</Text>
+                    <Text style={styles.label}>원하시는 닉네임을 입력해주세요.</Text>
                     <TextInput 
                         style={[styles.input, errors.nickname && styles.errorInput]} 
                         placeholder="어떻게 불러드릴까요? (예: 건강마스터)"
@@ -84,7 +84,7 @@ const UserInfoScreen = () => {
                 </View>
 
                 <View style={styles.section}>
-                    <Text style={styles.label}>당신의 성별을 선택해주세요.</Text>
+                    <Text style={styles.label}>성별을 선택해주세요.</Text>
                     <View style={styles.genderContainer}>
                         <TouchableOpacity 
                             style={[styles.genderButton, selectedGender === '남성' && styles.selectedGender]}
