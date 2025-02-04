@@ -28,7 +28,7 @@ const StackNavigator = () => {
     if (isChecking) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#7D4EFF" />
+                <ActivityIndicator size="large" color="#FBAF8B" />
             </View>
         );
     }
