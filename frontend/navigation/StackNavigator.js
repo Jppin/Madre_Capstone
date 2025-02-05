@@ -9,6 +9,8 @@ import UserInfoScreen from '../screens/UserInfoScreen';
 import SignupComplete from '../screens/SignupComplete';  // ✅ 추가
 import RecommendationStart from '../screens/RecommendationStart';  // ✅ 추가
 import TabNavigator from './TabNavigator';
+import HealthSurvey from '../screens/HealthSurvey';
+import HealthSurvey2 from '../screens/HealthSurvey2';
 
 const Stack = createStackNavigator();
 
@@ -43,6 +45,8 @@ const StackNavigator = () => {
                 <Stack.Screen name="UserInfo" component={UserInfoScreen} />
                 <Stack.Screen name="SignupComplete" component={SignupComplete} />
                 <Stack.Screen name="RecommendationStart" component={RecommendationStart} />
+                <Stack.Screen name="HealthSurvey" component={HealthSurvey} />
+                <Stack.Screen name="HealthSurvey2" component={HealthSurvey2} />
                 <Stack.Screen name="Main" component={TabNavigator} />
             </Stack.Navigator>
         </NavigationContainer>
