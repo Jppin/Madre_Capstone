@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 const HealthSurvey = ({ progress = 33 }) => {
     const navigation = useNavigation();
 
-    // ✅ 상태 관리 (사용자 입력)
+    // ✅ 상태 관리 (사용자 입력) 으아아
     const [alcohol, setAlcohol] = useState(0); // 음주 횟수
     const [smoking, setSmoking] = useState(null); // 흡연 여부
     const [pregnancy, setPregnancy] = useState(null); // 임신 상태
