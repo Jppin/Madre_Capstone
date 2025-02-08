@@ -1,8 +1,7 @@
-//HealthSurvey3.js
-
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import LoadingScreen from '../components/LoadingScreen'; // ✅ 로딩 스크린 추가
 
 const HealthSurvey3 = () => {
     const navigation = useNavigation();
@@ -20,7 +19,8 @@ const HealthSurvey3 = () => {
 
     // ✅ 상태 관리
     const [selectedConcerns, setSelectedConcerns] = useState([]);
-    const [errorMessage, setErrorMessage] = useState(''); // 에러 메시지
+    const [errorMessage, setErrorMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false); // ✅ 로딩 상태 추가
 
     // ✅ 건강 고민 목록
     const healthConcerns = [
@@ -30,26 +30,37 @@ const HealthSurvey3 = () => {
         "혈압 조절", "뼈 건강", "관절 건강", "간 건강", "갑상선 건강", "혈중 중성지방"
     ];
 
-    // ✅ 선택 토글 함수 (선택 시 색상 변경, 선택하면 에러 메시지 제거)
+    // ✅ 선택 토글 함수
     const toggleConcern = (concern) => {
-        setErrorMessage(''); // 선택하면 에러 메시지 제거
+        setErrorMessage('');
 
         setSelectedConcerns((prev) =>
             prev.includes(concern)
-                ? prev.filter(item => item !== concern) // 이미 선택된 경우 해제
-                : [...prev, concern] // 새로 선택
+                ? prev.filter(item => item !== concern)
+                : [...prev, concern]
         );
     };
 
-    // ✅ 확인 버튼 클릭 시 검사 후 이동
+    // ✅ 확인 버튼 클릭 시 처리
     const handleNext = () => {
         if (selectedConcerns.length === 0) {
             setErrorMessage('고민되는 건강 항목을 선택해주세요.');
             return;
         }
-        console.log("선택된 건강 고민:", selectedConcerns);
-        navigation.navigate('NextScreen', { selectedConcerns });
+
+        setIsLoading(true); // ✅ 로딩 상태 활성화
+
+        // ✅ 2초 후에 로딩 스크린에서 InfoComplete로 이동
+        setTimeout(() => {
+            setIsLoading(false);
+            navigation.navigate('InfoComplete', { selectedConcerns });
+        }, 2000);
     };
+
+    // ✅ 로딩 중이면 로딩 화면 표시
+    if (isLoading) {
+        return <LoadingScreen />;
+    }
 
     return (
         <View style={styles.container}>
@@ -66,8 +77,8 @@ const HealthSurvey3 = () => {
                 <Text style={styles.backText}>←</Text>
             </TouchableOpacity>
 
-            {/* 질문 텍스트 (줄바꿈 포함) */}
-            <Text style={styles.title}>{"고민되거나 개선하고 싶은\n건강 고민이 있으신가요?"}</Text>
+            {/* 질문 텍스트 */}
+            <Text style={styles.title}>{"고민되시거나 개선하고 싶으신\n건강 고민이 있으신가요?"}</Text>
 
             <ScrollView contentContainerStyle={styles.concernContainer}>
                 {healthConcerns.map((concern, index) => (
@@ -91,7 +102,7 @@ const HealthSurvey3 = () => {
                 ))}
             </ScrollView>
 
-            {/* 에러 메시지 표시 */}
+            {/* 에러 메시지 */}
             {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 
             {/* 확인 버튼 */}
@@ -109,14 +120,14 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         paddingHorizontal: 20,
         paddingBottom: 30,
-        justifyContent: 'space-between', // 전체 배치 조정
+        justifyContent: 'space-between',
     },
     progressBarContainer: {
         width: '100%',
         height: 8,
         backgroundColor: '#E0E0E0',
         borderRadius: 4,
-        marginTop: 50, // ✅ 진행 바 위치 조정
+        marginTop: 50,
     },
     progressBar: {
         height: '100%',
@@ -125,7 +136,7 @@ const styles = StyleSheet.create({
     },
     backButton: {
         position: 'absolute',
-        top: 50, // ✅ 버튼을 더 아래로 내림
+        top: 50,
         left: 10,
         zIndex: 10,
         padding: 10,
@@ -138,14 +149,14 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         textAlign: 'center',
-        marginTop: 50, // ✅ 질문을 아래로 내림
+        marginTop: 50,
         marginBottom: 20,
     },
     concernContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'center',
-        paddingBottom: 30, // ✅ 스크롤뷰 패딩 추가 (버튼과 겹치지 않게)
+        paddingBottom: 30,
     },
     concernButton: {
         borderWidth: 1,
@@ -178,7 +189,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         alignItems: 'center',
         alignSelf: 'stretch',
-        marginTop: 20, // ✅ 버튼을 더 아래로 내림
+        marginTop: 20,
     },
     confirmText: {
         color: 'white',

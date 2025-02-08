@@ -78,10 +78,12 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
 };
 
 const TabNavigator = () => {
+
   return (
     <Tab.Navigator
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{ headerShown: false }}
+      initialRouteName="Home" // ✅ 이걸 추가하면 기본 화면이 HomeScreen이 됨!
     >
       <Tab.Screen name="Medicine" component={MedicineScreen} options={{ tabBarLabel: '약품 보관함' }} />
       <Tab.Screen name="Nutrition" component={NutritionScreen} options={{ tabBarLabel: '영양성분 추천' }} />
