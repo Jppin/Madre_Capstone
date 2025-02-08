@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import LoadingScreen from '../components/LoadingScreen'; // ✅ 로딩 스크린 추가
+import LoadingScreen from '../../components/LoadingScreen'; // ✅ 로딩 스크린 추가
 
 const HealthSurvey3 = () => {
     const navigation = useNavigation();
