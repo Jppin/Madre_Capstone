@@ -7,7 +7,7 @@ const RecommendationStart = () => {
 
     return (
         <View style={styles.container}>
-            <Image source={require('../assets/icons/capybara1.png')} style={styles.image} />
+            <Image source={require('../../assets/icons/capybara1.png')} style={styles.image} />
             <View style={styles.separator} />
             <Text style={styles.title}>당신에게 꼭 맞는 영양성분을{'\n'}추천해드릴게요.</Text>
             <Text style={styles.subtitle}>
