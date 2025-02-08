@@ -1,10 +1,21 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { useNavigation } from '@react-navigation/native';
 
-const HealthSurvey = ({ progress = 33 }) => {
+const HealthSurvey = () => {
     const navigation = useNavigation();
+
+    // ✅ 진행 바 애니메이션 값 (초기값: 0 → 목표값: 33, useRef 사용으로 고정)
+    const progress = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        Animated.timing(progress, {
+            toValue: 33, // 목표값 (33%)
+            duration: 500, // 애니메이션 지속 시간 (0.5초)
+            useNativeDriver: false, // width 속성에는 useNativeDriver 사용 불가
+        }).start();
+    }, []); // ✅ 한 번만 실행됨
 
     // ✅ 상태 관리 (사용자 입력)
     const [alcohol, setAlcohol] = useState(0); // 음주 횟수
@@ -28,7 +39,10 @@ const HealthSurvey = ({ progress = 33 }) => {
         <View style={styles.container}>
             {/* 상단 진행 바 */}
             <View style={styles.progressBarContainer}>
-                <View style={[styles.progressBar, { width: `${progress}%` }]} />
+                <Animated.View style={[styles.progressBar, { width: progress.interpolate({
+                    inputRange: [0, 33],
+                    outputRange: ['0%', '33%'],
+                }) }]} />
             </View>
 
             {/* 상단 뒤로 가기 버튼 */}
@@ -106,7 +120,7 @@ const styles = StyleSheet.create({
         height: 8,
         backgroundColor: '#E0E0E0',
         borderRadius: 4,
-        marginTop: 40, // ✅ 진행 바 위치 조정
+        marginTop: 40,
     },
     progressBar: {
         height: '100%',
@@ -115,7 +129,7 @@ const styles = StyleSheet.create({
     },
     backButton: {
         position: 'absolute',
-        top: 43, // ✅ 뒤로 가기 버튼 위치 조정
+        top: 43,
         left: 10,
         zIndex: 10,
         padding: 10,
@@ -128,7 +142,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         marginTop: -30,
-        
     },
     question: {
         fontSize: 18,
@@ -205,6 +218,5 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
 });
-
 
 export default HealthSurvey;
