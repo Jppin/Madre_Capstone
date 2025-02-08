@@ -1,16 +1,26 @@
-//HealthSurvey2.js
-
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 const HealthSurvey2 = () => {
     const navigation = useNavigation();
 
-    // ✅ 질환 선택 데이터 (사용자가 선택한 질환 목록)
-    const [selectedConditions, setSelectedConditions] = useState([]);
+    // ✅ 진행 바 애니메이션 값 (초기값: 33 → 목표값: 66, useRef 사용)
+    const progress = useRef(new Animated.Value(33)).current;
 
-    // ✅ 질환 목록 (사진 참고)
+    useEffect(() => {
+        Animated.timing(progress, {
+            toValue: 66, // 목표값 (66%)
+            duration: 500, // 애니메이션 지속 시간 (0.5초)
+            useNativeDriver: false,
+        }).start();
+    }, []);
+
+    // ✅ 상태 관리
+    const [selectedConditions, setSelectedConditions] = useState([]);
+    const [errorMessage, setErrorMessage] = useState(''); // 에러 메시지 상태 추가
+
+    // ✅ 질환 목록
     const conditions = [
         '해당 사항이 없어요', '고혈압', '당뇨병', '간질환', '지방간',
         '고지혈증(콜레스테롤)', '고중성지방혈증', '위장질환', '대장질환', '변비',
@@ -20,23 +30,49 @@ const HealthSurvey2 = () => {
         '뇌전증', '백내장', '녹내장'
     ];
 
-    // ✅ 선택 토글 함수
+    // ✅ 선택 토글 함수 (선택 시 에러 메시지 제거)
     const toggleCondition = (condition) => {
-        if (selectedConditions.includes(condition)) {
-            setSelectedConditions(selectedConditions.filter(item => item !== condition));
+        setErrorMessage(''); // 항목 선택 시 에러 메시지 초기화
+
+        if (condition === '해당 사항이 없어요') {
+            setSelectedConditions(['해당 사항이 없어요']);
         } else {
-            setSelectedConditions([...selectedConditions, condition]);
+            setSelectedConditions((prev) => {
+                if (prev.includes('해당 사항이 없어요')) {
+                    return [condition];
+                }
+                return prev.includes(condition)
+                    ? prev.filter(item => item !== condition)
+                    : [...prev, condition];
+            });
         }
     };
 
-    // ✅ 확인 버튼 클릭 → HealthSurvey3으로 이동 (입력 데이터 함께 전달)
+    // ✅ 확인 버튼 클릭 시, 선택 여부 검사 → HealthSurvey3으로 이동
     const handleNext = () => {
+        if (selectedConditions.length === 0) {
+            setErrorMessage('질문에 답해주세요.');
+            return;
+        }
         console.log("선택된 질환 목록:", selectedConditions);
         navigation.navigate('HealthSurvey3', { selectedConditions });
     };
 
     return (
         <View style={styles.container}>
+            {/* 상단 진행 바 */}
+            <View style={styles.progressBarContainer}>
+                <Animated.View style={[styles.progressBar, { width: progress.interpolate({
+                    inputRange: [33, 66],
+                    outputRange: ['33%', '66%'],
+                }) }]} />
+            </View>
+
+            {/* 상단 뒤로 가기 버튼 */}
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                <Text style={styles.backText}>←</Text>
+            </TouchableOpacity>
+
             <Text style={styles.title}>갖고 있는 질환이 있으신가요?</Text>
             <Text style={styles.subtitle}>피해야 하는 영양성분을 분석해드릴게요</Text>
 
@@ -62,6 +98,10 @@ const HealthSurvey2 = () => {
                 ))}
             </ScrollView>
 
+            {/* 에러 메시지 표시 */}
+            {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+
+            {/* 확인 버튼 */}
             <TouchableOpacity style={styles.confirmButton} onPress={handleNext}>
                 <Text style={styles.confirmText}>확인</Text>
             </TouchableOpacity>
@@ -74,12 +114,37 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'white',
-        padding: 20,
+        paddingHorizontal: 20,
+        paddingBottom: 30,
+    },
+    progressBarContainer: {
+        width: '100%',
+        height: 8,
+        backgroundColor: '#E0E0E0',
+        borderRadius: 4,
+        marginTop: 40,
+    },
+    progressBar: {
+        height: '100%',
+        backgroundColor: '#FBAF8B',
+        borderRadius: 4,
+    },
+    backButton: {
+        position: 'absolute',
+        top: 43,
+        left: 10,
+        zIndex: 10,
+        padding: 10,
+    },
+    backText: {
+        fontSize: 24,
+        color: 'black',
     },
     title: {
         fontSize: 20,
         fontWeight: 'bold',
         textAlign: 'center',
+        marginTop: 30,
         marginBottom: 10,
     },
     subtitle: {
@@ -112,12 +177,19 @@ const styles = StyleSheet.create({
     selectedText: {
         color: 'white',
     },
+    errorText: {
+        color: 'red',
+        fontSize: 16,
+        textAlign: 'center',
+        marginVertical: 10,
+    },
     confirmButton: {
         backgroundColor: '#FBAF8B',
         padding: 15,
         borderRadius: 8,
         alignItems: 'center',
-        marginTop: 20,
+        alignSelf: 'stretch',
+        marginTop: 10,
     },
     confirmText: {
         color: 'white',
