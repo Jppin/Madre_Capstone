@@ -1,7 +1,12 @@
+//StackNavigtor.js
+
 import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
+
+
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
@@ -11,6 +16,7 @@ import RecommendationStart from '../screens/RecommendationStart';  // ✅ 추가
 import TabNavigator from './TabNavigator';
 import HealthSurvey from '../screens/HealthSurvey';
 import HealthSurvey2 from '../screens/HealthSurvey2';
+import HealthSurvey3 from '../screens/HealthSurvey3';
 
 const Stack = createStackNavigator();
 
@@ -48,6 +54,7 @@ const StackNavigator = () => {
                 <Stack.Screen name="HealthSurvey" component={HealthSurvey} />
                 <Stack.Screen name="HealthSurvey2" component={HealthSurvey2} />
                 <Stack.Screen name="Main" component={TabNavigator} />
+                <Stack.Screen name="HealthSurvey3" component={HealthSurvey3} />
             </Stack.Navigator>
         </NavigationContainer>
     );
