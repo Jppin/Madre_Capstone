@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// 주예 다녀옴 하하하하하하하핫 
+// 주예 다녀옴 하하하하하하gkgkgkgkgkgk  
 const LoginScreen = () => {
     const navigation = useNavigation();
     const [email, setEmail] = useState('');
