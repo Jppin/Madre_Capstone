@@ -6,7 +6,6 @@ import { useNavigation } from '@react-navigation/native';
 const HealthSurvey = () => {
     const navigation = useNavigation();
 
-<<<<<<< HEAD
     // ✅ 진행 바 애니메이션 값 (초기값: 0 → 목표값: 33, useRef 사용으로 고정)
     const progress = useRef(new Animated.Value(0)).current;
 
@@ -19,9 +18,6 @@ const HealthSurvey = () => {
     }, []); // ✅ 한 번만 실행됨
 
     // ✅ 상태 관리 (사용자 입력)
-=======
-    // ✅ 상태 관리 (사용자 입력) 으아아
->>>>>>> dc21650984d02d4a74e1f5c40fedec09369b983d
     const [alcohol, setAlcohol] = useState(0); // 음주 횟수
     const [smoking, setSmoking] = useState(null); // 흡연 여부
     const [pregnancy, setPregnancy] = useState(null); // 임신 상태
