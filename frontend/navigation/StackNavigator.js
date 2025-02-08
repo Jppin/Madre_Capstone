@@ -8,14 +8,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomSpinner from '../components/CustomSpinner';
 
 import LoginScreen from '../screens/LoginScreen';
-import SignupScreen from '../screens/SignupScreen';
-import UserInfoScreen from '../screens/UserInfoScreen';
-import SignupComplete from '../screens/SignupComplete';
-import RecommendationStart from '../screens/RecommendationStart';
-import HealthSurvey from '../screens/HealthSurvey';
-import HealthSurvey2 from '../screens/HealthSurvey2';
-import HealthSurvey3 from '../screens/HealthSurvey3';
-import InfoComplete from '../screens/InfoComplete';
+import SignupScreen from '../screens/NewUser/SignupScreen';
+import UserInfoScreen from '../screens/NewUser/UserInfoScreen';
+import SignupComplete from '../screens/NewUser/SignupComplete';
+import RecommendationStart from '../screens/NewUser/RecommendationStart';
+import HealthSurvey from '../screens//NewUser/HealthSurvey';
+import HealthSurvey2 from '../screens/NewUser/HealthSurvey2';
+import HealthSurvey3 from '../screens/NewUser/HealthSurvey3';
+import InfoComplete from '../screens/NewUser/InfoComplete';
 import TabNavigator from './TabNavigator';
 
 const Stack = createStackNavigator();
