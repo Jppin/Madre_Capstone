@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+// 주예 다녀옴 하핫 
 const LoginScreen = () => {
     const navigation = useNavigation();
     const [email, setEmail] = useState('');
@@ -51,7 +51,7 @@ const LoginScreen = () => {
                     />
                     <TextInput 
                         style={styles.input} 
-                        placeholder="비밀번호 입력" 
+                        placeholder="비밀번호 입력"  
                         secureTextEntry 
                         value={password} 
                         onChangeText={setPassword} 
@@ -92,7 +92,8 @@ const LoginScreen = () => {
             </View>
         </ScrollView>
     );
-};
+}; //김주예 성공
+
 
 const styles = StyleSheet.create({
     scrollContainer: {
