@@ -1,6 +1,5 @@
-// navigation/TabNavigator.js
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Animated } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import HomeScreen from '../screens/HomeScreen';
@@ -11,7 +10,7 @@ import MyPageScreen from '../screens/MyPageScreen';
 
 const Tab = createBottomTabNavigator();
 
-// 커스텀 하단 탭 바 컴포넌트///으으 다시시
+// **커스텀 하단 탭 바**
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   return (
     <View style={styles.tabBarContainer}>
@@ -26,7 +25,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
 
         const isFocused = state.index === index;
 
-        // 각 탭별 단일 아이콘 이미지 사용////으아아아아아아
+        // 아이콘 설정
         let iconSource;
         switch (route.name) {
           case 'Home':
@@ -61,15 +60,11 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
         return (
           <TouchableOpacity
             key={route.key}
-            style={[
-              styles.tabItem,
-              index !== state.routes.length - 1 && styles.borderRight,
-              isFocused && styles.activeTabItem, // active 상태면 추가 스타일 적용
-            ]}
+            style={[styles.tabItem, isFocused && styles.activeTab]}
             onPress={onPress}
           >
-            <Image source={iconSource} style={styles.iconStyle} />
-            <Text style={[styles.tabLabel, { color: isFocused ? '#000' : '#999' }]}>{label}</Text>
+            <Image source={iconSource} style={[styles.iconStyle, isFocused && styles.activeIcon]} />
+            <Text style={[styles.tabLabel, isFocused && styles.activeLabel]}>{label}</Text>
           </TouchableOpacity>
         );
       })}
@@ -78,51 +73,62 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
 };
 
 const TabNavigator = () => {
-
   return (
     <Tab.Navigator
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{ headerShown: false }}
-      initialRouteName="Home" // ✅ 이걸 추가하면 기본 화면이 HomeScreen이 됨!
+      initialRouteName="Home"
     >
       <Tab.Screen name="Medicine" component={MedicineScreen} options={{ tabBarLabel: '약품 보관함' }} />
-      <Tab.Screen name="Nutrition" component={NutritionScreen} options={{ tabBarLabel: '영양성분 추천' }} />
+      <Tab.Screen name="Nutrition" component={NutritionScreen} options={{ tabBarLabel: '성분 추천 내역' }} />
       <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: '케어 센터' }} />
-      <Tab.Screen name="Youtube" component={YoutubeScreen} options={{ tabBarLabel: '유튜브 쇼츠' }} />
+      <Tab.Screen name="Youtube" component={YoutubeScreen} options={{ tabBarLabel: '건강 쇼츠' }} />
       <Tab.Screen name="MyPage" component={MyPageScreen} options={{ tabBarLabel: '마이페이지' }} />
     </Tab.Navigator>
   );
 };
 
+// **스타일 개선**
 const styles = StyleSheet.create({
   tabBarContainer: {
     flexDirection: 'row',
-    backgroundColor: '#fff', // 하단 바 배경색
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-    height: 60,
+    backgroundColor: '#F8F8F8', // 밝은 그레이톤
+    height: 70, // 높이 조정
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: -3 },
+    elevation: 5, // 안드로이드 그림자
   },
   tabItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 10,
   },
-  borderRight: {
-    borderRightWidth: 1,
-    borderRightColor: '#ddd',
-  },
-  activeTabItem: {
-    backgroundColor: '#eee', // active 상태일 때 연한 회색 배경
+  activeTab: {
+    backgroundColor: '#E0E0E0', // 활성 탭 배경색
     borderRadius: 10,
   },
   tabLabel: {
     fontSize: 12,
+    color: '#999',
     marginTop: 4,
   },
+  activeLabel: {
+    fontSize: 12,
+    color: '#333', // 활성화 시 진한 색상
+    fontWeight: 'bold',
+  },
   iconStyle: {
-    width: 24,
-    height: 24,
+    width: 26,
+    height: 26,
     resizeMode: 'contain',
+    opacity: 0.6, // 비활성화 아이콘 투명도 조정
+  },
+  activeIcon: {
+    opacity: 1, // 활성화 시 선명하게
   },
 });
 
