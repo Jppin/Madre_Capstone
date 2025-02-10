@@ -181,11 +181,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1, // 회색 테두리 추가
+    borderColor: "#D1D1D1", // 연한 회색 테두리 색상
+    
   },
   FSButtonText: { color: "#91969A", fontSize: 14, fontWeight: "bold" },
   iconImage: {
@@ -200,21 +198,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "#FFF",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowOffset: { width: 4, height: 5 }, // → 오른쪽 + 아래 방향으로 그림자 이동
+    shadowOpacity: 0.12, // → 그림자 투명도 조정 (더 연하게 가능)
+    shadowRadius: 10, // → 그림자 퍼지는 정도
+    elevation: 5, // → 안드로이드에서도 비슷한 효과 적용
     marginBottom: 10,
     marginTop: 3,
-    marginHorizontal: 2,
+    marginHorizontal: 4,
   },
   medicineLeft: {
     flex: 1,
   },
   medicineMiddle: {
-    flex: 1,
+    flex: 1.5,
     alignItems: "flex-start",
-    marginLeft: 15,
+    
   },
   medicineName: {
     fontSize: 18,
