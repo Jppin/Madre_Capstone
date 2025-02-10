@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, Animated } from 'react
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import HomeScreen from '../screens/HomeScreen';
-import MedicineScreen from '../screens/MedicineScreen';
+import MedicineScreen from '../screens/MedicineScreens/MedicineScreen';
 import NutritionScreen from '../screens/NutritionScreen';
 import YoutubeScreen from '../screens/YoutubeScreen';
 import MyPageScreen from '../screens/MyPageScreen';
