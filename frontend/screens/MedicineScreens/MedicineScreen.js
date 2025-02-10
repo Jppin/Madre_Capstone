@@ -7,9 +7,9 @@ import {
   Switch,
   StyleSheet,
   TextInput,
+  Image,  // 추가: 아이콘 이미지 사용
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import Icon from "react-native-vector-icons/MaterialIcons";
 
 const MedicineScreen = () => {
   const [medicines, setMedicines] = useState([
@@ -44,7 +44,7 @@ const MedicineScreen = () => {
         <Text style={styles.header}>내 약품 보관함</Text>
         <View style={styles.searchContainer}>
           <TextInput style={styles.searchBar} placeholder="내 약 검색" />
-          <Icon name="search" size={24} color="#91969A" style={styles.searchIcon} />
+          <Image source={require("../../assets/icons/search1.png")} style={styles.searchIcon} />
         </View>
       </View>
 
@@ -57,12 +57,12 @@ const MedicineScreen = () => {
           </TouchableOpacity>
           <View style={styles.rightButtons}>
             <TouchableOpacity style={styles.FSButton}>
+              <Image source={require("../../assets/icons/filter1.png")} style={styles.iconImage} />
               <Text style={styles.FSButtonText}>필터</Text>
-              <Icon name="filter-list-alt" size={24} color="#91969A" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.FSButton}>
+              <Image source={require("../../assets/icons/sort1.png")} style={styles.iconImage} />
               <Text style={styles.FSButtonText}>정렬</Text>
-              <Icon name="sort" size={24} color="#91969A" />
             </TouchableOpacity>
           </View>
         </View>
@@ -141,12 +141,16 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 40,
     paddingVertical: 10,
+    paddingRight: 40,  // 아이콘과 텍스트 간격 유지
   },
   searchIcon: {
     position: "absolute",
-    right: 15,
+    right: 12,
     top: "50%",
-    transform: [{ translateY: -12 }],
+    width: 20,
+    height: 20,
+    transform: [{ translateY: -10 }],
+    resizeMode: "contain",
   },
   container: { flex: 1, backgroundColor: "#fff", padding: 20 },
   addButton: {
@@ -171,7 +175,8 @@ const styles = StyleSheet.create({
   },
   FSButton: {
     backgroundColor: "#fff",
-    padding: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 10,
     flexDirection: "row",
     alignItems: "center",
@@ -183,7 +188,11 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   FSButtonText: { color: "#91969A", fontSize: 14, fontWeight: "bold" },
-  
+  iconImage: {
+    width: 20,
+    height: 20,
+    resizeMode: "contain",
+  },
   medicineCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -203,9 +212,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   medicineMiddle: {
-    flex: 1,  // 추가된 부분
-    alignItems: "flex-start",  // 왼쪽 정렬
-    marginLeft: -30,  // 살짝 왼쪽으로 이동
+    flex: 1,
+    alignItems: "flex-start",
+    marginLeft: 15,
   },
   medicineName: {
     fontSize: 18,
@@ -231,22 +240,16 @@ const styles = StyleSheet.create({
   },
   detailButtonWrapper: {
     position: "absolute", 
-    bottom: 12, // 하단 정렬
-    right: 15, // 왼쪽 정렬
+    bottom: 12,
+    right: 15,
   },
   detailButton: {
     fontSize: 12,
     color: "#666",
-    alignSelf: "flex-start",  // 하단 왼쪽 정렬
-    includeFontPadding: false,  // 추가: 텍스트 자체 패딩 제거
+    alignSelf: "flex-start",
+    includeFontPadding: false,
     textAlignVertical: "center",
   },
-  medicineMiddle: {
-    flex: 1,
-    alignItems: "flex-start",  // 왼쪽 정렬 (수정됨)
-    marginLeft: 15,  // 간격 조정
-  },
 });
-
 
 export default MedicineScreen;
