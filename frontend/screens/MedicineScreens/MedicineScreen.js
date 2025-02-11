@@ -24,13 +24,12 @@ const MedicineScreen = () => {
       name: "디곡신",
       date: "2024-10-22",
       active: true,
-      warning: "심장질환 환자 주의",
+      warning: "심장질환 환자 주의", // ✅ 주의사항 추가
       pharmacy: "서울 중앙 약국", // ✅ 약국 정보 추가
       prescriptionDate: "2024-10-21", // ✅ 처방일 추가
       registerDate: "2024-10-22", // ✅ 등록일 추가
       appearance: "흰색의 원형정제", // ✅ 성상 추가
       dosageGuide: "하루 2회, 식후 복용", // ✅ 복용 안내 추가
-      precautions: "충분한 물과 함께 섭취", // ✅ 주의사항 추가
       sideEffects: "어지러움, 졸음 유발 가능", // ✅ 부작용 추가
     },
     {
@@ -38,14 +37,13 @@ const MedicineScreen = () => {
       name: "이지엔6 프로 연질캡슐",
       date: "2024-10-25",
       active: false,
-      warning: "",
+      warning: "운전 전 복용 금지",
       pharmacy: "강남 대형 약국",
       prescriptionDate: "2024-10-24",
       registerDate: "2024-10-25",
       appearance: "연질 캡슐",
       dosageGuide: "하루 1회, 식후 30분 내 복용",
-      precautions: "운전 전 복용 금지",
-      sideEffects: "구토, 속 쓰림 가능",
+      sideEffects: "구토 및 속쓰림",
     },
   ]);
 
@@ -118,7 +116,10 @@ const clearSearch = () => {
     filterType === "모든 약품" ||
     (filterType === "복용 중" && medicine.active) ||
     (filterType === "미복용" && !medicine.active) ||
-    (filterType === "주의사항" && medicine.warning && medicine.warning.trim() !== "");
+    (filterType === "주의사항" && (
+      (medicine.warning && medicine.warning.trim() !== "") || 
+      (medicine.sideEffects && medicine.sideEffects.trim() !== "")
+    ));
 
   const matchesSearch = medicine.name.includes(finalSearchQuery); // 🔍 검색어가 포함된 경우만 표시
 
@@ -174,13 +175,13 @@ const clearSearch = () => {
     const newMedicine = {
       id: String(medicines.length + 1),
       name: `새로운 약품 ${medicines.length + 1}`,
-      registerDate: getCurrentDate(), // ✅ 새로 추가하는 약품만 등록일 자동 설정
       active: false,
-      pharmacy: "알 수 없음", // 기본값 설정
+      registerDate: getCurrentDate(), // ✅ 새로 추가하는 약품만 등록일 자동 설정
       prescriptionDate: "알 수 없음",
+      pharmacy: "알 수 없음", // 기본값 설정
       appearance: "알 수 없음",
       dosageGuide: "알 수 없음",
-      precautions: "알 수 없음",
+      warning: "알 수 없음",
       sideEffects: "알 수 없음",
     };
   
