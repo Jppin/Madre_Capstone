@@ -79,7 +79,7 @@ const MedicineDetailScreen = () => {
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>⚠️ 주의사항</Text>
-            <Text style={styles.warningText}>{medicine.precautions}</Text>
+            <Text style={styles.warningText}>{medicine.warning}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>⚠️ 부작용</Text>
