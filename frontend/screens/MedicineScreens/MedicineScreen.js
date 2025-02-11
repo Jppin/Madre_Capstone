@@ -8,30 +8,81 @@ import {
   StyleSheet,
   TextInput,
   Image,
-  Modal, // 정렬 팝업을 위한 Modal 추가
+  Modal,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
 const MedicineScreen = () => {
+
   const [medicines, setMedicines] = useState([
-    { id: "1", name: "디곡신", date: "2024.10.22 처방", remaining: "10정 남음", active: true },
-    { id: "2", name: "이지엔 6프...", date: "2024.10.22 처방", remaining: "10정 남음", active: false },
+    { id: "1", name: "디곡신", date: "2024-10-22", remaining: "10정 남음", active: true, warning: "심장질환 환자 주의" },
+    { id: "2", name: "이지엔 6프...", date: "2024-10-25", remaining: "10정 남음", active: false, warning: "" },
   ]);
-  const [sortVisible, setSortVisible] = useState(false); // 정렬 메뉴 상태
+
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [sortVisible, setSortVisible] = useState(false);
+  const [filterType, setFilterType] = useState("모든 약품");
+  const [sortType, setSortType] = useState(null);
+
   const navigation = useNavigation();
+// 🔍 검색어 상태 추가
+const [searchQuery, setSearchQuery] = useState(""); 
+
+
+
+
 
   // 정렬 함수
   const sortMedicines = (type) => {
     let sortedMedicines = [...medicines];
+
     if (type === "가나다순") {
       sortedMedicines.sort((a, b) => a.name.localeCompare(b.name, "ko"));
-    } else if (type === "날짜순") {
-      sortedMedicines.sort((a, b) => new Date(b.date) - new Date(a.date));
+    } else if (type === "날짜순(최신순)") {
+        sortedMedicines.sort((a, b) => new Date(b.date) - new Date(a.date));
     }
+
     setMedicines(sortedMedicines);
-    setSortVisible(false); // 정렬 후 메뉴 닫기
+    setSortType(type);
+    setSortVisible(false);
   };
 
+
+
+
+
+
+
+
+
+  // 필터링된 약품 목록
+  const filteredMedicines = medicines.filter((medicine) => {
+    const matchesFilter =
+    filterType === "모든 약품" ||
+    (filterType === "복용 중" && medicine.active) ||
+    (filterType === "미복용" && !medicine.active) ||
+    (filterType === "주의사항" && medicine.warning && medicine.warning.trim() !== "");
+
+  const matchesSearch = medicine.name.includes(searchQuery); // 🔍 검색어가 포함된 경우만 표시
+
+  return matchesFilter && matchesSearch; // 검색 & 필터 조건 모두 만족하는 경우만 표시
+  });
+
+
+
+
+
+
+
+
+
+  // 필터 선택 함수
+  const applyFilter = (type) => {
+    setFilterType(type);
+    setFilterVisible(false);
+  };
+
+  // 약품 복용 여부 토글
   const toggleMedicine = (id) => {
     setMedicines((prev) =>
       prev.map((medicine) =>
@@ -40,16 +91,53 @@ const MedicineScreen = () => {
     );
   };
 
+
+
+
+
+
+
+
+  const getCurrentDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  
+
+
+
+
+
+
   const addMedicine = () => {
     const newMedicine = {
       id: String(medicines.length + 1),
-      name: "새로운 약품",
-      date: "2024.10.30 처방",
+      name: `새로운 약품 ${medicines.length + 1}`,
+      date: getCurrentDate(), // 현재 날짜 자동 입력
       remaining: "10정 남음",
       active: false,
     };
+  
     setMedicines([...medicines, newMedicine]);
+  
+    // 새로 추가된 약품의 상세 페이지로 바로 이동
+    navigation.navigate("MedicineDetailScreen", { medicine: newMedicine });
   };
+  
+
+
+
+
+
+
+
+
+
+
 
   return (
     <>
@@ -57,33 +145,38 @@ const MedicineScreen = () => {
       <View style={styles.headerContainer}>
         <Text style={styles.header}>내 약품 보관함</Text>
         <View style={styles.searchContainer}>
-          <TextInput style={styles.searchBar} placeholder="내 약 검색" />
+          <TextInput style={styles.searchBar} placeholder="내 약 검색" 
+          
+          value={searchQuery} // 🔍 입력값 유지
+  onChangeText={(text) => setSearchQuery(text)} // 🔍 검색어 변경 시 업데이트
+          />
           <Image source={require("../../assets/icons/search1.png")} style={styles.searchIcon} />
         </View>
       </View>
 
       {/* 본문 */}
       <View style={styles.container}>
-        {/* 추가 및 필터 버튼 */}
-        <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.addButton} onPress={addMedicine}>
-            <Text style={styles.addButtonText}>+ 약품 추가하기</Text>
-          </TouchableOpacity>
-          <View style={styles.rightButtons}>
-            <TouchableOpacity style={styles.FSButton}>
-              <Image source={require("../../assets/icons/filter1.png")} style={styles.iconImage} />
-              <Text style={styles.FSButtonText}>필터</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.FSButton} onPress={() => setSortVisible(true)}>
-              <Image source={require("../../assets/icons/sort1.png")} style={styles.iconImage} />
-              <Text style={styles.FSButtonText}>정렬</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+  {/* 추가 및 필터 + 정렬 버튼 */}
+  <View style={styles.buttonRow}>
+    {/* ✅ 수정: 여기에 onPress 추가함 */}
+    <TouchableOpacity style={styles.addButton} onPress={addMedicine}>
+      <Text style={styles.addButtonText}>+ 약품 추가하기</Text>
+    </TouchableOpacity>
+    <View style={styles.rightButtons}>
+      <TouchableOpacity style={styles.FSButton} onPress={() => setFilterVisible(true)}>
+        <Image source={require("../../assets/icons/filter1.png")} style={styles.iconImage} />
+        <Text style={styles.FSButtonText}>필터</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.FSButton} onPress={() => setSortVisible(true)}>
+        <Image source={require("../../assets/icons/sort1.png")} style={styles.iconImage} />
+        <Text style={styles.FSButtonText}>정렬</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
 
         {/* 약품 리스트 */}
         <FlatList
-          data={medicines}
+          data={filteredMedicines}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <MedicineCard medicine={item} toggleMedicine={toggleMedicine} navigation={navigation} />
@@ -91,15 +184,34 @@ const MedicineScreen = () => {
         />
       </View>
 
+      {/* 필터 팝업 메뉴 */}
+      <Modal visible={filterVisible} transparent animationType="fade">
+        <TouchableOpacity style={styles.modalOverlay} onPress={() => setFilterVisible(false)} />
+        <View style={styles.menu}>
+          <TouchableOpacity onPress={() => applyFilter("모든 약품")} style={styles.menuOption}>
+            <Text style={styles.menuOptionText}>모든 약품</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => applyFilter("복용 중")} style={styles.menuOption}>
+            <Text style={styles.menuOptionText}>복용 중인 약품</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => applyFilter("미복용")} style={styles.menuOption}>
+            <Text style={styles.menuOptionText}>복용 중이지 않은 약품</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => applyFilter("주의사항")} style={styles.menuOption}>
+            <Text style={styles.menuOptionText}>주의사항 존재 약품</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
       {/* 정렬 팝업 메뉴 */}
       <Modal visible={sortVisible} transparent animationType="fade">
         <TouchableOpacity style={styles.modalOverlay} onPress={() => setSortVisible(false)} />
-        <View style={styles.sortMenu}>
-          <TouchableOpacity onPress={() => sortMedicines("가나다순")} style={styles.sortOption}>
-            <Text style={styles.sortOptionText}>가나다순</Text>
+        <View style={styles.menu}>
+          <TouchableOpacity onPress={() => sortMedicines("가나다순")} style={styles.menuOption}>
+            <Text style={styles.menuOptionText}>가나다순</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => sortMedicines("날짜순")} style={styles.sortOption}>
-            <Text style={styles.sortOptionText}>날짜순</Text>
+          <TouchableOpacity onPress={() => sortMedicines("날짜순(최신순)")} style={styles.menuOption}>
+            <Text style={styles.menuOptionText}>날짜순(최신순)</Text>
           </TouchableOpacity>
         </View>
       </Modal>
@@ -111,19 +223,17 @@ const MedicineScreen = () => {
 const MedicineCard = ({ medicine, toggleMedicine, navigation }) => {
   return (
     <View style={styles.medicineCard}>
-      {/* 약 이름 및 상태 */}
       <View style={styles.medicineLeft}>
         <Text style={styles.medicineName}>{medicine.name}</Text>
         <Text style={styles.medicineStatus}>{medicine.active ? "(복용 중)" : "(미복용)"}</Text>
       </View>
 
-      {/* 처방 날짜 및 남은 개수 */}
       <View style={styles.medicineMiddle}>
         <Text style={styles.medicineDate}>{medicine.date}</Text>
         <Text style={styles.medicineRemaining}>{medicine.remaining}</Text>
       </View>
 
-      {/* 스위치 */}
+      {/* 스위치 추가 (복용 여부 토글) */}
       <Switch
         style={styles.medicineSwitch}
         value={medicine.active}
@@ -132,15 +242,31 @@ const MedicineCard = ({ medicine, toggleMedicine, navigation }) => {
         thumbColor={"#FFF"}
       />
 
-      {/* 상세 정보 보기 */}
-      <TouchableOpacity onPress={() => navigation.navigate("MedicineDetailScreen", { medicine })}
+<TouchableOpacity
+        onPress={() => navigation.navigate("MedicineDetailScreen", { medicine })}
         style={styles.detailButtonWrapper}
       >
         <Text style={styles.detailButton}>▸ 상세 정보 보기</Text>
       </TouchableOpacity>
     </View>
+  
   );
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /** 스타일 */
 const styles = StyleSheet.create({
@@ -282,7 +408,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.3)",
   },
-  sortMenu: {
+  menu: {
     position: "absolute",
     top: 120,
     right: 20,
@@ -295,11 +421,11 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  sortOption: {
+  menuOption: {
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
-  sortOptionText: {
+  menuOptionText: {
     fontSize: 14,
     color: "#333",
   },
