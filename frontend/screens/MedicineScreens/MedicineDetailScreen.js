@@ -34,9 +34,9 @@ const MedicineDetailScreen = () => {
         <Text style={styles.headerTitle}>약품 상세정보</Text>
       </View>
       
-
+      <View style={styles.wrapper}>
       {/* 스크롤 가능한 약품 상세 정보 */}
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}showsVerticalScrollIndicator={false}>
         {/* 약품 정보 카드 */}
         <View style={styles.medicineCard}>
           <View style={styles.medicineInfo}>
@@ -59,38 +59,38 @@ const MedicineDetailScreen = () => {
         <View style={styles.detailTable}>
           <View style={styles.row}>
             <Text style={styles.label}>약국</Text>
-            <Text style={styles.value}>약국명</Text>
+            <Text style={styles.value}>{medicine.pharmacy}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>처방일</Text>
-            <Text style={styles.value}>처방일 정보</Text>
+            <Text style={styles.value}>{medicine.prescriptionDate}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>등록일자</Text>
-            <Text style={styles.value}>{medicine.date}</Text>
+            <Text style={styles.value}>{medicine.registerDate}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>성상</Text>
-            <Text style={styles.value}>흰색의 원형정제</Text>
+            <Text style={styles.value}>{medicine.appearance}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>📌 복용 안내</Text>
-            <Text style={styles.importantText}>하루 2회, 식후 복용</Text>
+            <Text style={styles.importantText}>{medicine.dosageGuide}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>⚠️ 주의사항</Text>
-            <Text style={styles.warningText}>충분한 물과 함께 섭취</Text>
+            <Text style={styles.warningText}>{medicine.precautions}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>⚠️ 부작용</Text>
-            <Text style={styles.warningText}>어지러움, 졸음 유발 가능</Text>
+            <Text style={styles.warningText}>{medicine.sideEffects}</Text>
           </View>
         </View>
       </ScrollView>
 
       
     </View>
-
+    </View>
     
   );
 };
@@ -104,12 +104,25 @@ const MedicineDetailScreen = () => {
 
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1, backgroundColor: "#FBAF8B" },
+
+
+  wrapper: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 15,
+    margin: 20,
+    width: "92%", // ✅ 너비
+    height: "85%",
+    alignSelf: "center", // ✅ 가운데 정렬
+  },
+
+
   header: { backgroundColor: "#FBAF8B", padding: 15, flexDirection: "row", alignItems: "center" },
   backButton: { marginRight: 10 },
   backText: { fontSize: 24, color: "#000" },
   headerTitle: { fontSize: 18, fontWeight: "bold", color: "#fff" },
-  content: { padding: 20 },
+  content: { flexGrow: 1, padding: 20 },
 
   // 약품 정보 카드
   medicineCard: { 
@@ -124,8 +137,16 @@ const styles = StyleSheet.create({
   
 
   // 상세 테이블
-  detailTable: { backgroundColor: "#f8f8f8", padding: 15, borderRadius: 8 },
-  row: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#ddd" },
+  detailTable: { backgroundColor: "#f8f8f8", padding: 15, borderRadius: 8, alignSelf: "stretch" },
+  row: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    alignItems: "flex-start", // ✅ 여러 줄이 될 경우 올바르게 정렬
+    flexWrap: "wrap", // ✅ 내용이 길어지면 자동 줄 바꿈
+    paddingVertical: 8, 
+    borderBottomWidth: 1, 
+    borderBottomColor: "#ddd",
+  },
   label: { fontSize: 16, fontWeight: "bold", color: "#444" },
   value: { fontSize: 16, color: "#666" },
   importantText: { fontSize: 16, color: "#d9534f", fontWeight: "bold" }, // 복용 안내 강조
