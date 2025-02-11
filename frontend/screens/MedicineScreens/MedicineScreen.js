@@ -7,7 +7,8 @@ import {
   Switch,
   StyleSheet,
   TextInput,
-  Image,  // 추가: 아이콘 이미지 사용
+  Image,
+  Modal, // 정렬 팝업을 위한 Modal 추가
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
@@ -16,7 +17,20 @@ const MedicineScreen = () => {
     { id: "1", name: "디곡신", date: "2024.10.22 처방", remaining: "10정 남음", active: true },
     { id: "2", name: "이지엔 6프...", date: "2024.10.22 처방", remaining: "10정 남음", active: false },
   ]);
+  const [sortVisible, setSortVisible] = useState(false); // 정렬 메뉴 상태
   const navigation = useNavigation();
+
+  // 정렬 함수
+  const sortMedicines = (type) => {
+    let sortedMedicines = [...medicines];
+    if (type === "가나다순") {
+      sortedMedicines.sort((a, b) => a.name.localeCompare(b.name, "ko"));
+    } else if (type === "날짜순") {
+      sortedMedicines.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+    setMedicines(sortedMedicines);
+    setSortVisible(false); // 정렬 후 메뉴 닫기
+  };
 
   const toggleMedicine = (id) => {
     setMedicines((prev) =>
@@ -60,7 +74,7 @@ const MedicineScreen = () => {
               <Image source={require("../../assets/icons/filter1.png")} style={styles.iconImage} />
               <Text style={styles.FSButtonText}>필터</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.FSButton}>
+            <TouchableOpacity style={styles.FSButton} onPress={() => setSortVisible(true)}>
               <Image source={require("../../assets/icons/sort1.png")} style={styles.iconImage} />
               <Text style={styles.FSButtonText}>정렬</Text>
             </TouchableOpacity>
@@ -76,6 +90,19 @@ const MedicineScreen = () => {
           )}
         />
       </View>
+
+      {/* 정렬 팝업 메뉴 */}
+      <Modal visible={sortVisible} transparent animationType="fade">
+        <TouchableOpacity style={styles.modalOverlay} onPress={() => setSortVisible(false)} />
+        <View style={styles.sortMenu}>
+          <TouchableOpacity onPress={() => sortMedicines("가나다순")} style={styles.sortOption}>
+            <Text style={styles.sortOptionText}>가나다순</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => sortMedicines("날짜순")} style={styles.sortOption}>
+            <Text style={styles.sortOptionText}>날짜순</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </>
   );
 };
@@ -101,20 +128,19 @@ const MedicineCard = ({ medicine, toggleMedicine, navigation }) => {
         style={styles.medicineSwitch}
         value={medicine.active}
         onValueChange={() => toggleMedicine(medicine.id)}
-        trackColor={{ false: "#E0E0E0", true: "#FBAF8B" }} // 스위치만 주황색 적용
-        thumbColor={"#FFF"} // 동그란 부분은 흰색 유지
+        trackColor={{ false: "#E0E0E0", true: "#FBAF8B" }}
+        thumbColor={"#FFF"}
       />
 
       {/* 상세 정보 보기 */}
       <TouchableOpacity onPress={() => navigation.navigate("MedicineDetailScreen", { medicine })}
-        style={styles.detailButtonWrapper} // 버튼 자체 크기 제한
-        >
+        style={styles.detailButtonWrapper}
+      >
         <Text style={styles.detailButton}>▸ 상세 정보 보기</Text>
       </TouchableOpacity>
     </View>
   );
 };
-
 
 /** 스타일 */
 const styles = StyleSheet.create({
@@ -248,6 +274,36 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
     textAlignVertical: "center",
   },
+
+
+
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+  },
+  sortMenu: {
+    position: "absolute",
+    top: 120,
+    right: 20,
+    backgroundColor: "#FFF",
+    borderRadius: 8,
+    paddingVertical: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  sortOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  sortOptionText: {
+    fontSize: 14,
+    color: "#333",
+  },
+
 });
 
 export default MedicineScreen;
