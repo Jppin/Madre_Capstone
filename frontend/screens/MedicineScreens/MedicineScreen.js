@@ -95,7 +95,8 @@ const clearSearch = () => {
     if (type === "가나다순") {
       sortedMedicines.sort((a, b) => a.name.localeCompare(b.name, "ko"));
     } else if (type === "날짜순(최신순)") {
-        sortedMedicines.sort((a, b) => new Date(b.date) - new Date(a.date));
+        sortedMedicines.sort((a, b) => 
+          new Date(b.registerDate.replace(/\./g, "-")) - new Date(a.registerDate.replace(/\./g, "-")));
     }
 
     setMedicines(sortedMedicines);
@@ -254,6 +255,7 @@ const clearSearch = () => {
           renderItem={({ item }) => (
             <MedicineCard medicine={item} toggleMedicine={toggleMedicine} navigation={navigation} />
           )}
+          showsVerticalScrollIndicator={false}// ✅ 스크롤바 숨기기
         />
       </View>
 
