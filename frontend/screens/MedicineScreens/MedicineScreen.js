@@ -1,3 +1,6 @@
+//MedicineScreen.js
+
+
 import React, { useState } from "react";
 import {
   View,
@@ -9,24 +12,51 @@ import {
   TextInput,
   Image,
   Modal,
+  Keyboard,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
 const MedicineScreen = () => {
-
+  const navigation = useNavigation();
   const [medicines, setMedicines] = useState([
-    { id: "1", name: "디곡신", date: "2024-10-22", remaining: "10정 남음", active: true, warning: "심장질환 환자 주의" },
-    { id: "2", name: "이지엔 6프...", date: "2024-10-25", remaining: "10정 남음", active: false, warning: "" },
+    { id: "1", name: "디곡신", date: "2024-10-22", active: true, warning: "심장질환 환자 주의" },
+    { id: "2", name: "이지엔6 프로 연질캡슐", date: "2024-10-25", active: false, warning: "" },
   ]);
 
+
+  const [searchQuery, setSearchQuery] = useState("");// 🔍 검색어 상태 추가
+  const [finalSearchQuery, setFinalSearchQuery] = useState(""); // 🔍 검색 실행 시 적용될 검색어
   const [filterVisible, setFilterVisible] = useState(false);
   const [sortVisible, setSortVisible] = useState(false);
   const [filterType, setFilterType] = useState("모든 약품");
   const [sortType, setSortType] = useState(null);
 
-  const navigation = useNavigation();
-// 🔍 검색어 상태 추가
-const [searchQuery, setSearchQuery] = useState(""); 
+
+
+// 🔍 돋보기 버튼 클릭 시 검색 실행
+  const handleSearchSubmit = () => {
+  if (!searchQuery.trim()) return;
+  setFinalSearchQuery(searchQuery); // 현재 입력된 검색어를 최종 확정
+  Keyboard.dismiss(); // 키보드 닫기
+  };
+
+
+
+
+
+
+
+
+// ❌ 검색 초기화 (X 버튼 클릭)
+const clearSearch = () => {
+  setSearchQuery("");
+  setFinalSearchQuery("");
+  Keyboard.dismiss();
+};
+
+
+
+
 
 
 
@@ -63,7 +93,7 @@ const [searchQuery, setSearchQuery] = useState("");
     (filterType === "미복용" && !medicine.active) ||
     (filterType === "주의사항" && medicine.warning && medicine.warning.trim() !== "");
 
-  const matchesSearch = medicine.name.includes(searchQuery); // 🔍 검색어가 포함된 경우만 표시
+  const matchesSearch = medicine.name.includes(finalSearchQuery); // 🔍 검색어가 포함된 경우만 표시
 
   return matchesFilter && matchesSearch; // 검색 & 필터 조건 모두 만족하는 경우만 표시
   });
@@ -118,7 +148,6 @@ const [searchQuery, setSearchQuery] = useState("");
       id: String(medicines.length + 1),
       name: `새로운 약품 ${medicines.length + 1}`,
       date: getCurrentDate(), // 현재 날짜 자동 입력
-      remaining: "10정 남음",
       active: false,
     };
   
@@ -145,34 +174,46 @@ const [searchQuery, setSearchQuery] = useState("");
       <View style={styles.headerContainer}>
         <Text style={styles.header}>내 약품 보관함</Text>
         <View style={styles.searchContainer}>
-          <TextInput style={styles.searchBar} placeholder="내 약 검색" 
-          
+          <TextInput 
+          style={styles.searchBar} 
+          placeholder="내 약 검색" 
           value={searchQuery} // 🔍 입력값 유지
-  onChangeText={(text) => setSearchQuery(text)} // 🔍 검색어 변경 시 업데이트
+          onChangeText={(text) => setSearchQuery(text)} // 🔍 검색어 변경 시 업데이트
           />
-          <Image source={require("../../assets/icons/search1.png")} style={styles.searchIcon} />
+
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+              <Image source={require("../../assets/icons/clear.png")} style={styles.clearIcon} />
+            </TouchableOpacity>
+          )}
+
+
+
+          <TouchableOpacity onPress={handleSearchSubmit}> 
+            <Image source={require("../../assets/icons/search1.png")} style={styles.searchIcon} />
+          </TouchableOpacity>
         </View>
       </View>
 
       {/* 본문 */}
       <View style={styles.container}>
-  {/* 추가 및 필터 + 정렬 버튼 */}
-  <View style={styles.buttonRow}>
-    {/* ✅ 수정: 여기에 onPress 추가함 */}
-    <TouchableOpacity style={styles.addButton} onPress={addMedicine}>
-      <Text style={styles.addButtonText}>+ 약품 추가하기</Text>
-    </TouchableOpacity>
-    <View style={styles.rightButtons}>
-      <TouchableOpacity style={styles.FSButton} onPress={() => setFilterVisible(true)}>
-        <Image source={require("../../assets/icons/filter1.png")} style={styles.iconImage} />
-        <Text style={styles.FSButtonText}>필터</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.FSButton} onPress={() => setSortVisible(true)}>
-        <Image source={require("../../assets/icons/sort1.png")} style={styles.iconImage} />
-        <Text style={styles.FSButtonText}>정렬</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
+        {/* 추가 및 필터 + 정렬 버튼 */}
+        <View style={styles.buttonRow}>
+          {/* ✅ 수정: 여기에 onPress 추가함 */}
+          <TouchableOpacity style={styles.addButton} onPress={addMedicine}>
+            <Text style={styles.addButtonText}>+ 약품 추가하기</Text>
+          </TouchableOpacity>
+          <View style={styles.rightButtons}>
+            <TouchableOpacity style={styles.FSButton} onPress={() => setFilterVisible(true)}>
+              <Image source={require("../../assets/icons/filter1.png")} style={styles.iconImage} />
+              <Text style={styles.FSButtonText}>필터</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.FSButton} onPress={() => setSortVisible(true)}>
+              <Image source={require("../../assets/icons/sort1.png")} style={styles.iconImage} />
+              <Text style={styles.FSButtonText}>정렬</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         {/* 약품 리스트 */}
         <FlatList
@@ -223,14 +264,15 @@ const [searchQuery, setSearchQuery] = useState("");
 const MedicineCard = ({ medicine, toggleMedicine, navigation }) => {
   return (
     <View style={styles.medicineCard}>
-      <View style={styles.medicineLeft}>
-        <Text style={styles.medicineName}>{medicine.name}</Text>
-        <Text style={styles.medicineStatus}>{medicine.active ? "(복용 중)" : "(미복용)"}</Text>
+      {/* 복용 상태 원형 표시 */}
+      <View style={[styles.statusCircle, medicine.active ? styles.activeStatus : styles.inactiveStatus]}>
+        <Text style={styles.statusText}>{medicine.active ? "복용 중" : "미복용"}</Text>
       </View>
 
-      <View style={styles.medicineMiddle}>
-        <Text style={styles.medicineDate}>{medicine.date}</Text>
-        <Text style={styles.medicineRemaining}>{medicine.remaining}</Text>
+      {/* 약품 정보 */}
+      <View style={styles.medicineInfo}>
+        <Text style={styles.medicineName}>{medicine.name}</Text>
+        <Text style={styles.medicineDate}>등록일: {medicine.date}</Text>
       </View>
 
       {/* 스위치 추가 (복용 여부 토글) */}
@@ -242,14 +284,17 @@ const MedicineCard = ({ medicine, toggleMedicine, navigation }) => {
         thumbColor={"#FFF"}
       />
 
-<TouchableOpacity
-        onPress={() => navigation.navigate("MedicineDetailScreen", { medicine })}
+      {/* 상세 정보 보기 버튼 */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate("MedicineDetailScreen", { 
+          medicine, 
+          toggleMedicine: () => toggleMedicine(medicine.id) // ❌ 이 부분 삭제!
+        })}
         style={styles.detailButtonWrapper}
       >
         <Text style={styles.detailButton}>▸ 상세 정보 보기</Text>
       </TouchableOpacity>
     </View>
-  
   );
 };
 
@@ -301,9 +346,22 @@ const styles = StyleSheet.create({
     top: "50%",
     width: 20,
     height: 20,
-    transform: [{ translateY: -10 }],
+    transform: [{ translateY: -30 }],
     resizeMode: "contain",
   },
+
+  clearButton: {
+    position: "absolute",
+    right: 40,
+    top: "50%",
+    transform: [{ translateY: -10 }],
+  },
+  clearIcon: {
+    width: 18,
+    height: 18,
+    tintColor: "#999",
+  },
+
   container: { flex: 1, backgroundColor: "#fff", padding: 20 },
   addButton: {
     backgroundColor: "#FF8E72",
@@ -358,6 +416,28 @@ const styles = StyleSheet.create({
     marginTop: 3,
     marginHorizontal: 4,
   },
+  statusCircle: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 15,
+  },
+  activeStatus: {
+    backgroundColor: "#FBAF8B",
+  },
+  inactiveStatus: {
+    backgroundColor: "#E0E0E0",
+  },
+  statusText: {
+    color: "#FFF",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+
+
+
   medicineLeft: {
     flex: 1,
   },
@@ -366,10 +446,14 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     
   },
+
+
+  
   medicineName: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#000",
+    paddingVertical: 6,
   },
   medicineStatus: {
     fontSize: 14,
@@ -385,8 +469,9 @@ const styles = StyleSheet.create({
   },
   medicineSwitch: {
     position: "absolute",
-    top: 15,
+    top: 30,
     right: 15,
+    transform: [{ scale: 1.4 }],
   },
   detailButtonWrapper: {
     position: "absolute", 
