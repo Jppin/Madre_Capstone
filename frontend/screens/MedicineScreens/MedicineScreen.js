@@ -1,3 +1,6 @@
+//MedicineScreen.js
+
+
 import React, { useState } from "react";
 import {
   View,
@@ -7,17 +10,135 @@ import {
   Switch,
   StyleSheet,
   TextInput,
-  Image,  // 추가: 아이콘 이미지 사용
+  Image,
+  Modal,
+  Keyboard,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
 const MedicineScreen = () => {
-  const [medicines, setMedicines] = useState([
-    { id: "1", name: "디곡신", date: "2024.10.22 처방", remaining: "10정 남음", active: true },
-    { id: "2", name: "이지엔 6프...", date: "2024.10.22 처방", remaining: "10정 남음", active: false },
-  ]);
   const navigation = useNavigation();
+  const [medicines, setMedicines] = useState([
+    {
+      id: "1",
+      name: "디곡신",
+      date: "2024-10-22",
+      active: true,
+      warning: "심장질환 환자 주의",
+      pharmacy: "서울 중앙 약국", // ✅ 약국 정보 추가
+      prescriptionDate: "2024-10-21", // ✅ 처방일 추가
+      registerDate: "2024-10-22", // ✅ 등록일 추가
+      appearance: "흰색의 원형정제", // ✅ 성상 추가
+      dosageGuide: "하루 2회, 식후 복용", // ✅ 복용 안내 추가
+      precautions: "충분한 물과 함께 섭취", // ✅ 주의사항 추가
+      sideEffects: "어지러움, 졸음 유발 가능", // ✅ 부작용 추가
+    },
+    {
+      id: "2",
+      name: "이지엔6 프로 연질캡슐",
+      date: "2024-10-25",
+      active: false,
+      warning: "",
+      pharmacy: "강남 대형 약국",
+      prescriptionDate: "2024-10-24",
+      registerDate: "2024-10-25",
+      appearance: "연질 캡슐",
+      dosageGuide: "하루 1회, 식후 30분 내 복용",
+      precautions: "운전 전 복용 금지",
+      sideEffects: "구토, 속 쓰림 가능",
+    },
+  ]);
 
+
+  const [searchQuery, setSearchQuery] = useState("");// 🔍 검색어 상태 추가
+  const [finalSearchQuery, setFinalSearchQuery] = useState(""); // 🔍 검색 실행 시 적용될 검색어
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [sortVisible, setSortVisible] = useState(false);
+  const [filterType, setFilterType] = useState("모든 약품");
+  const [sortType, setSortType] = useState(null);
+
+
+
+// 🔍 돋보기 버튼 클릭 시 검색 실행
+  const handleSearchSubmit = () => {
+  if (!searchQuery.trim()) return;
+  setFinalSearchQuery(searchQuery); // 현재 입력된 검색어를 최종 확정
+  Keyboard.dismiss(); // 키보드 닫기
+  };
+
+
+
+
+
+
+
+
+// ❌ 검색 초기화 (X 버튼 클릭)
+const clearSearch = () => {
+  setSearchQuery("");
+  setFinalSearchQuery("");
+  Keyboard.dismiss();
+};
+
+
+
+
+
+
+
+
+
+  // 정렬 함수
+  const sortMedicines = (type) => {
+    let sortedMedicines = [...medicines];
+
+    if (type === "가나다순") {
+      sortedMedicines.sort((a, b) => a.name.localeCompare(b.name, "ko"));
+    } else if (type === "날짜순(최신순)") {
+        sortedMedicines.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    setMedicines(sortedMedicines);
+    setSortType(type);
+    setSortVisible(false);
+  };
+
+
+
+
+
+
+
+
+
+  // 필터링된 약품 목록
+  const filteredMedicines = medicines.filter((medicine) => {
+    const matchesFilter =
+    filterType === "모든 약품" ||
+    (filterType === "복용 중" && medicine.active) ||
+    (filterType === "미복용" && !medicine.active) ||
+    (filterType === "주의사항" && medicine.warning && medicine.warning.trim() !== "");
+
+  const matchesSearch = medicine.name.includes(finalSearchQuery); // 🔍 검색어가 포함된 경우만 표시
+
+  return matchesFilter && matchesSearch; // 검색 & 필터 조건 모두 만족하는 경우만 표시
+  });
+
+
+
+
+
+
+
+
+
+  // 필터 선택 함수
+  const applyFilter = (type) => {
+    setFilterType(type);
+    setFilterVisible(false);
+  };
+
+  // 약품 복용 여부 토글
   const toggleMedicine = (id) => {
     setMedicines((prev) =>
       prev.map((medicine) =>
@@ -26,16 +147,58 @@ const MedicineScreen = () => {
     );
   };
 
+
+
+
+
+
+
+
+  const getCurrentDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  
+
+
+
+
+
+
   const addMedicine = () => {
     const newMedicine = {
       id: String(medicines.length + 1),
-      name: "새로운 약품",
-      date: "2024.10.30 처방",
-      remaining: "10정 남음",
+      name: `새로운 약품 ${medicines.length + 1}`,
+      registerDate: getCurrentDate(), // ✅ 새로 추가하는 약품만 등록일 자동 설정
       active: false,
+      pharmacy: "알 수 없음", // 기본값 설정
+      prescriptionDate: "알 수 없음",
+      appearance: "알 수 없음",
+      dosageGuide: "알 수 없음",
+      precautions: "알 수 없음",
+      sideEffects: "알 수 없음",
     };
+  
     setMedicines([...medicines, newMedicine]);
+  
+    // 새로 추가된 약품의 상세 페이지로 바로 이동
+    navigation.navigate("MedicineDetailScreen", { medicine: newMedicine });
   };
+  
+
+
+
+
+
+
+
+
+
+
 
   return (
     <>
@@ -43,24 +206,41 @@ const MedicineScreen = () => {
       <View style={styles.headerContainer}>
         <Text style={styles.header}>내 약품 보관함</Text>
         <View style={styles.searchContainer}>
-          <TextInput style={styles.searchBar} placeholder="내 약 검색" />
-          <Image source={require("../../assets/icons/search1.png")} style={styles.searchIcon} />
+          <TextInput 
+          style={styles.searchBar} 
+          placeholder="내 약 검색" 
+          value={searchQuery} // 🔍 입력값 유지
+          onChangeText={(text) => setSearchQuery(text)} // 🔍 검색어 변경 시 업데이트
+          />
+
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+              <Image source={require("../../assets/icons/clear.png")} style={styles.clearIcon} />
+            </TouchableOpacity>
+          )}
+
+
+
+          <TouchableOpacity onPress={handleSearchSubmit}> 
+            <Image source={require("../../assets/icons/search1.png")} style={styles.searchIcon} />
+          </TouchableOpacity>
         </View>
       </View>
 
       {/* 본문 */}
       <View style={styles.container}>
-        {/* 추가 및 필터 버튼 */}
+        {/* 추가 및 필터 + 정렬 버튼 */}
         <View style={styles.buttonRow}>
+          {/* ✅ 수정: 여기에 onPress 추가함 */}
           <TouchableOpacity style={styles.addButton} onPress={addMedicine}>
             <Text style={styles.addButtonText}>+ 약품 추가하기</Text>
           </TouchableOpacity>
           <View style={styles.rightButtons}>
-            <TouchableOpacity style={styles.FSButton}>
+            <TouchableOpacity style={styles.FSButton} onPress={() => setFilterVisible(true)}>
               <Image source={require("../../assets/icons/filter1.png")} style={styles.iconImage} />
               <Text style={styles.FSButtonText}>필터</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.FSButton}>
+            <TouchableOpacity style={styles.FSButton} onPress={() => setSortVisible(true)}>
               <Image source={require("../../assets/icons/sort1.png")} style={styles.iconImage} />
               <Text style={styles.FSButtonText}>정렬</Text>
             </TouchableOpacity>
@@ -69,13 +249,45 @@ const MedicineScreen = () => {
 
         {/* 약품 리스트 */}
         <FlatList
-          data={medicines}
+          data={filteredMedicines}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <MedicineCard medicine={item} toggleMedicine={toggleMedicine} navigation={navigation} />
           )}
         />
       </View>
+
+      {/* 필터 팝업 메뉴 */}
+      <Modal visible={filterVisible} transparent animationType="fade">
+        <TouchableOpacity style={styles.modalOverlay} onPress={() => setFilterVisible(false)} />
+        <View style={styles.menu}>
+          <TouchableOpacity onPress={() => applyFilter("모든 약품")} style={styles.menuOption}>
+            <Text style={styles.menuOptionText}>모든 약품</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => applyFilter("복용 중")} style={styles.menuOption}>
+            <Text style={styles.menuOptionText}>복용 중인 약품</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => applyFilter("미복용")} style={styles.menuOption}>
+            <Text style={styles.menuOptionText}>복용 중이지 않은 약품</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => applyFilter("주의사항")} style={styles.menuOption}>
+            <Text style={styles.menuOptionText}>주의사항 존재 약품</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
+      {/* 정렬 팝업 메뉴 */}
+      <Modal visible={sortVisible} transparent animationType="fade">
+        <TouchableOpacity style={styles.modalOverlay} onPress={() => setSortVisible(false)} />
+        <View style={styles.menu}>
+          <TouchableOpacity onPress={() => sortMedicines("가나다순")} style={styles.menuOption}>
+            <Text style={styles.menuOptionText}>가나다순</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => sortMedicines("날짜순(최신순)")} style={styles.menuOption}>
+            <Text style={styles.menuOptionText}>날짜순(최신순)</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </>
   );
 };
@@ -84,36 +296,53 @@ const MedicineScreen = () => {
 const MedicineCard = ({ medicine, toggleMedicine, navigation }) => {
   return (
     <View style={styles.medicineCard}>
-      {/* 약 이름 및 상태 */}
-      <View style={styles.medicineLeft}>
+      {/* 복용 상태 원형 표시 */}
+      <View style={[styles.statusCircle, medicine.active ? styles.activeStatus : styles.inactiveStatus]}>
+        <Text style={styles.statusText}>{medicine.active ? "복용 중" : "미복용"}</Text>
+      </View>
+
+      {/* 약품 정보 */}
+      <View style={styles.medicineInfo}>
         <Text style={styles.medicineName}>{medicine.name}</Text>
-        <Text style={styles.medicineStatus}>{medicine.active ? "(복용 중)" : "(미복용)"}</Text>
+        <Text style={styles.medicineDate}>등록일: {medicine.registerDate || "날짜 없음"}</Text>
       </View>
 
-      {/* 처방 날짜 및 남은 개수 */}
-      <View style={styles.medicineMiddle}>
-        <Text style={styles.medicineDate}>{medicine.date}</Text>
-        <Text style={styles.medicineRemaining}>{medicine.remaining}</Text>
-      </View>
-
-      {/* 스위치 */}
+      {/* 스위치 추가 (복용 여부 토글) */}
       <Switch
         style={styles.medicineSwitch}
         value={medicine.active}
         onValueChange={() => toggleMedicine(medicine.id)}
-        trackColor={{ false: "#E0E0E0", true: "#FBAF8B" }} // 스위치만 주황색 적용
-        thumbColor={"#FFF"} // 동그란 부분은 흰색 유지
+        trackColor={{ false: "#E0E0E0", true: "#FBAF8B" }}
+        thumbColor={"#FFF"}
       />
 
-      {/* 상세 정보 보기 */}
-      <TouchableOpacity onPress={() => navigation.navigate("MedicineDetailScreen", { medicine })}
-        style={styles.detailButtonWrapper} // 버튼 자체 크기 제한
-        >
+      {/* 상세 정보 보기 버튼 */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate("MedicineDetailScreen", { 
+          medicine, 
+          toggleMedicine: () => toggleMedicine(medicine.id) // ❌ 이 부분 삭제!
+        })}
+        style={styles.detailButtonWrapper}
+      >
         <Text style={styles.detailButton}>▸ 상세 정보 보기</Text>
       </TouchableOpacity>
     </View>
   );
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /** 스타일 */
@@ -149,9 +378,22 @@ const styles = StyleSheet.create({
     top: "50%",
     width: 20,
     height: 20,
-    transform: [{ translateY: -10 }],
+    transform: [{ translateY: -30 }],
     resizeMode: "contain",
   },
+
+  clearButton: {
+    position: "absolute",
+    right: 40,
+    top: "50%",
+    transform: [{ translateY: -10 }],
+  },
+  clearIcon: {
+    width: 18,
+    height: 18,
+    tintColor: "#999",
+  },
+
   container: { flex: 1, backgroundColor: "#fff", padding: 20 },
   addButton: {
     backgroundColor: "#FF8E72",
@@ -206,6 +448,28 @@ const styles = StyleSheet.create({
     marginTop: 3,
     marginHorizontal: 4,
   },
+  statusCircle: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 15,
+  },
+  activeStatus: {
+    backgroundColor: "#FBAF8B",
+  },
+  inactiveStatus: {
+    backgroundColor: "#E0E0E0",
+  },
+  statusText: {
+    color: "#FFF",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+
+
+
   medicineLeft: {
     flex: 1,
   },
@@ -214,10 +478,14 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     
   },
+
+
+  
   medicineName: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#000",
+    paddingVertical: 6,
   },
   medicineStatus: {
     fontSize: 14,
@@ -233,8 +501,9 @@ const styles = StyleSheet.create({
   },
   medicineSwitch: {
     position: "absolute",
-    top: 15,
+    top: 30,
     right: 15,
+    transform: [{ scale: 1.4 }],
   },
   detailButtonWrapper: {
     position: "absolute", 
@@ -248,6 +517,36 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
     textAlignVertical: "center",
   },
+
+
+
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+  },
+  menu: {
+    position: "absolute",
+    top: 120,
+    right: 20,
+    backgroundColor: "#FFF",
+    borderRadius: 8,
+    paddingVertical: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  menuOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  menuOptionText: {
+    fontSize: 14,
+    color: "#333",
+  },
+
 });
 
 export default MedicineScreen;
