@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from "../context/AuthContext";
+import Feather from "react-native-vector-icons/Feather";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
@@ -10,6 +11,7 @@ const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { setUserData, getData } = useContext(AuthContext);
+    const [showPassword, setShowPassword] = useState(false);
 
     // ✅ 로그인 버튼 (토큰 저장 후 Main으로 이동)
     const handleLogin = async () => {
@@ -24,9 +26,10 @@ const LoginScreen = () => {
     
             if (res.data.status === "ok" && res.data.token) {
                 await AsyncStorage.setItem("token", res.data.token);
-                Alert.alert("로그인 성공", "성공적으로 로그인하였습니다.");
+                await AsyncStorage.setItem("isNewUser", "false");
 
                 await getData();
+                navigation.replace("MainTabs");
 
             } else {
                 Alert.alert("로그인 실패", res.data.message || "아이디 또는 비밀번호를 확인하세요.");
@@ -37,14 +40,6 @@ const LoginScreen = () => {
         }
     };
     
-
-    // ✅ "건너뛰기" 버튼을 누르면 로그인 없이 Main으로 이동
-    const handleSkip = () => {
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'Main' }]
-        });
-    };
 
     // ✅ "회원가입" 버튼 클릭 시 회원가입 페이지로 이동
     const handleSignup = () => {
@@ -70,13 +65,18 @@ const LoginScreen = () => {
                         value={email} 
                         onChangeText={(text) => setEmail(text)}
                     />
-                    <TextInput 
-                        style={styles.input} 
-                        placeholder="비밀번호 입력"  
-                        secureTextEntry 
-                        value={password} 
-                        onChangeText={(text) => setPassword(text)}
-                    />
+                    <View style={styles.passwordContainer}>
+                        <TextInput 
+                            style={styles.passwordInput} 
+                            placeholder="비밀번호 입력"  
+                            secureTextEntry={!showPassword} 
+                            value={password} 
+                            onChangeText={(text) => setPassword(text)}
+                        />
+                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                            <Feather name={showPassword ? "eye" : "eye-off"} color={"grey"} size={23} />
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
@@ -85,10 +85,12 @@ const LoginScreen = () => {
 
                 {/* ✅ 비밀번호 찾기 | 아이디 찾기 | 회원가입하기 */}
                 <View style={styles.linkContainer}>
-                    <TouchableOpacity><Text style={styles.linkText}>비밀번호 찾기</Text></TouchableOpacity>
-                    <Text style={styles.divider}> | </Text>
                     <TouchableOpacity><Text style={styles.linkText}>아이디 찾기</Text></TouchableOpacity>
                     <Text style={styles.divider}> | </Text>
+
+                    <TouchableOpacity><Text style={styles.linkText}>비밀번호 찾기</Text></TouchableOpacity>
+                    <Text style={styles.divider}> | </Text>
+                    
                     <TouchableOpacity onPress={handleSignup}>
                         <Text style={styles.linkText}>회원가입하기</Text>
                     </TouchableOpacity>
@@ -105,11 +107,6 @@ const LoginScreen = () => {
                         <Text style={styles.snsText}>네이버로 로그인</Text>
                     </TouchableOpacity>
                 </View>
-
-                {/* ✅ 건너뛰기 버튼 */}
-                <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-                    <Text style={styles.skipText}>건너뛰기</Text>
-                </TouchableOpacity>
             </View>
         </ScrollView>
     );
@@ -138,6 +135,26 @@ const styles = StyleSheet.create({
     inputContainer: {
         width: '80%',
         alignItems: 'flex-start',
+    },
+
+    passwordContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        width: "100%",
+        borderWidth: 1,
+        borderColor: "#ccc",
+        borderRadius: 5,
+        paddingHorizontal: 10,
+        marginBottom: 10,
+    },
+
+    passwordInput: {
+        flex: 1,
+        height: 50,
+    },
+
+    eyeIcon: {
+        padding: 10,
     },
 
     label: { 

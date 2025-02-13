@@ -59,12 +59,11 @@ const SignupScreen = () => {
                 Alert.alert("회원가입 성공", "가입이 완료되었습니다!");
     
                 await AsyncStorage.setItem("token", res.data.token);
+                await AsyncStorage.setItem("isNewUser", "true");
+                
                 await getData(); // ✅ 회원가입 후 사용자 정보 불러오기
-    
-                navigation.reset({
-                    index: 0,
-                    routes: [{ name: "UserInfo" }],
-                });
+
+                navigation.replace("UserInfo");
             } else {
                 Alert.alert("회원가입 실패", res.data.message || "다시 시도해주세요.");
             }
