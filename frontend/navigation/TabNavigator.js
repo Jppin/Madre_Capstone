@@ -9,7 +9,7 @@ import HomeScreen from '../screens/HomeScreen';
 import MedicineNavigator from "./MedicineNavigator";
 import NutritionScreen from '../screens/NutritionScreen';
 import YoutubeScreen from '../screens/YoutubeScreen';
-import MyPageScreen from '../screens/MyPageScreen';
+import MyPageScreen from '../screens/MyPage/MyPageScreen';
 
 const Tab = createBottomTabNavigator();
 
