@@ -10,10 +10,7 @@ const InfoComplete = ({ route }) => {
 
     // ✅ 시작하기 버튼 클릭 시 → HomeScreen으로 이동
     const handleStart = () => {
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'Main' }],
-        });
+        navigation.replace("MainTabs");
     };
 
     return (

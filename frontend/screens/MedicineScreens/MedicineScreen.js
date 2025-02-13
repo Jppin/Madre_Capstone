@@ -321,7 +321,7 @@ const MedicineCard = ({ medicine, toggleMedicine, navigation }) => {
 
       {/* 상세 정보 보기 버튼 */}
       <TouchableOpacity
-        onPress={() => navigation.navigate("MedicineDetailScreen", { 
+        onPress={() => navigation.navigate("MedicineDetail", { 
           medicine, 
           toggleMedicine: () => toggleMedicine(medicine.id) // ❌ 이 부분 삭제!
         })}
