@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import LoadingScreen from '../../components/LoadingScreen'; // ✅ 로딩 스크린 추가
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HealthSurvey3 = () => {
     const navigation = useNavigation();
@@ -42,13 +43,20 @@ const HealthSurvey3 = () => {
     };
 
     // ✅ 확인 버튼 클릭 시 처리
-    const handleNext = () => {
+    const handleNext = async () => {
         if (selectedConcerns.length === 0) {
             setErrorMessage('고민되는 건강 항목을 선택해주세요.');
             return;
         }
-
-        setIsLoading(true); // ✅ 로딩 상태 활성화
+    
+        try {
+            await AsyncStorage.setItem("user_concerns", JSON.stringify(selectedConcerns));
+            console.log("✅ HealthSurvey3 데이터 저장 완료!");
+    
+            navigation.navigate('InfoComplete');
+        } catch (error) {
+            console.error("❌ HealthSurvey3 데이터 저장 실패:", error);
+        }    
 
         // ✅ 2초 후에 로딩 스크린에서 InfoComplete로 이동
         setTimeout(() => {

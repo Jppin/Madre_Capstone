@@ -31,7 +31,10 @@ const LoginScreen = () => {
                 await AsyncStorage.setItem("isNewUser", "false");
 
                 await getData();
-                navigation.replace("MainTabs");
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: "MainNavigator" }], // ✅ 네비게이션 스택을 완전히 리셋
+                });
 
             } else {
                 Alert.alert("로그인 실패", res.data.message || "아이디 또는 비밀번호를 확인하세요.");

@@ -12,7 +12,8 @@ export const AuthProvider = ({ children }) => {
     async function getData() {
         try {
             const token = await AsyncStorage.getItem("token");
-            const newUser = await AsyncStorage.getItem("isNewUser");
+            const newUserStatus = await AsyncStorage.getItem("isNewUser");
+
             if (!token) {
                 setUserData(null);
                 setIsNewUser(false);
@@ -23,14 +24,17 @@ export const AuthProvider = ({ children }) => {
             const res = await axios.get("http://10.0.2.2:5001/userdata", {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setUserData(res.data.data);
-            setIsNewUser(newUser === "true");
 
-            if (res.data.data.isNewUser) {
-                setIsNewUser(true);
+            if (res.data && res.data.data) {
+                setUserData(res.data.data);
+            } else {
+                setUserData(null);
             }
 
+            setIsNewUser(newUserStatus === "true"); // ✅ 더 명확한 조건 설정
+
         } catch (error) {
+            console.error("❌ 유저 데이터 가져오기 실패:", error);
             setUserData(null);
             setIsNewUser(false);
         } finally {
@@ -43,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ userData, loading, setUserData, getData, isNewUser }}>
+        <AuthContext.Provider value={{ userData, loading, setUserData, getData, isNewUser, setIsNewUser }}>
             {children}
         </AuthContext.Provider>
     );

@@ -84,6 +84,38 @@ app.get("/userdata", async (req, res) => {
   }
 });
 
+// ✅ 사용자 정보 저장 엔드포인트 (온보딩 완료 시 호출)
+app.post("/save-user-info", async (req, res) => {
+  const { email, nickname, birthYear, gender, alcohol, smoking, pregnancy, conditions, concerns } = req.body;
+
+  try {
+      // ✅ 이메일로 기존 사용자 찾기
+      const user = await User.findOne({ email });
+
+      if (!user) {
+          return res.status(404).json({ status: "error", message: "사용자를 찾을 수 없습니다." });
+      }
+
+      // ✅ 사용자 데이터 업데이트
+      user.nickname = nickname;
+      user.birthYear = birthYear;
+      user.gender = gender;
+      user.alcohol = alcohol;
+      user.smoking = smoking;
+      user.pregnancy = pregnancy;
+      user.conditions = conditions;
+      user.concerns = concerns;
+
+      await user.save(); // ✅ 데이터 저장
+
+      res.status(200).json({ status: "ok", message: "사용자 정보 저장 완료" });
+  } catch (error) {
+      console.error("❌ 사용자 정보 저장 오류:", error);
+      res.status(500).json({ status: "error", message: "사용자 정보 저장 중 문제가 발생했습니다." });
+  }
+});
+
+
 // ✅ 서버 시작
 app.listen(5001, () => {
   console.log("Node.js server started on port 5001.");
