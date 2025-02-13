@@ -1,3 +1,5 @@
+//LoginScreen.js
+
 import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
