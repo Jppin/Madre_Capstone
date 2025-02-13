@@ -7,12 +7,15 @@ export const AuthContext = createContext({});
 export const AuthProvider = ({ children }) => {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isNewUser, setIsNewUser] = useState(false);
 
     async function getData() {
         try {
             const token = await AsyncStorage.getItem("token");
+            const newUser = await AsyncStorage.getItem("isNewUser");
             if (!token) {
                 setUserData(null);
+                setIsNewUser(false);
                 setLoading(false);
                 return;
             }
@@ -21,8 +24,15 @@ export const AuthProvider = ({ children }) => {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setUserData(res.data.data);
+            setIsNewUser(newUser === "true");
+
+            if (res.data.data.isNewUser) {
+                setIsNewUser(true);
+            }
+
         } catch (error) {
             setUserData(null);
+            setIsNewUser(false);
         } finally {
             setLoading(false);
         }
@@ -33,7 +43,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ userData, loading, setUserData, getData }}>
+        <AuthContext.Provider value={{ userData, loading, setUserData, getData, isNewUser }}>
             {children}
         </AuthContext.Provider>
     );
