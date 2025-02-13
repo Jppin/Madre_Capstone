@@ -60,6 +60,7 @@ const SignupScreen = () => {
     
                 await AsyncStorage.setItem("token", res.data.token);
                 await AsyncStorage.setItem("isNewUser", "true");
+                await AsyncStorage.setItem("user_email", email);
                 
                 await getData(); // ✅ 회원가입 후 사용자 정보 불러오기
 

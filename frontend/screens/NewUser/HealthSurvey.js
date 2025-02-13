@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HealthSurvey = () => {
     const navigation = useNavigation();
@@ -24,16 +25,24 @@ const HealthSurvey = () => {
     const [errorMessage, setErrorMessage] = useState(''); // 에러 메시지
 
     // ✅ 데이터 저장 및 다음 화면 이동 (HealthSurvey2로)
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
         if (smoking === null || pregnancy === null) {
             setErrorMessage('모든 질문에 답해주세요.');
             return;
         }
-
-        const userData = { alcohol, smoking, pregnancy };
-        console.log("저장된 데이터:", userData);
-        navigation.navigate('HealthSurvey2', { userData });
+    
+        try {
+            await AsyncStorage.setItem("user_alcohol", String(alcohol));
+            await AsyncStorage.setItem("user_smoking", smoking);
+            await AsyncStorage.setItem("user_pregnancy", pregnancy);
+            console.log("✅ HealthSurvey 데이터 저장 완료!");
+    
+            navigation.navigate('HealthSurvey2');
+        } catch (error) {
+            console.error("❌ HealthSurvey 데이터 저장 실패:", error);
+        }
     };
+    
 
     return (
         <View style={styles.container}>
