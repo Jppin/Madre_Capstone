@@ -59,7 +59,7 @@ const MedicineScreen = () => {
   ////??????????????????????????????????????
   const goToCameraScreen = () => {
     closeAddMedicineModal(); // 모달 닫기
-    navigation.navigate("CameraScreen"); // 카메라 촬영 화면으로 이동
+    navigation.navigate("CameraScreen");
   };
 
   const goToGalleryScreen = () => {
@@ -438,7 +438,7 @@ const MedicineCard = ({ medicine, toggleMedicine, navigation }) => {
 
       {/* 상세 정보 보기 버튼 */}
       <TouchableOpacity
-        onPress={() => navigation.navigate("MedicineDetail", { 
+        onPress={() => navigation.navigate("MedicineDetailScreen", { 
           medicine, 
           toggleMedicine: () => toggleMedicine(medicine.id) 
         })}
