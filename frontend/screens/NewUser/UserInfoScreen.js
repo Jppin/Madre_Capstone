@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNPickerSelect from 'react-native-picker-select';
+import Feather from "react-native-vector-icons/Feather";
 
 const generateYearOptions = () => {
     const currentYear = new Date().getFullYear();
@@ -19,9 +21,8 @@ const UserInfoScreen = () => {
     const [selectedGender, setSelectedGender] = useState(null);
     const [errors, setErrors] = useState({});
     const [modalVisible, setModalVisible] = useState(false);
-    const [confirmationModal, setConfirmationModal] = useState(false);
 
-    const validateAndProceed = () => {
+    const validateAndProceed = async () => {
         let newErrors = {};
         if (!nickname.trim()) newErrors.nickname = '닉네임을 입력해주세요.';
         if (!birthYear) newErrors.birthYear = '태어난 연도를 선택해주세요.';
@@ -30,24 +31,40 @@ const UserInfoScreen = () => {
         setErrors(newErrors);
         
         if (Object.keys(newErrors).length === 0) {
-            setModalVisible(true);
+            try{
+                await AsyncStorage.setItem("user_nickname", nickname);
+                await AsyncStorage.setItem("user_birthYear", JSON.stringify(birthYear));
+                await AsyncStorage.setItem("user_gender", selectedGender);
+
+                setModalVisible(true);
+            } catch (error) {
+                console.error("AsyncStorage 저장 오류:", error);
+            }
         }
     };
 
     const handleConfirm = () => {
         setModalVisible(false);
-        navigation.navigate('SignupComplete', {
-            nickname: nickname,
-            birthYear: birthYear,
-            selectedGender: selectedGender,
-        }); // 가입 완료 페이지로 이동하면서 데이터 전달
+
+        console.log("🔹 navigation.navigate 실행 전!");
+        navigation.navigate('SignupComplete');
     };
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                <Text style={styles.backText}>←</Text>
+            <TouchableOpacity 
+                onPress={() => {
+                    if (navigation.canGoBack()) {
+                        navigation.goBack();  // ✅ 이전 화면이 있으면 뒤로 가기
+                    } else {
+                        navigation.navigate("Login");  // ✅ 이전 화면이 없으면 Login 화면으로 이동
+                    }
+                }} 
+                style={styles.backButton}
+            >
+                <Feather name="chevron-left" size={28} color="#333" />
             </TouchableOpacity>
+
 
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <Text style={styles.headerText}>내 정보 입력</Text>

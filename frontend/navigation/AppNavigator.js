@@ -1,11 +1,10 @@
 import React, { useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
 import { AuthContext } from '../context/AuthContext';
 import CustomSpinner from '../components/CustomSpinner';
-import { createStackNavigator } from '@react-navigation/stack';
-import UserInfoScreen from '../screens/NewUser/UserInfoScreen';
 
 const Stack = createStackNavigator();
 
@@ -18,17 +17,17 @@ export default function AppNavigator() {
 
     return (
         <NavigationContainer>
-            {userData ? (
-                isNewUser ? (
-                    <Stack.Navigator screenOptions={{ headerShown: false }}>
-                        <Stack.Screen name="UserInfo" component={UserInfoScreen} />
-                    </Stack.Navigator>
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+                {userData ? (
+                    isNewUser ? (
+                        <Stack.Screen name="Auth" component={AuthNavigator} initialParams={{ initialRoute: "UserInfo" }} />
+                    ) : (
+                        <Stack.Screen name="MainNavigator" component={MainNavigator} />
+                    )
                 ) : (
-                    <MainNavigator />
-                )
-            ) : (
-                <AuthNavigator />
-            )}
+                    <Stack.Screen name="Auth" component={AuthNavigator} />
+                )}
+            </Stack.Navigator>
         </NavigationContainer>
     );
 }

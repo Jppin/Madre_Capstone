@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HealthSurvey2 = () => {
     const navigation = useNavigation();
@@ -49,14 +50,22 @@ const HealthSurvey2 = () => {
     };
 
     // ✅ 확인 버튼 클릭 시, 선택 여부 검사 → HealthSurvey3으로 이동
-    const handleNext = () => {
+    const handleNext = async () => {
         if (selectedConditions.length === 0) {
             setErrorMessage('질문에 답해주세요.');
             return;
         }
-        console.log("선택된 질환 목록:", selectedConditions);
-        navigation.navigate('HealthSurvey3', { selectedConditions });
+    
+        try {
+            await AsyncStorage.setItem("user_conditions", JSON.stringify(selectedConditions));
+            console.log("✅ HealthSurvey2 데이터 저장 완료!");
+    
+            navigation.navigate('HealthSurvey3');
+        } catch (error) {
+            console.error("❌ HealthSurvey2 데이터 저장 실패:", error);
+        }
     };
+    
 
     return (
         <View style={styles.container}>
