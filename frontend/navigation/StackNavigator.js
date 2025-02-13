@@ -19,6 +19,12 @@ import InfoComplete from '../screens/NewUser/InfoComplete';
 import TabNavigator from './TabNavigator';
 import MedicineScreen from "../screens/MedicineScreens/MedicineScreen";
 import MedicineDetailScreen from "../screens/MedicineScreens/MedicineDetailScreen";
+import CameraScreen from "../screens/MedicineScreens/CameraScreen"
+import GalleryScreen from "../screens/MedicineScreens/GalleryScreen"
+import ManualEntryScreen from "../screens/MedicineScreens/ManualEntryScreen"
+
+
+
 
 const Stack = createStackNavigator();
 
@@ -53,7 +59,11 @@ const StackNavigator = () => {
                 <Stack.Screen name="InfoComplete" component={InfoComplete} />
                 <Stack.Screen name="Main" component={TabNavigator} />
                 <Stack.Screen name="MedicineScreen" component={MedicineScreen} options={{ title: "내 약품 보관함" }} />
-        <Stack.Screen name="MedicineDetailScreen" component={MedicineDetailScreen} options={{ title: "약품 상세 정보" }} />
+                <Stack.Screen name="MedicineDetailScreen" component={MedicineDetailScreen} options={{ title: "약품 상세 정보" }} />
+                <Stack.Screen name="CameraScreen" component={CameraScreen}/>
+                <Stack.Screen name="GalleryScreen" component={GalleryScreen}/>
+                <Stack.Screen name="ManualEntryScreen" component={ManualEntryScreen}/>
+
             </Stack.Navigator>
         </NavigationContainer>
     );
