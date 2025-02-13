@@ -48,6 +48,37 @@ const MedicineScreen = () => {
   ]);
 
 
+  const [isAddMedicineModalVisible, setAddMedicineModalVisible] = useState(false); // 추가 모달 상태
+
+  // 모달 열기
+  const openAddMedicineModal = () => setAddMedicineModalVisible(true);
+  // 모달 닫기
+  const closeAddMedicineModal = () => setAddMedicineModalVisible(false);
+
+  
+  ////??????????????????????????????????????
+  const goToCameraScreen = () => {
+    closeAddMedicineModal(); // 모달 닫기
+    navigation.navigate("CameraScreen");
+  };
+
+  const goToGalleryScreen = () => {
+    closeAddMedicineModal();
+    navigation.navigate("GalleryScreen");
+  };
+  
+  // 직접 입력 화면으로 이동하는 함수
+  const goToManualEntryScreen = () => {
+    closeAddMedicineModal();
+    navigation.navigate("ManualEntryScreen");
+  };
+
+
+
+
+
+
+
   const [searchQuery, setSearchQuery] = useState("");// 🔍 검색어 상태 추가
   const [finalSearchQuery, setFinalSearchQuery] = useState(""); // 🔍 검색 실행 시 적용될 검색어
   const [filterVisible, setFilterVisible] = useState(false);
@@ -57,7 +88,7 @@ const MedicineScreen = () => {
 
 
 
-// 🔍 돋보기 버튼 클릭 시 검색 실행
+  // 🔍 돋보기 버튼 클릭 시 검색 실행
   const handleSearchSubmit = () => {
   if (!searchQuery.trim()) return;
   setFinalSearchQuery(searchQuery); // 현재 입력된 검색어를 최종 확정
@@ -71,12 +102,12 @@ const MedicineScreen = () => {
 
 
 
-// ❌ 검색 초기화 (X 버튼 클릭)
-const clearSearch = () => {
+  // ❌ 검색 초기화 (X 버튼 클릭)
+  const clearSearch = () => {
   setSearchQuery("");
   setFinalSearchQuery("");
   Keyboard.dismiss();
-};
+  };
 
 
 
@@ -170,6 +201,8 @@ const clearSearch = () => {
 
 
 
+/////////////////////////////////////여기일단보류 건드리지말아줘
+/*
 
   const addMedicine = () => {
     const newMedicine = {
@@ -190,12 +223,12 @@ const clearSearch = () => {
     // 새로 추가된 약품의 상세 페이지로 바로 이동
     navigation.navigate("MedicineDetailScreen", { medicine: newMedicine });
   };
-  
+  */
 
 
 
 
-
+    
 
 
 
@@ -214,14 +247,11 @@ const clearSearch = () => {
           value={searchQuery} // 🔍 입력값 유지
           onChangeText={(text) => setSearchQuery(text)} // 🔍 검색어 변경 시 업데이트
           />
-
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
               <Image source={require("../../assets/icons/clear.png")} style={styles.clearIcon} />
             </TouchableOpacity>
           )}
-
-
 
           <TouchableOpacity onPress={handleSearchSubmit}> 
             <Image source={require("../../assets/icons/search1.png")} style={styles.searchIcon} />
@@ -229,12 +259,15 @@ const clearSearch = () => {
         </View>
       </View>
 
+
+
+
       {/* 본문 */}
       <View style={styles.container}>
         {/* 추가 및 필터 + 정렬 버튼 */}
         <View style={styles.buttonRow}>
           {/* ✅ 수정: 여기에 onPress 추가함 */}
-          <TouchableOpacity style={styles.addButton} onPress={addMedicine}>
+          <TouchableOpacity style={styles.addButton} onPress={openAddMedicineModal}>
             <Text style={styles.addButtonText}>+ 약품 추가하기</Text>
           </TouchableOpacity>
           <View style={styles.rightButtons}>
@@ -248,6 +281,85 @@ const clearSearch = () => {
             </TouchableOpacity>
           </View>
         </View>
+
+
+
+
+
+
+       {/* 추가 모달 */}
+       <Modal visible={isAddMedicineModalVisible} transparent animationType="slide">
+      <View style={{ flex: 1 }}>
+      {/* 배경 오버레이: 터치 시 모달 닫힘 */}
+     <TouchableOpacity
+      style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.3)" }}
+      onPress={closeAddMedicineModal}
+        />
+        {/* 모달 콘텐츠 */}
+        <View style={styles.modalContainer}>
+        {/* 약봉투 카메라 촬영 버튼 */}
+        <TouchableOpacity style={styles.modalButton} onPress={goToCameraScreen}>
+        <Image
+          source={require("../../assets/icons/camera.png")}
+          style={styles.modalIcon}
+        />
+        <View>
+          <Text style={styles.modalText}>약봉투 카메라 촬영</Text>
+          <Text style={styles.modalSubText}>
+            약봉투가 정면에서 잘 나오도록 촬영해주세요!
+          </Text>
+        </View>
+      </TouchableOpacity>
+      {/* 일반의약품 제품 촬영 버튼 */}
+      <TouchableOpacity style={styles.modalButton} onPress={goToCameraScreen}>
+        <Image
+          source={require("../../assets/icons/camera.png")}
+          style={styles.modalIcon}
+        />
+        <View>
+          <Text style={styles.modalText}>일반의약품 제품 촬영</Text>
+          <Text style={styles.modalSubText}>
+            제품명이 정면에서 잘 보이도록 촬영해주세요!
+          </Text>
+        </View>
+      </TouchableOpacity>
+      
+      
+      {/* 사진 앨범에서 선택 버튼 */}
+      <TouchableOpacity
+        style={styles.modalButton}
+        onPress={goToGalleryScreen}
+      >
+        <Image
+          source={require("../../assets/icons/gallery.png")}
+          style={styles.modalIcon}
+        />
+        <Text style={styles.modalText}>사진 앨범에서 선택</Text>
+      </TouchableOpacity>
+      
+      
+      {/* 직접 입력 버튼 */}
+      <TouchableOpacity
+        style={styles.modalButton}
+        onPress={goToManualEntryScreen}
+      >
+        <Image
+          source={require("../../assets/icons/edit.png")}
+          style={styles.modalIcon}
+        />
+        <Text style={styles.modalText}>직접 입력</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+  
+ 
+
+
+
+
+
+
 
         {/* 약품 리스트 */}
         <FlatList
@@ -291,6 +403,11 @@ const clearSearch = () => {
           </TouchableOpacity>
         </View>
       </Modal>
+
+
+
+
+
     </>
   );
 };
@@ -321,9 +438,9 @@ const MedicineCard = ({ medicine, toggleMedicine, navigation }) => {
 
       {/* 상세 정보 보기 버튼 */}
       <TouchableOpacity
-        onPress={() => navigation.navigate("MedicineDetail", { 
+        onPress={() => navigation.navigate("MedicineDetailScreen", { 
           medicine, 
-          toggleMedicine: () => toggleMedicine(medicine.id) // ❌ 이 부분 삭제!
+          toggleMedicine: () => toggleMedicine(medicine.id) 
         })}
         style={styles.detailButtonWrapper}
       >
@@ -548,6 +665,47 @@ const styles = StyleSheet.create({
   menuOptionText: {
     fontSize: 14,
     color: "#333",
+  },
+
+
+
+
+  modalContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#FFF",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+  },
+  modalButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    backgroundColor: "#F5F5F5",
+    marginBottom: 12,
+    borderWidth: 1,
+    borderRadius: 10,
+    borderColor: "#E0E0E0"
+  },
+  modalIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 10,
+  },
+  modalText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  modalSubText: {
+    fontSize: 12,
+    color: "#FF6B6B",
   },
 
 });
