@@ -45,6 +45,10 @@ const LoginScreen = () => {
         }
     };
     
+    const handleForgotPassword = () => {
+        navigation.navigate('ForgotPassword');
+    };
+
 
     // ✅ "회원가입" 버튼 클릭 시 회원가입 페이지로 이동
     const handleSignup = () => {
@@ -88,12 +92,8 @@ const LoginScreen = () => {
                     <Text style={styles.loginText}>로그인</Text>
                 </TouchableOpacity>
 
-                {/* ✅ 비밀번호 찾기 | 아이디 찾기 | 회원가입하기 */}
                 <View style={styles.linkContainer}>
-                    <TouchableOpacity><Text style={styles.linkText}>아이디 찾기</Text></TouchableOpacity>
-                    <Text style={styles.divider}> | </Text>
-
-                    <TouchableOpacity><Text style={styles.linkText}>비밀번호 찾기</Text></TouchableOpacity>
+                    <TouchableOpacity onPress={handleForgotPassword}><Text style={styles.linkText}>비밀번호를 잊어버렸나요?</Text></TouchableOpacity>
                     <Text style={styles.divider}> | </Text>
                     
                     <TouchableOpacity onPress={handleSignup}>
