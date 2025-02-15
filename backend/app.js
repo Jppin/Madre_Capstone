@@ -1,3 +1,5 @@
+//App.js
+
 const express = require("express");
 const app = express();
 app.use(express.json());
@@ -111,7 +113,7 @@ app.post("/login-user", async(req, res) => {
 });
 
 
-// ✅ 사용자 데이터 가져오기 엔드포인트 (토큰 헤더 방식 적용)
+// ✅ 사용자 데이터 가져오기 엔드포인트 (토큰 헤더 방식 적용) - 이멜만 가져옴옴
 app.get("/userdata", async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -164,6 +166,62 @@ app.post("/save-user-info", async (req, res) => {
       res.status(500).json({ status: "error", message: "사용자 정보 저장 중 문제가 발생했습니다." });
   }
 });
+
+
+
+
+
+
+// ✅ 전체 사용자 정보 가져오기 엔드포인트 - 마이페이지용
+app.get("/user-full-data", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "인증 토큰이 필요합니다." });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    
+    const user = await User.findOne({ email: decoded.email });
+
+    if (!user) {
+      return res.status(404).json({ message: "사용자 정보를 찾을 수 없습니다." });
+    }
+
+    // ✅ 전체 사용자 정보 반환
+    res.status(200).json({ 
+      status: "ok", 
+      data: {
+        email: user.email,
+        nickname: user.nickname,
+        birthYear: user.birthYear,
+        gender: user.gender,
+        alcohol: user.alcohol,
+        smoking: user.smoking,
+        pregnancy: user.pregnancy,
+        conditions: user.conditions,
+        concerns: user.concerns
+      } 
+    });
+  } catch (error) {
+    res.status(401).json({ status: "error", message: "유효하지 않은 토큰입니다." });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // ✅ 서버 시작
