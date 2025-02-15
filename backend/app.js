@@ -26,6 +26,14 @@ app.get("/", (req, res) => {
   res.send({ status: "Started" });
 });
 
+
+
+
+
+
+
+
+
 // ✅ 비밀번호 찾기 (임시 비밀번호 전송)
 app.post("/api/forgot-password", async (req, res) => {
   const { email } = req.body;
@@ -75,6 +83,12 @@ app.post("/api/forgot-password", async (req, res) => {
 });
 
 
+
+
+
+
+
+
 // ✅ 회원가입 엔드포인트
 app.post("/register", async (req, res) => {
     const { email, password } = req.body;
@@ -94,6 +108,12 @@ app.post("/register", async (req, res) => {
 });
 
 
+
+
+
+
+
+
 // ✅ 로그인 엔드포인트
 app.post("/login-user", async(req, res) => {
     const { email, password } = req.body;
@@ -111,6 +131,10 @@ app.post("/login-user", async(req, res) => {
         return res.status(401).json({ status: "error", message: "잘못된 비밀번호입니다." });
     }
 });
+
+
+
+
 
 
 // ✅ 사용자 데이터 가져오기 엔드포인트 (토큰 헤더 방식 적용) - 이멜만 가져옴옴
@@ -135,6 +159,12 @@ app.get("/userdata", async (req, res) => {
     res.status(401).json({ status: "error", message: "유효하지 않은 토큰입니다." });
   }
 });
+
+
+
+
+
+
 
 // ✅ 사용자 정보 저장 엔드포인트 (온보딩 완료 시 호출)
 app.post("/save-user-info", async (req, res) => {
@@ -211,7 +241,7 @@ app.get("/user-full-data", async (req, res) => {
 });
 
 
-//마이페이지 이름성별나이 업뎃
+//마이페이지 이름성별나이&건강습관 업뎃
 app.post("/update-user-info", async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -222,11 +252,21 @@ app.post("/update-user-info", async (req, res) => {
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    const { nickname, birthYear, gender } = req.body;
+    const { nickname, birthYear, gender, alcohol, smoking, pregnancy } = req.body;
+
+    // ✅ 업데이트할 필드만 선택적으로 저장 (값이 undefined인 경우 업데이트하지 않음)
+    const updateFields = {};
+    if (nickname !== undefined) updateFields.nickname = nickname;
+    if (birthYear !== undefined) updateFields.birthYear = birthYear;
+    if (gender !== undefined) updateFields.gender = gender;
+    if (alcohol !== undefined) updateFields.alcohol = alcohol;
+    if (smoking !== undefined) updateFields.smoking = smoking;
+    if (pregnancy !== undefined) updateFields.pregnancy = pregnancy;
+
 
     const user = await User.findOneAndUpdate(
       { email: decoded.email },
-      { nickname, birthYear, gender },
+      { $set: updateFields },
       { new: true } // 업데이트 후 변경된 데이터 반환
     );
 
