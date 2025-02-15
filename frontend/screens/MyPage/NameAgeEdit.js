@@ -107,7 +107,7 @@ const NameAgeEdit = () => {
     const handleUpdateComplete = () => {
         setUpdateCompleteModal(false);
         
-        navigation.navigate("MyPageScreen", { updated: true });
+        navigation.navigate("MyPageNavigator", { updated: true });
     };
 
 

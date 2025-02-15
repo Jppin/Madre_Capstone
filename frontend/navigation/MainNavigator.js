@@ -9,7 +9,6 @@ import GalleryScreen from '../screens/MedicineScreens/GalleryScreen';
 import ManualEntryScreen from '../screens/MedicineScreens/ManualEntryScreen';
 import MedicineDetailScreen from "../screens/MedicineScreens/MedicineDetailScreen";
 import MyPageNavigator from "./MyPageNavigator";
-import MyPageScreen from '../screens/MyPage/MyPageScreen';
 import NameAgeEdit from "../screens/MyPage/NameAgeEdit";
 
 
@@ -28,7 +27,6 @@ export default function MainNavigator() {
             <Stack.Screen name="ManualEntryScreen" component={ManualEntryScreen} />
             <Stack.Screen name="MedicineDetailScreen" component={MedicineDetailScreen} options={{ tabBarStyle: { display: 'none' } }}/>
             <Stack.Screen name="MyPageNavigator" component={MyPageNavigator} /> 
-            <Stack.Screen name="MyPage" component={MyPageScreen} />
             <Stack.Screen name="NameAgeEdit" component={NameAgeEdit} />
         </Stack.Navigator>
     );

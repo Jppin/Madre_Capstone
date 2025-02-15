@@ -5,7 +5,7 @@ import React,{useEffect, useState} from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import { StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import CustomSpinner from "../../components/CustomSpinner";
 
 
 const MyPageScreen = () => {
@@ -75,13 +75,9 @@ const MyPageScreen = () => {
 
 
   
-    // ✅ 로딩 중이면 인디케이터 표시
+    // 로딩 중이면 스피너 표시
     if (loading) {
-      return (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0090FF" />
-        </View>
-      );
+      return <CustomSpinner />;
     }
 
 
