@@ -24,6 +24,54 @@ const NameAgeEdit = () => {
     const [selectedGender, setSelectedGender] = useState(null);
     const [errors, setErrors] = useState({});
     const [modalVisible, setModalVisible] = useState(false);
+    const [updateCompleteModal, setUpdateCompleteModal] = useState(false); // ✅ 업데이트 완료 팝업 추가
+
+
+
+    // ✅ 사용자 정보 업데이트 함수 (MongoDB 반영)
+    const updateUserInfo = async () => {
+        try {
+            const token = await AsyncStorage.getItem("token");
+            if (!token) {
+                console.error("토큰 없음, 로그인 필요");
+                return;
+            }
+
+            const response = await fetch("http://10.0.2.2:5001/update-user-info", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    nickname,
+                    birthYear,
+                    gender: selectedGender
+                }),
+            });
+
+            const result = await response.json();
+
+            if (result.status === "ok") {
+                console.log("✅ 사용자 정보 업데이트 성공");
+            // ✅ MongoDB 업데이트 성공하면 AsyncStorage에도 반영
+            await AsyncStorage.setItem("user_nickname", nickname);
+            await AsyncStorage.setItem("user_birthYear", JSON.stringify(birthYear));
+            await AsyncStorage.setItem("user_gender", selectedGender);
+
+            setUpdateCompleteModal(true); // ✅ 업데이트 완료 모달 표시
+        } else {
+            console.error("❌ 사용자 정보 업데이트 실패:", result.message);
+        }
+    } catch (error) {
+        console.error("❌ 사용자 정보 업데이트 중 오류 발생:", error);
+    }
+};
+
+
+
+
+
 
     const validateAndProceed = async () => {
         let newErrors = {};
@@ -34,24 +82,42 @@ const NameAgeEdit = () => {
         setErrors(newErrors);
         
         if (Object.keys(newErrors).length === 0) {
-            try{
-                await AsyncStorage.setItem("user_nickname", nickname);
-                await AsyncStorage.setItem("user_birthYear", JSON.stringify(birthYear));
-                await AsyncStorage.setItem("user_gender", selectedGender);
-
-                setModalVisible(true);
-            } catch (error) {
-                console.error("AsyncStorage 저장 오류:", error);
+            setModalVisible(true); // ✅ 확인 모달 띄우기
             }
+        
+    };
+
+
+
+    // ✅ "확인했어요!" 버튼 누르면 MongoDB 업데이트 실행
+    const handleConfirm = async () => {
+        setModalVisible(false); // ✅ 첫 번째 모달 닫기
+    
+        try {
+            await updateUserInfo(); // ✅ MongoDB 업데이트 실행
+        } catch (error) {
+            console.error("❌ 업데이트 중 오류 발생:", error);
         }
     };
 
-    const handleConfirm = () => {
-        setModalVisible(false);
 
-        console.log("🔹 navigation.navigate 실행 전!");
-        navigation.navigate('SignupComplete');
+
+
+    // ✅ 업데이트 완료 후 MyPageScreen으로 이동
+    const handleUpdateComplete = () => {
+        setUpdateCompleteModal(false);
+        
+        navigation.navigate("MyPageScreen", { updated: true });
     };
+
+
+
+
+
+
+
+
+
 
     return (
         <View style={styles.container}>
@@ -143,15 +209,36 @@ const NameAgeEdit = () => {
                         <Text style={styles.modalText}>성별: {selectedGender}</Text>
                         <View style={styles.modalButtonContainer}>
                             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalButton}>
-                                <Text style={styles.modalButtonText}>수정하기</Text>
+                                <Text style={styles.modalButtonText1}>수정하기</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={handleConfirm} style={[styles.modalButton, styles.confirmButton]}>
-                                <Text style={styles.modalButtonText}>확인했어요!</Text>
+                                <Text style={styles.modalButtonText2}>확인했어요!</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
                 </View>
             </Modal>
+
+
+
+
+            {/* ✅ 두 번째 모달: 업데이트 완료 안내 */}
+            <Modal visible={updateCompleteModal} transparent animationType="slide">
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>✅ 업데이트 완료!</Text>
+                        <Text style={styles.modalText}>정보가 저장되었습니다.</Text>
+                        <TouchableOpacity onPress={handleUpdateComplete} style={styles.modalButton2}>
+                            <Text style={styles.modalButtonText3}>마이페이지로 이동</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+
+
+
+
         </View>
     );
 };
@@ -277,41 +364,85 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 10,
-        width: '80%',
+        padding: 30,
+        borderRadius: 20, // ✅ 둥근 모서리
+        width: '85%', // ✅ 모달 크기 조정
         alignItems: 'center',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        elevation: 10, // ✅ Android 그림자 효과
     },
     modalTitle: {
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 15,
+        color:"#FBAF8B"
     },
     modalText: {
-        fontSize: 16,
-        marginBottom: 10,
+        fontSize: 16, // ✅ 가독성 향상
+        color: '#333',
+        textAlign: 'center',
+        marginBottom: 10, // ✅ 텍스트 간격 조정
     },
     modalButtonContainer: {
         flexDirection: 'row',
         marginTop: 20,
     },
+
+    //수정하기버튼
     modalButton: {
         flex: 1,
-        padding: 10,
+        padding: 15,
         alignItems: 'center',
         borderWidth: 1,
         borderColor: '#ccc',
-        borderRadius: 5,
+        borderRadius: 12,
         marginHorizontal: 5,
     },
+    //확인했어요 버튼
     confirmButton: {
-        backgroundColor: '#FBAF8B',
+        backgroundColor: '#FBAF8B', // ✅ 버튼 색상 변경
+        paddingVertical: 15, // ✅ 버튼 크기 증가
+        borderRadius: 12,
+        width: '80%', // ✅ 버튼 너비 증가 (가운데 정렬)
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#ccc',
     },
-    modalButtonText: {
+
+    //마이페이지로 이동 버튼
+    modalButton2: {
+        backgroundColor: "#FBAF8B", // ✅ 배경색 유지
+        paddingVertical: 10, // ✅ 버튼 높이 증가
+        borderRadius: 12, 
+        width: "80%", // ✅ 너비 조정 (더 커짐)
+        alignItems: "center",
+        justifyContent: "center", // ✅ 가운데 정렬 추가
+        marginTop: 20, // ✅ 버튼 간격 추가
+    },
+
+
+
+    modalButtonText1: {
         fontSize: 16,
+        color: 'black',
+    },
+    modalButtonText2: {
+        fontSize: 16,
+        color: 'white',
+    },
+    modalButtonText3: {
+        fontSize: 16,
+        color: 'white',
     },
 
-
+    confirmButtonText: {
+        fontSize: 16,
+        color: 'black',
+        fontWeight: 'bold',
+    },
 
 
 });

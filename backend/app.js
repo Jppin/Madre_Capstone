@@ -104,7 +104,7 @@ app.post("/login-user", async(req, res) => {
     }
 
     if (await bcrypt.compare(password, oldUser.password)) {
-        const token = jwt.sign({ email: oldUser.email }, JWT_SECRET, { expiresIn: "1h" });
+        const token = jwt.sign({ email: oldUser.email }, JWT_SECRET, { expiresIn: "3h" });
 
         return res.status(200).json({ status: "ok", token }); // ✅ token을 JSON 응답에 포함
     } else {
@@ -211,7 +211,35 @@ app.get("/user-full-data", async (req, res) => {
 });
 
 
+//마이페이지 이름성별나이 업뎃
+app.post("/update-user-info", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "인증 토큰이 필요합니다." });
+    }
 
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const { nickname, birthYear, gender } = req.body;
+
+    const user = await User.findOneAndUpdate(
+      { email: decoded.email },
+      { nickname, birthYear, gender },
+      { new: true } // 업데이트 후 변경된 데이터 반환
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "사용자 정보를 찾을 수 없습니다." });
+    }
+
+    res.status(200).json({ status: "ok", message: "사용자 정보 업데이트 완료" });
+  } catch (error) {
+    console.error("사용자 정보 업데이트 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+});
 
 
 
