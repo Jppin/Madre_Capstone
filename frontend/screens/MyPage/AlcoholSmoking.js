@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, response } from 'react-native';
 import Slider from '@react-native-community/slider';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Feather from "react-native-vector-icons/Feather";
 
@@ -84,7 +84,14 @@ const AlcoholSmoking = () => {
 
             // ✅ 성공 메시지 표시 후 MyPage로 이동
             Alert.alert("완료", "정보가 수정되었습니다.", [
-                { text: "확인", onPress: () => navigation.navigate("MyPageNavigator", { updated: true }) }
+                { text: "확인", onPress: () => {
+                                        navigation.dispatch(
+                                            CommonActions.reset({
+                                                index: 0,
+                                                routes: [{ name: "MainNavigator" }], // ✅ 탭 네비게이터를 완전히 초기화
+                                            })
+                                        );
+                                    }}
             ]);
         } else {
             console.error("❌ 사용자 정보 업데이트 실패:", result.message);
@@ -102,17 +109,17 @@ const AlcoholSmoking = () => {
         <View style={styles.container}>
             {/* 상단 뒤로 가기 버튼 */}
             <TouchableOpacity 
-                            onPress={() => {
-                                if (navigation.canGoBack()) {
-                                    navigation.goBack();  // ✅ 이전 화면이 있으면 뒤로 가기
-                                } else {
-                                    navigation.navigate("Login");  // ✅ 이전 화면이 없으면 Login 화면으로 이동
-                                }
-                            }} 
-                            style={styles.backButton}
-                        >
-                            <Feather name="chevron-left" size={28} color="#333" />
-                        </TouchableOpacity>
+                    onPress={() => {
+                        if (navigation.canGoBack()) {
+                             navigation.goBack();  // ✅ 이전 화면이 있으면 뒤로 가기
+                        } else {
+                            navigation.navigate("Login");  // ✅ 이전 화면이 없으면 Login 화면으로 이동
+                        }
+                    }} 
+                    style={styles.backButton}
+                >
+                <Feather name="chevron-left" size={28} color="#333" />
+            </TouchableOpacity>
 
             {/* 질문 및 입력 UI */}
             <View style={styles.content}>
@@ -178,18 +185,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingBottom: 30,
-    },
-    progressBarContainer: {
-        width: '100%',
-        height: 8,
-        backgroundColor: '#E0E0E0',
-        borderRadius: 4,
-        marginTop: 40,
-    },
-    progressBar: {
-        height: '100%',
-        backgroundColor: '#FBAF8B',
-        borderRadius: 4,
     },
     backButton: {
         position: 'absolute',
@@ -273,6 +268,7 @@ const styles = StyleSheet.create({
     confirmText: {
         color: 'white',
         fontSize: 16,
+        fontWeight: 'bold',
         
     },
     errorText: {
