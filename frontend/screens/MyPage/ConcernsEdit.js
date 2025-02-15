@@ -1,0 +1,202 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import LoadingScreen from '../../components/LoadingScreen'; // ✅ 로딩 스크린 추가
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Feather from "react-native-vector-icons/Feather";
+
+
+
+
+const HealthSurvey3 = () => {
+    const navigation = useNavigation();
+
+    // ✅ 상태 관리
+    const [selectedConcerns, setSelectedConcerns] = useState([]);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false); // ✅ 로딩 상태 추가
+
+    // ✅ 건강 고민 목록
+    const healthConcerns = [
+        "눈 건강", "체지방 개선", "피부건강", "피로감", "장 건강", "스트레스/수면",
+        "면역 기능", "운동능력/근육량", "소화 기능", "여성건강", "갱년기 여성건강", "전립선 건강",
+        "비뇨기능 개선", "노화/항산화", "치아/잇몸", "콜레스테롤 개선", "기억력 개선", "탈모/손톱건강",
+        "혈압 조절", "뼈 건강", "관절 건강", "간 건강", "갑상선 건강", "혈중 중성지방"
+    ];
+
+    // ✅ 선택 토글 함수
+    const toggleConcern = (concern) => {
+        setErrorMessage('');
+
+        setSelectedConcerns((prev) =>
+            prev.includes(concern)
+                ? prev.filter(item => item !== concern)
+                : [...prev, concern]
+        );
+    };
+
+    // ✅ 확인 버튼 클릭 시 처리
+    const handleNext = async () => {
+        if (selectedConcerns.length === 0) {
+            setErrorMessage('고민되는 건강 항목을 선택해주세요.');
+            return;
+        }
+    
+        try {
+            await AsyncStorage.setItem("user_concerns", JSON.stringify(selectedConcerns));
+            console.log("✅ HealthSurvey3 데이터 저장 완료!");
+    
+            navigation.navigate('InfoComplete');
+        } catch (error) {
+            console.error("❌ HealthSurvey3 데이터 저장 실패:", error);
+        }    
+
+        // ✅ 2초 후에 로딩 스크린에서 InfoComplete로 이동
+        setTimeout(() => {
+            setIsLoading(false);
+            navigation.navigate('InfoComplete', { selectedConcerns });
+        }, 2000);
+    };
+
+    // ✅ 로딩 중이면 로딩 화면 표시
+    if (isLoading) {
+        return <LoadingScreen />;
+    }
+
+
+
+
+
+
+    return (
+        <View style={styles.container}>
+            
+
+            {/* 상단 뒤로 가기 버튼 */}
+            <TouchableOpacity 
+                    onPress={() => {
+                        if (navigation.canGoBack()) {
+                                navigation.goBack();  // ✅ 이전 화면이 있으면 뒤로 가기
+                        } else {
+                            navigation.navigate("Login");  // ✅ 이전 화면이 없으면 Login 화면으로 이동
+                        }
+                    }} 
+                    style={styles.backButton}
+                >
+                <Feather name="chevron-left" size={28} color="#333" />
+            </TouchableOpacity>
+
+
+
+
+
+            {/* 질문 텍스트 */}
+            <Text style={styles.title}>{"고민되시거나 개선하고 싶으신\n건강 고민이 있으신가요?"}</Text>
+
+            <ScrollView contentContainerStyle={styles.concernContainer}>
+                {healthConcerns.map((concern, index) => (
+                    <TouchableOpacity
+                        key={index}
+                        style={[
+                            styles.concernButton,
+                            selectedConcerns.includes(concern) && styles.selectedButton
+                        ]}
+                        onPress={() => toggleConcern(concern)}
+                    >
+                        <Text
+                            style={[
+                                styles.concernText,
+                                selectedConcerns.includes(concern) && styles.selectedText
+                            ]}
+                        >
+                            {concern}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+
+            {/* 에러 메시지 */}
+            {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+
+            {/* 확인 버튼 */}
+            <TouchableOpacity style={styles.confirmButton} onPress={handleNext}>
+                <Text style={styles.confirmText}>확인</Text>
+            </TouchableOpacity>
+        </View>
+    );
+};
+
+// ✅ 스타일
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: 'white',
+        paddingHorizontal: 20,
+        paddingBottom: 30,
+        justifyContent: 'space-between',
+    },
+    backButton: {
+        position: 'absolute',
+        top: 50,
+        left: 10,
+        zIndex: 10,
+        padding: 10,
+    },
+    backText: {
+        fontSize: 24,
+        color: 'black',
+    },
+    title: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginTop: 110,
+        marginBottom: 20,
+    },
+    concernContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        paddingBottom: 30,
+    },
+    concernButton: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 20,
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        margin: 2,
+    },
+    concernText: {
+        fontSize: 14,
+        color: '#666',
+    },
+    selectedButton: {
+        backgroundColor: '#FBAF8B',
+        borderColor: '#FBAF8B',
+    },
+    selectedText: {
+        color: 'white',
+    },
+    errorText: {
+        color: 'red',
+        fontSize: 14,
+        textAlign: 'center',
+        marginVertical: 10,
+    },
+    confirmButton: {
+        backgroundColor: '#FBAF8B',
+        padding: 15,
+        borderRadius: 8,
+        alignItems: 'center',
+        alignSelf: 'stretch',
+        marginTop: 20,
+    },
+    confirmText: {
+        color: 'white',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+});
+
+export default HealthSurvey3;

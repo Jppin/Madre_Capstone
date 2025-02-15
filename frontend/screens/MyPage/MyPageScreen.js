@@ -17,6 +17,13 @@ const MyPageScreen = () => {
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true); // ✅ 로딩 상태 추가
 
+  //만성질환->해당사항이 없어요이면 숫자 0으로 뜨게
+  const conditionList = Array.isArray(userInfo?.conditions) ? userInfo.conditions : [];
+  const conditionCount = conditionList.length === 0 || conditionList.includes("해당 사항이 없어요") ? 0 : conditionList.length;
+
+
+
+
 
 
     // ✅ 사용자 정보 가져오기 함수
@@ -135,20 +142,31 @@ const MyPageScreen = () => {
 
 
 
+
+
+
         <View style={styles.infoRow}>
           <View style={styles.infoTextWrapper}>
             <Text style={styles.infoLabel}>만성질환 여부</Text>
-            <Text style={styles.infoCount}>{userInfo?.conditions?.length || 0}</Text>
+            <Text style={styles.infoCount}>{conditionCount}</Text>
           </View>
         </View>
 
         <View style={styles.infoDetailRow}>
-        <Text style={styles.infoDetail}>{userInfo?.conditions?.join(", ") || "해당사항없음"}</Text>
-        <TouchableOpacity>
-            <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon2} />
-          </TouchableOpacity>
-          </View>
-        <View style={styles.separator} />
+        <Text style={styles.infoDetail}>
+          {conditionList.length === 0 || conditionList.includes("해당 사항이 없어요") 
+            ? "해당사항없음" 
+            : conditionList.join(", ")}
+        </Text>
+        <TouchableOpacity onPress={() => navigation.navigate("ConditionsEdit")}>
+          <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon2} />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.separator} />
+
+
+
+
 
 
 
@@ -162,7 +180,7 @@ const MyPageScreen = () => {
 
         <View style={styles.infoDetailRow}>
         <Text style={styles.infoDetail}>{userInfo?.concerns?.join(", ") || "해당사항없음"}</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={()=> navigation.navigate("ConcernsEdit")}>
             <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon2} />
           </TouchableOpacity>
           </View>
@@ -172,7 +190,7 @@ const MyPageScreen = () => {
 
 
 
-        {/* 이 밑애는 나중에 약품컬렉션까지 만들면 수정할게여여 */}
+        {/* 이 밑애는 나중에 약품컬렉션까지 만들면 수정할게여 */}
 
         <View style={styles.infoRow}>
           <View style={styles.infoTextWrapper}>
