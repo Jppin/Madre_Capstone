@@ -1,6 +1,6 @@
 //MyPageScreen.js
 
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import React,{useEffect, useState} from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import { StyleSheet } from "react-native";
@@ -10,7 +10,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const MyPageScreen = () => {
   const navigation = useNavigation();
-
+  const route = useRoute(); // ✅ 네비게이션에서 받은 params 확인
 
 
   // ✅ 사용자 정보 상태 변수
@@ -53,11 +53,27 @@ const MyPageScreen = () => {
         setLoading(false); // ✅ 로딩 종료
       }
     };
-  
+
+   
     // ✅ 컴포넌트가 처음 렌더링될 때 사용자 정보 불러오기
     useEffect(() => {
       fetchUserInfo();
     }, []);
+
+
+    // ✅ MyPage가 다시 포커스될 때 최신 정보 가져오기
+    useEffect(() => {
+      if (route.params?.updated) {
+          fetchUserInfo(); // ✅ 업데이트 후 새로고침
+          navigation.setParams({ updated: false }); // ✅ params 초기화
+      }
+  }, [route.params?.updated]);
+
+  
+
+
+
+
   
     // ✅ 로딩 중이면 인디케이터 표시
     if (loading) {
