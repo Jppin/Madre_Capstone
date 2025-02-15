@@ -1,8 +1,80 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
+//MyPageScreen.js
+
+import { useNavigation } from "@react-navigation/native";
+import React,{useEffect, useState} from "react";
+import { View, Text, Image, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import { StyleSheet } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+
 
 const MyPageScreen = () => {
+  const navigation = useNavigation();
+
+
+
+  // ✅ 사용자 정보 상태 변수
+  const [userInfo, setUserInfo] = useState(null);
+  const [loading, setLoading] = useState(true); // ✅ 로딩 상태 추가
+
+
+
+    // ✅ 사용자 정보 가져오기 함수
+    const fetchUserInfo = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token"); // ✅ 토큰 가져오기
+        console.log("🟢 AsyncStorage에서 가져온 토큰:", token);
+        
+        if (!token) {
+          console.error("토큰 없음, 로그인 필요");
+          return;
+        }
+  
+        const response = await fetch("http://10.0.2.2:5001/user-full-data", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`, // ✅ 토큰 포함
+            "Content-Type": "application/json",
+          },
+        });
+  
+        const result = await response.json();
+        console.log("🟢 서버에서 받은 응답:", result.data);
+        
+        
+        if (result.status === "ok") {
+          setUserInfo(result.data); // ✅ 사용자 정보 저장
+        } else {
+          console.error("사용자 정보를 불러오지 못함:", result.message);
+        }
+      } catch (error) {
+        console.error("사용자 정보 요청 중 오류 발생:", error);
+      } finally {
+        setLoading(false); // ✅ 로딩 종료
+      }
+    };
+  
+    // ✅ 컴포넌트가 처음 렌더링될 때 사용자 정보 불러오기
+    useEffect(() => {
+      fetchUserInfo();
+    }, []);
+  
+    // ✅ 로딩 중이면 인디케이터 표시
+    if (loading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0090FF" />
+        </View>
+      );
+    }
+
+
+
+
+
+
+
+
   return (
     <ScrollView style={styles.container}>
       {/* 페이지 제목 */}
@@ -22,12 +94,12 @@ const MyPageScreen = () => {
         </View>
         <View style={styles.profileTextContainer}>
           <View style={styles.profileRow}>
-            <Text style={styles.username}>띵똥땅</Text>
-            <TouchableOpacity>
+            <Text style={styles.username}>{userInfo?.nickname || "사용자"}</Text>
+            <TouchableOpacity onPress={()=> navigation.navigate("NameAgeEdit")}>
               <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.userInfo}>24세 / 여성</Text>
+          <Text style={styles.userInfo}>태어난 연도 : {userInfo?.birthYear || "모름"} / 성별 : {userInfo?.gender || "모름"}</Text>
         </View>
       </View>
 
@@ -40,13 +112,12 @@ const MyPageScreen = () => {
       <View style={styles.infoContainer}>
         <View style={styles.infoRow}>
           <View style={styles.infoTextWrapper}>
-            <Text style={styles.infoLabel}>현재 건강 상태</Text>
-            <Text style={styles.infoCount}>0</Text>
+            <Text style={styles.infoLabel}>현재 건강 습관</Text>
           </View>
         </View>
         
         <View style={styles.infoDetailRow}>
-        <Text style={styles.infoDetail}>해당사항없음</Text>
+        <Text style={styles.infoDetail}>음주 : 주 {userInfo?.alcohol}회, 흡연 여부 : {userInfo?.smoking}, 임신 관련 : {userInfo?.pregnancy} </Text>
         <TouchableOpacity>
             <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon2} />
           </TouchableOpacity>
@@ -57,13 +128,13 @@ const MyPageScreen = () => {
 
         <View style={styles.infoRow}>
           <View style={styles.infoTextWrapper}>
-            <Text style={styles.infoLabel}>만성질환</Text>
-            <Text style={styles.infoCount}>1</Text>
+            <Text style={styles.infoLabel}>만성질환 여부</Text>
+            <Text style={styles.infoCount}>{userInfo?.conditions?.length || 0}</Text>
           </View>
         </View>
 
         <View style={styles.infoDetailRow}>
-        <Text style={styles.infoDetail}>비만</Text>
+        <Text style={styles.infoDetail}>{userInfo?.conditions?.join(", ") || "해당사항없음"}</Text>
         <TouchableOpacity>
             <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon2} />
           </TouchableOpacity>
@@ -76,12 +147,12 @@ const MyPageScreen = () => {
         <View style={styles.infoRow}>
           <View style={styles.infoTextWrapper}>
             <Text style={styles.infoLabel}>건강고민</Text>
-            <Text style={styles.infoCount}>7</Text>
+            <Text style={styles.infoCount}>{userInfo?.concerns?.length || 0}</Text>
           </View>
         </View>
 
         <View style={styles.infoDetailRow}>
-        <Text style={styles.infoDetail}>눈건강, 장건강, 체지방 개선, 피부건강...</Text>
+        <Text style={styles.infoDetail}>{userInfo?.concerns?.join(", ") || "해당사항없음"}</Text>
         <TouchableOpacity>
             <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon2} />
           </TouchableOpacity>
@@ -90,6 +161,9 @@ const MyPageScreen = () => {
 
 
 
+
+
+        {/* 이 밑애는 나중에 약품컬렉션까지 만들면 수정할게여여 */}
 
         <View style={styles.infoRow}>
           <View style={styles.infoTextWrapper}>
@@ -106,6 +180,15 @@ const MyPageScreen = () => {
           </View>
       </View>
       <View style={styles.separator} />
+
+
+
+
+
+
+
+
+
 
       {/* 설정 메뉴 */}
       <View style={styles.menuContainer}>
@@ -157,17 +240,30 @@ const styles = StyleSheet.create({
   
   
   
-  editIcon2: { width: 20, height: 20, marginLeft: 10,},
+  editIcon2: {
+    width: 20,
+    height: 20,
+    marginLeft: 10,
+    alignSelf: "center", // ✅ 아이콘을 텍스트 높이에 맞춰 정렬
+  },
   infoContainer: { padding: 25, backgroundColor: "#F7F7F7", borderRadius: 10, margin: 10, borderWidth: 1, borderColor: "lightgrey" },
   infoLabel: { fontSize: 16, fontWeight: "bold", marginBottom:2, marginTop:10 },
   infoCount: { fontSize: 14, fontWeight: "bold", color: "red", marginBottom:2, marginTop:10, marginLeft:10 },
-  infoDetail: { fontSize: 14, color: "#555", marginTop: 5 },
+  infoDetail: {
+    fontSize: 14,
+    color: "#555",
+    flexShrink: 1, // ✅ 줄바꿈 허용
+    flexWrap: "wrap", // ✅ 긴 텍스트가 자동 줄바꿈됨
+    maxWidth: "85%", // ✅ 아이콘을 위한 공간 확보 (아이콘이 밀려나지 않도록)
+  },
   infoRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   infoTextWrapper: { flexDirection: "row", alignItems: "center", flexShrink: 1 },
   infoDetailRow: {
     flexDirection: "row",
+    alignItems: "flex-start", // ✅ 텍스트가 여러 줄일 때, 위쪽 정렬 유지
     alignItems: "center",
     justifyContent: "space-between",
+    flexWrap: "wrap", // ✅ 긴 텍스트가 자동으로 줄바꿈됨
     marginTop: 5,
   },
   

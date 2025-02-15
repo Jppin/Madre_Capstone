@@ -9,7 +9,8 @@ import HomeScreen from '../screens/HomeScreen';
 import MedicineNavigator from "./MedicineNavigator";
 import NutritionScreen from '../screens/NutritionScreen';
 import YoutubeScreen from '../screens/YoutubeScreen';
-import MyPageScreen from '../screens/MyPage/MyPageScreen';
+import MyPageNavigator from "./MyPageNavigator";;
+
 
 const Tab = createBottomTabNavigator();
 
@@ -86,7 +87,7 @@ const TabNavigator = () => {
       <Tab.Screen name="Nutrition" component={NutritionScreen} options={{ tabBarLabel: '성분 추천 내역' }} />
       <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: '케어 센터' }} />
       <Tab.Screen name="Youtube" component={YoutubeScreen} options={{ tabBarLabel: '건강 쇼츠' }} />
-      <Tab.Screen name="MyPage" component={MyPageScreen} options={{ tabBarLabel: '마이페이지' }} />
+      <Tab.Screen name="MyPage" component={MyPageNavigator} options={{ tabBarLabel: '마이페이지' }} />
     </Tab.Navigator>
   );
 };
