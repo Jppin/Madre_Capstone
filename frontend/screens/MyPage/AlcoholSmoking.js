@@ -5,6 +5,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, response } from 'react
 import Slider from '@react-native-community/slider';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Feather from "react-native-vector-icons/Feather";
 
 const AlcoholSmoking = () => {
     const navigation = useNavigation();
@@ -100,9 +101,18 @@ const AlcoholSmoking = () => {
     return (
         <View style={styles.container}>
             {/* 상단 뒤로 가기 버튼 */}
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                <Text style={styles.backText}>←</Text>
-            </TouchableOpacity>
+            <TouchableOpacity 
+                            onPress={() => {
+                                if (navigation.canGoBack()) {
+                                    navigation.goBack();  // ✅ 이전 화면이 있으면 뒤로 가기
+                                } else {
+                                    navigation.navigate("Login");  // ✅ 이전 화면이 없으면 Login 화면으로 이동
+                                }
+                            }} 
+                            style={styles.backButton}
+                        >
+                            <Feather name="chevron-left" size={28} color="#333" />
+                        </TouchableOpacity>
 
             {/* 질문 및 입력 UI */}
             <View style={styles.content}>
