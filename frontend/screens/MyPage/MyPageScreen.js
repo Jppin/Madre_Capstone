@@ -84,9 +84,6 @@ const MyPageScreen = () => {
 
 
 
-
-
-
   return (
     <ScrollView style={styles.container}>
       {/* 페이지 제목 */}
@@ -130,7 +127,7 @@ const MyPageScreen = () => {
         
         <View style={styles.infoDetailRow}>
         <Text style={styles.infoDetail}>음주 : 주 {userInfo?.alcohol}회, 흡연 여부 : {userInfo?.smoking}, 임신 관련 : {userInfo?.pregnancy} </Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={()=> navigation.navigate("AlcoholSmoking")}>
             <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon2} />
           </TouchableOpacity>
           </View>
