@@ -8,9 +8,10 @@ import CameraScreen from '../screens/MedicineScreens/CameraScreen';
 import GalleryScreen from '../screens/MedicineScreens/GalleryScreen';
 import ManualEntryScreen from '../screens/MedicineScreens/ManualEntryScreen';
 import MedicineDetailScreen from "../screens/MedicineScreens/MedicineDetailScreen";
-import MyPageNavigator from "./MyPageNavigator";
 import NameAgeEdit from "../screens/MyPage/NameAgeEdit";
 import AlcoholSmoking from "../screens/MyPage/AlcoholSmoking"
+import ConditionsEdit from '../screens/MyPage/ConditionsEdit';
+import ConcernsEdit from '../screens/MyPage/ConcernsEdit';
 
 
 const Stack = createStackNavigator();
@@ -25,10 +26,13 @@ export default function MainNavigator() {
             <Stack.Screen name="CameraScreen" component={CameraScreen} />
             <Stack.Screen name="GalleryScreen" component={GalleryScreen} />
             <Stack.Screen name="ManualEntryScreen" component={ManualEntryScreen} />
-            <Stack.Screen name="MedicineDetailScreen" component={MedicineDetailScreen} options={{ tabBarStyle: { display: 'none' } }}/>
-            <Stack.Screen name="MyPageNavigator" component={MyPageNavigator} /> 
+            <Stack.Screen name="MedicineDetailScreen" component={MedicineDetailScreen} options={{ tabBarStyle: { display: 'none' } }}/> 
             <Stack.Screen name="NameAgeEdit" component={NameAgeEdit} />
             <Stack.Screen name="AlcoholSmoking" component={AlcoholSmoking} />
+            <Stack.Screen name="ConditionsEdit" component={ConditionsEdit} />
+            <Stack.Screen name="ConcernsEdit" component={ConcernsEdit}/>
+        
+        
         </Stack.Navigator>
     );
 }
