@@ -1,6 +1,6 @@
 //MyPageScreen.js
 
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import React,{useEffect, useState} from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import { StyleSheet } from "react-native";
@@ -62,10 +62,14 @@ const MyPageScreen = () => {
     };
 
    
-    // ✅ 컴포넌트가 처음 렌더링될 때 사용자 정보 불러오기
-    useEffect(() => {
-      fetchUserInfo();
-    }, []);
+  
+    useFocusEffect(
+      React.useCallback(() => {
+        fetchUserInfo(); // ✅ 마이페이지 방문할 때마다 사용자 정보 최신화
+      }, [])
+    );
+
+
 
 
     // ✅ MyPage가 다시 포커스될 때 최신 정보 가져오기

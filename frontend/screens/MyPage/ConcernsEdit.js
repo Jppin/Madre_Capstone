@@ -1,20 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import LoadingScreen from '../../components/LoadingScreen'; // ✅ 로딩 스크린 추가
+//ConcernsEdit.js
+
+
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Feather from "react-native-vector-icons/Feather";
+import CustomSpinner from '../../components/CustomSpinner';
 
 
 
 
-const HealthSurvey3 = () => {
+
+
+
+const ConcernsEdit = () => {
     const navigation = useNavigation();
 
     // ✅ 상태 관리
     const [selectedConcerns, setSelectedConcerns] = useState([]);
     const [errorMessage, setErrorMessage] = useState('');
-    const [isLoading, setIsLoading] = useState(false); // ✅ 로딩 상태 추가
+    const [loading, setLoading] = useState(false);
+    
+
 
     // ✅ 건강 고민 목록
     const healthConcerns = [
@@ -35,33 +43,72 @@ const HealthSurvey3 = () => {
         );
     };
 
-    // ✅ 확인 버튼 클릭 시 처리
-    const handleNext = async () => {
+
+
+
+    if (loading) {
+        return <CustomSpinner />;
+      }
+
+
+    // ✅ MongoDB 업데이트 함수
+    const updateUserInfo = async () => {
         if (selectedConcerns.length === 0) {
             setErrorMessage('고민되는 건강 항목을 선택해주세요.');
             return;
         }
-    
-        try {
-            await AsyncStorage.setItem("user_concerns", JSON.stringify(selectedConcerns));
-            console.log("✅ HealthSurvey3 데이터 저장 완료!");
-    
-            navigation.navigate('InfoComplete');
-        } catch (error) {
-            console.error("❌ HealthSurvey3 데이터 저장 실패:", error);
-        }    
 
-        // ✅ 2초 후에 로딩 스크린에서 InfoComplete로 이동
-        setTimeout(() => {
-            setIsLoading(false);
-            navigation.navigate('InfoComplete', { selectedConcerns });
-        }, 2000);
+        setLoading(true);
+
+        try {
+            const token = await AsyncStorage.getItem("token");
+            if (!token) {
+                Alert.alert("오류", "로그인이 필요합니다.");
+                return;
+            }
+
+            const response = await fetch("http://10.0.2.2:5001/update-user-concerns", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ concerns: selectedConcerns }),
+            });
+
+            const result = await response.json();
+            console.log("🟢 서버 응답:", result);
+
+            if (result.status === "ok") {
+                console.log("✅ 건강 고민 업데이트 성공!");
+                // ✅ 업데이트 성공 시 AsyncStorage에도 반영
+                await AsyncStorage.setItem("user_concerns", JSON.stringify(selectedConcerns));
+
+                Alert.alert("완료", "정보가 수정되었습니다.", [
+                    { text: "확인", onPress: () => {
+                                            navigation.dispatch(
+                                                CommonActions.reset({
+                                                    index: 0,
+                                                    routes: [{ name: "MainNavigator" }], // ✅ 탭 네비게이터를 완전히 초기화
+                                                })
+                                            );
+                                        }}
+                ]);
+            } else {
+                console.error("❌ 건강 고민 업데이트 실패:", result.message);
+                Alert.alert("오류", "정보 수정에 실패했습니다.");
+                setLoading(false);
+            }
+        } catch (error) {
+            console.error("❌ 건강 고민 업데이트 중 오류 발생:", error);
+            Alert.alert("오류", "네트워크 오류가 발생했습니다.");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    // ✅ 로딩 중이면 로딩 화면 표시
-    if (isLoading) {
-        return <LoadingScreen />;
-    }
+
+
 
 
 
@@ -74,15 +121,9 @@ const HealthSurvey3 = () => {
 
             {/* 상단 뒤로 가기 버튼 */}
             <TouchableOpacity 
-                    onPress={() => {
-                        if (navigation.canGoBack()) {
-                                navigation.goBack();  // ✅ 이전 화면이 있으면 뒤로 가기
-                        } else {
-                            navigation.navigate("Login");  // ✅ 이전 화면이 없으면 Login 화면으로 이동
-                        }
-                    }} 
-                    style={styles.backButton}
-                >
+                onPress={() => navigation.goBack()} 
+                style={styles.backButton}
+            >
                 <Feather name="chevron-left" size={28} color="#333" />
             </TouchableOpacity>
 
@@ -119,8 +160,8 @@ const HealthSurvey3 = () => {
             {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 
             {/* 확인 버튼 */}
-            <TouchableOpacity style={styles.confirmButton} onPress={handleNext}>
-                <Text style={styles.confirmText}>확인</Text>
+            <TouchableOpacity style={styles.confirmButton} onPress={updateUserInfo}>
+                <Text style={styles.confirmText}>정보 수정 완료하기</Text>
             </TouchableOpacity>
         </View>
     );
@@ -199,4 +240,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default HealthSurvey3;
+export default ConcernsEdit;

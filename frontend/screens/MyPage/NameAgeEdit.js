@@ -65,7 +65,8 @@ const NameAgeEdit = () => {
                         navigation.dispatch(
                             CommonActions.reset({
                                 index: 0,
-                                routes: [{ name: "MainNavigator" }], // ✅ 탭 네비게이터를 완전히 초기화
+                                routes: [{ name: "MainNavigator" }, 
+                                ], // ✅ 탭 네비게이터를 완전히 초기화
                             })
                         );
                     }}
