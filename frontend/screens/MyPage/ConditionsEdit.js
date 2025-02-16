@@ -45,7 +45,7 @@ const ConditionsEdit = () => {
         }
     };
 
-    // ✅ 확인 버튼 클릭 시, 선택 여부 검사 → HealthSurvey3으로 이동
+    
     const handleNext = async () => {
         if (selectedConditions.length === 0) {
             setErrorMessage('질문에 답해주세요.');

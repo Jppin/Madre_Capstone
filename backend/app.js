@@ -1,4 +1,4 @@
-//App.js
+//app.js(backend)
 
 const express = require("express");
 const app = express();
@@ -316,6 +316,46 @@ app.post("/update-conditions", async (req, res) => {
     res.status(500).json({ message: "서버 오류 발생" });
   }
 });
+
+
+
+// 마이페이지용 건강고민 업데이트 API
+app.post("/update-user-concerns", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "인증 토큰이 필요합니다." });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const { concerns } = req.body;
+
+    if (!Array.isArray(concerns)) {
+      return res.status(400).json({ status: "error", message: "concerns는 배열이어야 합니다." });
+    }
+
+    // ✅ `findOneAndUpdate`를 사용하여 데이터 업데이트
+    const user = await User.findOneAndUpdate(
+      { email: decoded.email }, 
+      { $set: { concerns } },
+      { new: true } // 업데이트 후 변경된 데이터 반환
+    );
+
+    if (!user) {
+      return res.status(404).json({ status: "error", message: "사용자를 찾을 수 없습니다." });
+    }
+
+    res.json({ status: "ok", message: "건강 고민 업데이트 완료" });
+  } catch (error) {
+    console.error("❌ 건강 고민 업데이트 오류:", error);
+    res.status(500).json({ status: "error", message: "서버 오류 발생" });
+  }
+});
+
+
+
 
 
 
