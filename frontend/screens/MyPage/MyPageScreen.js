@@ -1,6 +1,6 @@
 //MyPageScreen.js
 
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import React,{useEffect, useState} from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import { StyleSheet } from "react-native";
@@ -16,6 +16,13 @@ const MyPageScreen = () => {
   // ✅ 사용자 정보 상태 변수
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true); // ✅ 로딩 상태 추가
+
+  //만성질환->해당사항이 없어요이면 숫자 0으로 뜨게
+  const conditionList = Array.isArray(userInfo?.conditions) ? userInfo.conditions : [];
+  const conditionCount = conditionList.length === 0 || conditionList.includes("해당 사항이 없어요") ? 0 : conditionList.length;
+
+
+
 
 
 
@@ -55,10 +62,14 @@ const MyPageScreen = () => {
     };
 
    
-    // ✅ 컴포넌트가 처음 렌더링될 때 사용자 정보 불러오기
-    useEffect(() => {
-      fetchUserInfo();
-    }, []);
+  
+    useFocusEffect(
+      React.useCallback(() => {
+        fetchUserInfo(); // ✅ 마이페이지 방문할 때마다 사용자 정보 최신화
+      }, [])
+    );
+
+
 
 
     // ✅ MyPage가 다시 포커스될 때 최신 정보 가져오기
@@ -135,20 +146,31 @@ const MyPageScreen = () => {
 
 
 
+
+
+
         <View style={styles.infoRow}>
           <View style={styles.infoTextWrapper}>
             <Text style={styles.infoLabel}>만성질환 여부</Text>
-            <Text style={styles.infoCount}>{userInfo?.conditions?.length || 0}</Text>
+            <Text style={styles.infoCount}>{conditionCount}</Text>
           </View>
         </View>
 
         <View style={styles.infoDetailRow}>
-        <Text style={styles.infoDetail}>{userInfo?.conditions?.join(", ") || "해당사항없음"}</Text>
-        <TouchableOpacity>
-            <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon2} />
-          </TouchableOpacity>
-          </View>
-        <View style={styles.separator} />
+        <Text style={styles.infoDetail}>
+          {conditionList.length === 0 || conditionList.includes("해당 사항이 없어요") 
+            ? "해당사항없음" 
+            : conditionList.join(", ")}
+        </Text>
+        <TouchableOpacity onPress={() => navigation.navigate("ConditionsEdit")}>
+          <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon2} />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.separator} />
+
+
+
+
 
 
 
@@ -162,7 +184,7 @@ const MyPageScreen = () => {
 
         <View style={styles.infoDetailRow}>
         <Text style={styles.infoDetail}>{userInfo?.concerns?.join(", ") || "해당사항없음"}</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={()=> navigation.navigate("ConcernsEdit")}>
             <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon2} />
           </TouchableOpacity>
           </View>
@@ -172,7 +194,7 @@ const MyPageScreen = () => {
 
 
 
-        {/* 이 밑애는 나중에 약품컬렉션까지 만들면 수정할게여여 */}
+        {/* 이 밑애는 나중에 약품컬렉션까지 만들면 수정할게여 */}
 
         <View style={styles.infoRow}>
           <View style={styles.infoTextWrapper}>
