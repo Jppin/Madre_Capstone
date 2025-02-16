@@ -61,16 +61,13 @@ const NameAgeEdit = () => {
     
                 // ✅ 모달 제거하고 Alert로 메시지 띄운 후 MyPage로 이동
                 Alert.alert("완료", "정보가 수정되었습니다.", [
-                    { text: "확인", onPress: () => {
-                        navigation.dispatch(
-                            CommonActions.reset({
-                                index: 0,
-                                routes: [{ name: "MainNavigator" }, 
-                                ], // ✅ 탭 네비게이터를 완전히 초기화
-                            })
-                        );
-                    }}
-                ]);
+                    { 
+                      text: "확인", 
+                      onPress: () => {
+                        navigation.navigate("MainTabs", { screen: "MyPage" }); // ✅ 정확한 경로로 이동
+                      }
+                    }
+                  ]);
             } else {
                 console.error("❌ 사용자 정보 업데이트 실패:", result.message);
                 Alert.alert("오류", "정보 수정에 실패했습니다.");

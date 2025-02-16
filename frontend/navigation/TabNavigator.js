@@ -2,14 +2,14 @@
 
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import HomeScreen from '../screens/HomeScreen';
 import MedicineNavigator from "./MedicineNavigator";
 import NutritionScreen from '../screens/NutritionScreen';
 import YoutubeScreen from '../screens/YoutubeScreen';
-import MyPageScreen from "../screens/MyPage/MyPageScreen";;
+import MyPageScreen from "../screens/MyPage/MyPageScreen";
 
 
 const Tab = createBottomTabNavigator();
