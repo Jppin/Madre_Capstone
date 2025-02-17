@@ -8,6 +8,7 @@ import CameraScreen from '../screens/MedicineScreens/CameraScreen';
 import GalleryScreen from '../screens/MedicineScreens/GalleryScreen';
 import ManualEntryScreen from '../screens/MedicineScreens/ManualEntryScreen';
 import MedicineDetailScreen from "../screens/MedicineScreens/MedicineDetailScreen";
+import NameAgeEdit from '../screens/MyPage/NameAgeEdit';
 import AlcoholSmoking from "../screens/MyPage/AlcoholSmoking";
 import ConditionsEdit from '../screens/MyPage/ConditionsEdit';
 import ConcernsEdit from '../screens/MyPage/ConcernsEdit';
