@@ -3,6 +3,7 @@
 
 import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
+import TabNavigator from './TabNavigator';
 import CameraScreen from '../screens/MedicineScreens/CameraScreen';
 import GalleryScreen from '../screens/MedicineScreens/GalleryScreen';
 import ManualEntryScreen from '../screens/MedicineScreens/ManualEntryScreen';
