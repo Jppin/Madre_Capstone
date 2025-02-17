@@ -127,7 +127,7 @@ app.post("/login-user", async(req, res) => {
     }
 
     if (await bcrypt.compare(password, oldUser.password)) {
-        const token = jwt.sign({ email: oldUser.email }, JWT_SECRET, { expiresIn: "3h" });
+        const token = jwt.sign({ email: oldUser.email }, JWT_SECRET, { expiresIn: "24h" });
 
         return res.status(200).json({ status: "ok", token }); // ✅ token을 JSON 응답에 포함
     } else {
@@ -386,8 +386,17 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+
+
+
+
 app.post("/upload-profile", upload.single("image"), async (req, res) => {
   console.log("업로드된 파일:", req.file); // 추가: 파일이 제대로 수신됐는지 확인
+  
+  if (!req.file) {
+    return res.status(400).json({ status: "error", message: "파일이 업로드되지 않았습니다." });
+  }
+  
   try {
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -403,7 +412,7 @@ app.post("/upload-profile", upload.single("image"), async (req, res) => {
       }
 
       // ✅ 업로드된 이미지 경로를 MongoDB에 저장
-      user.profileImage = `http://10.0.2.2:5001/uploads/${req.file.filename}`;
+      const fullUrl = `http://10.0.2.2:5001/uploads/${req.file.filename}`;
       user.profileImage = fullUrl;
       await user.save();
 
@@ -416,6 +425,46 @@ app.post("/upload-profile", upload.single("image"), async (req, res) => {
 
 // ✅ 서버에서 프로필 이미지 제공
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+
+
+
+
+
+
+
+
+// ✅ 기본 프로필 이미지로 변경하는 API
+app.post("/reset-profile", async (req, res) => {
+  try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+          return res.status(401).json({ status: "error", message: "인증 토큰이 필요합니다." });
+      }
+
+      const token = authHeader.split(" ")[1];
+      const decoded = jwt.verify(token, JWT_SECRET);
+      
+      // ✅ 해당 사용자의 프로필 이미지를 기본값으로 변경 (MongoDB에서 profileImage 필드 삭제)
+      const user = await User.findOneAndUpdate(
+          { email: decoded.email },
+          { $unset: { profileImage: "" } }, // ✅ `profileImage` 필드 삭제
+          { new: true }
+      );
+
+      if (!user) {
+          return res.status(404).json({ status: "error", message: "사용자를 찾을 수 없습니다." });
+      }
+
+      res.status(200).json({ status: "ok", message: "기본 프로필 이미지로 변경되었습니다." });
+  } catch (error) {
+      console.error("❌ 기본 프로필 이미지 변경 오류:", error);
+      res.status(500).json({ status: "error", message: "서버 오류 발생" });
+  }
+});
+
+
+
 
 
 
