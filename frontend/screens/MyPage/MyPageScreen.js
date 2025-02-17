@@ -2,10 +2,11 @@
 
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import React,{useEffect, useState} from "react";
-import { View, Text, Image, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
+import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
 import { StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomSpinner from "../../components/CustomSpinner";
+
 
 
 const MyPageScreen = () => {
@@ -16,6 +17,70 @@ const MyPageScreen = () => {
   // ✅ 사용자 정보 상태 변수
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true); // ✅ 로딩 상태 추가
+  const [profileImage, setProfileImage] = useState(null);
+
+
+
+
+
+
+   // ✅ 프로필 이미지 불러오기 함수
+   const loadProfileImage = async () => {
+    try {
+        const token = await AsyncStorage.getItem("token");
+        const response = await fetch("http://10.0.2.2:5001/user-full-data", {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${token}` },
+        });
+
+        const result = await response.json();
+        if (result.status === "ok" && result.data.profileImage) {
+            setProfileImage(result.data.profileImage);
+        }
+    } catch (error) {
+        console.error("❌ 프로필 이미지 로드 오류:", error);
+    }
+};
+
+
+
+
+
+
+    // ✅ 마이페이지에 들어올 때마다 최신 프로필 이미지 가져오기
+    useFocusEffect(
+      React.useCallback(() => {
+        fetchUserInfo(); // ✅ 마이페이지 방문할 때마다 사용자 정보 최신화
+          loadProfileImage(); // ✅ 저장된 프로필 이미지 불러오기
+      }, [])
+  );
+
+ 
+ 
+
+
+
+
+    
+
+// ✅ AsyncStorage에서 프로필 사진 불러오기
+useEffect(() => {
+  const loadProfileImage = async () => {
+    const savedImage = await AsyncStorage.getItem('profileImage');
+    if (savedImage) {
+      setProfileImage({ uri: savedImage });
+    }
+  };
+
+  loadProfileImage();
+}, []);
+
+
+
+
+
+
+
 
   //만성질환->해당사항이 없어요이면 숫자 0으로 뜨게
   const conditionList = Array.isArray(userInfo?.conditions) ? userInfo.conditions : [];
@@ -61,26 +126,10 @@ const MyPageScreen = () => {
       }
     };
 
-   
   
-    useFocusEffect(
-      React.useCallback(() => {
-        fetchUserInfo(); // ✅ 마이페이지 방문할 때마다 사용자 정보 최신화
-      }, [])
-    );
 
 
 
-
-    // ✅ MyPage가 다시 포커스될 때 최신 정보 가져오기
-    useEffect(() => {
-      if (route.params?.updated) {
-          fetchUserInfo(); // ✅ 업데이트 후 새로고침
-          navigation.setParams({ updated: false }); // ✅ params 초기화
-      }
-  }, [route.params?.updated]);
-
-  
 
 
 
@@ -104,11 +153,12 @@ const MyPageScreen = () => {
       {/* 프로필 영역 */}
       <View style={styles.profileContainer}>
         <View style={styles.profileImageWrapper}>
-          <Image
-            source={require("../../assets/icons/capybara1.png")}
-            style={styles.profileImage}
-          />
-          <TouchableOpacity style={styles.cameraButton}>
+        <Image
+          source={profileImage ? profileImage : require('../../assets/icons/capybara1.png')}
+          style={styles.profileImage}
+        />
+
+          <TouchableOpacity style={styles.cameraButton} onPress={()=> navigation.navigate("ProfilepicEdit", { currentProfileImage: profileImage})}>
             <Image source={require("../../assets/icons/camera.png")} style={styles.cameraIcon} />
           </TouchableOpacity>
         </View>
@@ -223,32 +273,28 @@ const MyPageScreen = () => {
 
       {/* 설정 메뉴 */}
       <View style={styles.menuContainer}>
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={()=>navigation.navigate("Settings1")}>
           <Image source={require("../../assets/icons/settings.png")} style={styles.menuIcon} />
           <Text style={styles.menuText}>내 계정 관리</Text>
           <Image source={require("../../assets/icons/rightarrow.png")} style={styles.arrowIcon} />
         </TouchableOpacity>
         <View style={styles.separator} />
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={()=>navigation.navigate("Settings2")}>
           <Image source={require("../../assets/icons/paper.png")} style={styles.menuIcon} />
           <Text style={styles.menuText}>서비스 이용약관</Text>
           <Image source={require("../../assets/icons/rightarrow.png")} style={styles.arrowIcon} />
         </TouchableOpacity>
         <View style={styles.separator} />
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={()=>navigation.navigate("Settings3")}>
           <Image source={require("../../assets/icons/privacy.png")} style={styles.menuIcon} />
           <Text style={styles.menuText}>개인정보 처리 방침</Text>
           <Image source={require("../../assets/icons/rightarrow.png")} style={styles.arrowIcon} />
         </TouchableOpacity>
         <View style={styles.separator} />
 
-        <TouchableOpacity style={styles.menuItem}>
-          <Image source={require("../../assets/icons/bell.png")} style={styles.menuIcon} />
-          <Text style={styles.menuText}>알림 설정</Text>
-          <Image source={require("../../assets/icons/rightarrow.png")} style={styles.arrowIcon} />
-        </TouchableOpacity>
+        
       </View>
     </ScrollView>
   );
