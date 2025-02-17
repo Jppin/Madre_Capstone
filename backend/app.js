@@ -1,5 +1,8 @@
 //app.js(backend)
 
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 const express = require("express");
 const app = express();
 app.use(express.json());
@@ -137,7 +140,9 @@ app.post("/login-user", async(req, res) => {
 
 
 
-// ✅ 사용자 데이터 가져오기 엔드포인트 (토큰 헤더 방식 적용) - 이멜만 가져옴옴
+
+
+// ✅ 로그인용 사용자 데이터 가져오기 엔드포인트 (토큰 헤더 방식 적용) - 이멜만 가져옴옴
 app.get("/userdata", async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -232,7 +237,8 @@ app.get("/user-full-data", async (req, res) => {
         smoking: user.smoking,
         pregnancy: user.pregnancy,
         conditions: user.conditions,
-        concerns: user.concerns
+        concerns: user.concerns,
+        profileImage: user.profileImage 
       } 
     });
   } catch (error) {
@@ -319,6 +325,11 @@ app.post("/update-conditions", async (req, res) => {
 
 
 
+
+
+
+
+
 // 마이페이지용 건강고민 업데이트 API
 app.post("/update-user-concerns", async (req, res) => {
   try {
@@ -355,6 +366,56 @@ app.post("/update-user-concerns", async (req, res) => {
 });
 
 
+
+
+
+
+
+
+// ✅ 이미지 저장 폴더 설정
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+      const uploadDir = path.join(__dirname, "uploads");
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+      cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+      cb(null, `${Date.now()}_${file.originalname}`);
+  }
+});
+
+const upload = multer({ storage });
+
+app.post("/upload-profile", upload.single("image"), async (req, res) => {
+  console.log("업로드된 파일:", req.file); // 추가: 파일이 제대로 수신됐는지 확인
+  try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+          return res.status(401).json({ message: "인증 토큰이 필요합니다." });
+      }
+
+      const token = authHeader.split(" ")[1];
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const user = await User.findOne({ email: decoded.email });
+
+      if (!user) {
+          return res.status(404).json({ message: "사용자 정보를 찾을 수 없습니다." });
+      }
+
+      // ✅ 업로드된 이미지 경로를 MongoDB에 저장
+      user.profileImage = `http://10.0.2.2:5001/uploads/${req.file.filename}`;
+      user.profileImage = fullUrl;
+      await user.save();
+
+      res.json({ status: "ok", message: "프로필 사진 업데이트 완료", profileImage: user.profileImage });
+  } catch (error) {
+      console.error("❌ 프로필 업로드 오류:", error);
+      res.status(500).json({ message: "서버 오류 발생" });
+  }
+});
+
+// ✅ 서버에서 프로필 이미지 제공
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 
 
