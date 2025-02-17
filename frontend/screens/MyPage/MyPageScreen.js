@@ -35,7 +35,7 @@ const MyPageScreen = () => {
 
         const result = await response.json();
         if (result.status === "ok" && result.data.profileImage) {
-            setProfileImage(result.data.profileImage);
+          setProfileImage({ uri: result.data.profileImage });
         }
     } catch (error) {
         console.error("❌ 프로필 이미지 로드 오류:", error);
@@ -145,16 +145,20 @@ useEffect(() => {
 
 
   return (
-    <ScrollView style={styles.container}>
-      {/* 페이지 제목 */}
-      <Text style={styles.pageTitle}>마이페이지</Text>
-      <View style={styles.separator} />
+    <ScrollView style={styles.container}
+    showsVerticalScrollIndicator={false}>
+      {/* ✅ 페이지 제목 배경 추가 */}
+      <View style={styles.pageHeader}>
+        <Text style={styles.pageTitle}>마이페이지</Text>
+      </View>
+     
       
       {/* 프로필 영역 */}
       <View style={styles.profileContainer}>
         <View style={styles.profileImageWrapper}>
         <Image
-          source={profileImage ? profileImage : require('../../assets/icons/capybara1.png')}
+          source={profileImage 
+            ? profileImage : require('../../assets/icons/capybara1.png')}
           style={styles.profileImage}
         />
 
@@ -301,8 +305,12 @@ useEffect(() => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  pageTitle: { fontSize: 24, fontWeight: "bold", textAlign: "left", marginInlineStart: 15, marginTop: 20 },
+    container: { flex: 1, backgroundColor: "#fff" },
+    pageHeader: {backgroundColor: "#FBAF8B",
+    paddingVertical: 20, borderBottomLeftRadius:15, borderBottomRightRadius:15
+    },
+
+  pageTitle: { fontSize: 24, fontWeight: "bold", textAlign: "left", marginInlineStart: 20, marginTop: 10, color:"#fff" },
   separator: { height: 1, backgroundColor: "#ddd", marginVertical: 10 },
   profileContainer: { flexDirection: "row", padding: 20, alignItems: "center" },
   profileImageWrapper: { position: "relative" },
@@ -325,7 +333,7 @@ const styles = StyleSheet.create({
   },
   infoContainer: { padding: 25, backgroundColor: "#F7F7F7", borderRadius: 10, margin: 10, borderWidth: 1, borderColor: "lightgrey" },
   infoLabel: { fontSize: 16, fontWeight: "bold", marginBottom:2, marginTop:10 },
-  infoCount: { fontSize: 14, fontWeight: "bold", color: "red", marginBottom:2, marginTop:10, marginLeft:10 },
+  infoCount: { fontSize: 14, fontWeight: "bold", color: "#FBAF8B", marginBottom:3, marginTop:10, marginLeft:10 },
   infoDetail: {
     fontSize: 14,
     color: "#555",
