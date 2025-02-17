@@ -12,7 +12,7 @@ const LoginScreen = () => {
     const navigation = useNavigation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { setUserData, getData } = useContext(AuthContext);
+    const { isNewUser, loading, getData } = useContext(AuthContext);
     const [showPassword, setShowPassword] = useState(false);
 
     // ✅ 로그인 버튼 (토큰 저장 후 Main으로 이동)
@@ -21,6 +21,7 @@ const LoginScreen = () => {
             Alert.alert("입력 확인", "이메일과 비밀번호를 모두 입력해주세요.");
             return;
         }
+    
         const userData = { email, password };
     
         try {
@@ -28,14 +29,27 @@ const LoginScreen = () => {
     
             if (res.data.status === "ok" && res.data.token) {
                 await AsyncStorage.setItem("token", res.data.token);
-                await AsyncStorage.setItem("isNewUser", "false");
-
+    
+                // ✅ getData() 실행하여 `isNewUser` 상태 업데이트
                 await getData();
-                navigation.reset({
-                    index: 0,
-                    routes: [{ name: "MainNavigator" }], // ✅ 네비게이션 스택을 완전히 리셋
-                });
-
+    
+                // ✅ isNewUser 상태 확인 후 이동
+                setTimeout(() => {
+                    if (isNewUser) {
+                        console.log("✅ 신규 유저 감지됨 → UserInfoScreen으로 이동");
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: "Auth", params: { initialRoute: "UserInfo" } }], // ✅ AuthNavigator에서 UserInfo로 초기화
+                        });
+                    } else {
+                        console.log("✅ 기존 유저 → MainNavigator로 이동");
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: "MainNavigator" }],
+                        });
+                    }
+                }, 500); // UI 업데이트 기다리는 작은 지연 추가
+    
             } else {
                 Alert.alert("로그인 실패", res.data.message || "아이디 또는 비밀번호를 확인하세요.");
             }
@@ -44,6 +58,7 @@ const LoginScreen = () => {
             Alert.alert("오류", "로그인 중 문제가 발생했습니다.");
         }
     };
+    
     
     const handleForgotPassword = () => {
         navigation.navigate('ForgotPassword');

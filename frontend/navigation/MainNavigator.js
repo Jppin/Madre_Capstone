@@ -1,17 +1,17 @@
 //MainNavigator.js
 
 
-import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import TabNavigator from './TabNavigator';
+import React from 'react';
 import CameraScreen from '../screens/MedicineScreens/CameraScreen';
 import GalleryScreen from '../screens/MedicineScreens/GalleryScreen';
 import ManualEntryScreen from '../screens/MedicineScreens/ManualEntryScreen';
 import MedicineDetailScreen from "../screens/MedicineScreens/MedicineDetailScreen";
-import NameAgeEdit from "../screens/MyPage/NameAgeEdit";
-import AlcoholSmoking from "../screens/MyPage/AlcoholSmoking"
-import ConditionsEdit from '../screens/MyPage/ConditionsEdit';
+import AlcoholSmoking from "../screens/MyPage/AlcoholSmoking";
 import ConcernsEdit from '../screens/MyPage/ConcernsEdit';
+import ConditionsEdit from '../screens/MyPage/ConditionsEdit';
+import NameAgeEdit from "../screens/MyPage/NameAgeEdit";
+import TabNavigator from './TabNavigator';
 
 
 const Stack = createStackNavigator();

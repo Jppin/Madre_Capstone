@@ -46,6 +46,7 @@ const ForgotPasswordScreen = () => {
             </TouchableOpacity>
 
             <Text style={styles.title}>비밀번호 찾기</Text>
+            <Text style={styles.subtitle}>가입한 이메일 주소로 임시 비밀번호를 보내드립니다.</Text>
             <TextInput
                 style={styles.input}
                 placeholder="이메일 주소 입력"
@@ -81,6 +82,11 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: "bold",
         marginBottom: 20,
+    },
+    subtitle: {
+        fontSize: 16,
+        color: "#666",
+        marginBottom: 15,
     },
     input: {
         width: "100%",
