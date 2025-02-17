@@ -60,7 +60,7 @@ const LoginScreen = () => {
             <View style={styles.container}>
                 {/* ✅ 로고 */}
                 <Image 
-                    source={require('../assets/icons/logo.png')} 
+                    source={require('../assets/icons/logo1.png')} 
                     style={styles.logo} 
                     resizeMode="contain" 
                 />
