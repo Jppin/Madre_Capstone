@@ -31,7 +31,7 @@ const UserInfoScreen = () => {
         setErrors(newErrors);
         
         if (Object.keys(newErrors).length === 0) {
-            try{
+            try {
                 await AsyncStorage.setItem("user_nickname", nickname);
                 await AsyncStorage.setItem("user_birthYear", JSON.stringify(birthYear));
                 await AsyncStorage.setItem("user_gender", selectedGender);
@@ -45,8 +45,6 @@ const UserInfoScreen = () => {
 
     const handleConfirm = () => {
         setModalVisible(false);
-
-        console.log("🔹 navigation.navigate 실행 전!");
         navigation.navigate('SignupComplete');
     };
 
@@ -55,16 +53,15 @@ const UserInfoScreen = () => {
             <TouchableOpacity 
                 onPress={() => {
                     if (navigation.canGoBack()) {
-                        navigation.goBack();  // ✅ 이전 화면이 있으면 뒤로 가기
+                        navigation.goBack();
                     } else {
-                        navigation.navigate("Login");  // ✅ 이전 화면이 없으면 Login 화면으로 이동
+                        navigation.navigate("Login");
                     }
                 }} 
                 style={styles.backButton}
             >
                 <Feather name="chevron-left" size={28} color="#333" />
             </TouchableOpacity>
-
 
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <Text style={styles.headerText}>내 정보 입력</Text>
@@ -79,6 +76,9 @@ const UserInfoScreen = () => {
                             setNickname(text);
                             setErrors((prev) => ({ ...prev, nickname: '' }));
                         }}
+                        keyboardType="default" // 한글 키보드 활성화
+                        autoCapitalize="none" // 자동 대문자 비활성화
+                        multiline={false} // 일부 기기에서 한글 입력 문제 해결
                     />
                     {errors.nickname && <Text style={styles.errorText}>{errors.nickname}</Text>}
                 </View>
@@ -160,12 +160,10 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         paddingHorizontal: 20,
     },
-
     scrollContainer: {
         flexGrow: 1,
-        paddingTop: 80,  // ✅ "내 정보 입력"을 충분히 아래로 내림
+        paddingTop: 80,
     },
-
     backButton: {
         position: 'absolute',
         top: 10,
@@ -173,30 +171,25 @@ const styles = StyleSheet.create({
         zIndex: 10,
         padding: 10,
     },
-
     backText: {
         fontSize: 20,
         color: '#333',
     },
-
     headerText: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#FBAF8B',
-        marginBottom: 40,  // ✅ "내 정보 입력"과 첫 번째 문항 사이 간격 증가
+        marginBottom: 40,
     },
-
     section: {
-        marginBottom: 40,  // ✅ 문항 사이 간격 넓힘
+        marginBottom: 40,
     },
-
     label: {
         fontSize: 16,
         fontWeight: 'bold',
         color: '#333',
         marginBottom: 15,
     },
-
     input: {
         width: '100%',
         height: 50,
@@ -205,22 +198,20 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         paddingHorizontal: 10,
     },
-
     pickerContainer: {
         width: '100%',
         height: 50,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
         justifyContent: 'center',
         paddingHorizontal: 10,
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderRadius: 5,
+        borderColor: '#ccc',
     },
-
     genderContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
     },
-
     genderButton: {
         flex: 1,
         paddingVertical: 15,
@@ -230,7 +221,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginHorizontal: 5,
     },
-
     genderText: {
         fontSize: 16,
         color: '#333',
@@ -244,7 +234,6 @@ const styles = StyleSheet.create({
     selectedGenderText: {
         color: 'white',
     },
-
     nextButton: {
         backgroundColor: '#FBAF8B',
         padding: 15,
@@ -260,7 +249,6 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
     },
-
     errorText: {
         color: 'red',
         fontSize: 14,
@@ -306,33 +294,16 @@ const styles = StyleSheet.create({
     },
     modalButtonText: {
         fontSize: 16,
-    },
-
-
-
-
+    }
 });
 
 const pickerSelectStyles = {
-    inputIOS: {
-        fontSize: 16,
-        paddingVertical: 12,
-        paddingHorizontal: 10,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        color: '#333',
-        paddingRight: 30,
-    },
     inputAndroid: {
         fontSize: 16,
         paddingVertical: 12,
         paddingHorizontal: 10,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
         color: '#333',
-        paddingRight: 30,
+        elevation: 0,  // 내부 border 제거
     },
 };
 

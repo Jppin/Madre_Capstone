@@ -1,12 +1,12 @@
 //AppNavigator.js
 
-import React, { useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import React, { useContext } from 'react';
+import CustomSpinner from '../components/CustomSpinner';
+import { AuthContext } from '../context/AuthContext';
 import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
-import { AuthContext } from '../context/AuthContext';
-import CustomSpinner from '../components/CustomSpinner';
 
 const Stack = createStackNavigator();
 
@@ -22,7 +22,10 @@ export default function AppNavigator() {
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 {userData ? (
                     isNewUser ? (
-                        <Stack.Screen name="Auth" component={AuthNavigator} initialParams={{ initialRoute: "UserInfo" }} />
+                        // ✅ AuthNavigator에서 'UserInfo' 화면을 기본값으로 설정
+                        <Stack.Screen name="Auth">
+                            {() => <AuthNavigator initialRoute="UserInfo" />}
+                        </Stack.Screen>
                     ) : (
                         <Stack.Screen name="MainNavigator" component={MainNavigator} />
                     )
