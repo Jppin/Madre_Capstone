@@ -12,6 +12,10 @@ import NameAgeEdit from "../screens/MyPage/NameAgeEdit";
 import AlcoholSmoking from "../screens/MyPage/AlcoholSmoking"
 import ConditionsEdit from '../screens/MyPage/ConditionsEdit';
 import ConcernsEdit from '../screens/MyPage/ConcernsEdit';
+import ProfilepicEdit from '../screens/MyPage/ProfilepicEdit'
+import Settings1 from '../screens/MyPage/Settings1';
+import Settings2 from '../screens/MyPage/Settings2';
+import Settings3 from '../screens/MyPage/Settings3';
 
 
 const Stack = createStackNavigator();
@@ -31,8 +35,11 @@ export default function MainNavigator() {
             <Stack.Screen name="AlcoholSmoking" component={AlcoholSmoking} />
             <Stack.Screen name="ConditionsEdit" component={ConditionsEdit} />
             <Stack.Screen name="ConcernsEdit" component={ConcernsEdit}/>
-        
-        
+            <Stack.Screen name="ProfilepicEdit" component={ProfilepicEdit}/>
+            <Stack.Screen name="Settings1" component={Settings1}/>
+            <Stack.Screen name="Settings2" component={Settings2}/>
+            <Stack.Screen name="Settings3" component={Settings3}/>
+
         </Stack.Navigator>
     );
 }
