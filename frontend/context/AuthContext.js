@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
                 return;
             }
 
-            const res = await axios.get("http://10.0.2.2:5001/userdata", {
+            const res = await axios.get("http://10.0.2.2:5001/user-full-data", {
                 headers: { Authorization: `Bearer ${token}` },
             });
 

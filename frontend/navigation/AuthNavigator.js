@@ -1,19 +1,18 @@
 //AuthNavigator.js
 
-
-import React from 'react';
+import { useRoute } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import React from 'react';
+import ForgotPasswordScreen from '../screens/NewUser/ForgotPasswordScreen';
 import LoginScreen from '../screens/LoginScreen';
-import SignupScreen from '../screens/NewUser/SignupScreen';
-import UserInfoScreen from '../screens/NewUser/UserInfoScreen';
-import SignupComplete from '../screens/NewUser/SignupComplete';
-import RecommendationStart from '../screens/NewUser/RecommendationStart';
 import HealthSurvey from '../screens/NewUser/HealthSurvey';
 import HealthSurvey2 from '../screens/NewUser/HealthSurvey2';
 import HealthSurvey3 from '../screens/NewUser/HealthSurvey3';
 import InfoComplete from '../screens/NewUser/InfoComplete';
-import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
-import { useRoute } from '@react-navigation/native';
+import RecommendationStart from '../screens/NewUser/RecommendationStart';
+import SignupComplete from '../screens/NewUser/SignupComplete';
+import SignupScreen from '../screens/NewUser/SignupScreen';
+import UserInfoScreen from '../screens/NewUser/UserInfoScreen';
 
 const Stack = createStackNavigator();
 

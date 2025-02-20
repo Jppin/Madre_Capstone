@@ -76,10 +76,11 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     backgroundColor: "#FBAF8B",
-    paddingVertical: 20, // 상하 여백 추가하여 헤더 높이 증가
+    paddingVertical: 10, // 상하 여백 추가하여 헤더 높이 증가
     paddingHorizontal: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
+    height: 110,
     flexDirection: 'row',
     alignItems: 'center',
    
