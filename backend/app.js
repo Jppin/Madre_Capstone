@@ -538,7 +538,50 @@ app.post("/reset-profile", async (req, res) => {
 });
 
 
+// ✅ 마이페이지 - 비밀번호 변경 API
+app.post("/api/change-password", async (req, res) => {
+  try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+          return res.status(401).json({ status: "error", message: "인증 토큰이 필요합니다." });
+      }
 
+      // ✅ 토큰 검증
+      const token = authHeader.split(" ")[1];
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const userEmail = decoded.email;
+
+      const { currentPassword, newPassword } = req.body;
+
+      // 1️⃣ 유저 조회
+      const user = await User.findOne({ email: userEmail });
+      if (!user) {
+          return res.status(404).json({ status: "error", message: "사용자를 찾을 수 없습니다." });
+      }
+
+      // 2️⃣ 현재 비밀번호 검증
+      const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isPasswordValid) {
+          return res.status(400).json({ status: "error", message: "현재 비밀번호가 올바르지 않습니다." });
+      }
+
+      // 3️⃣ 새 비밀번호 검증 (회원가입과 동일한 조건)
+      if (!/^(?=.*\d)(?=.*[a-z])(?=.*[\W_]).{10,}$/.test(newPassword)) {
+          return res.status(400).json({ status: "error", message: "비밀번호는 10자 이상이며, 소문자, 숫자, 특수문자를 포함해야 합니다." });
+      }
+
+      // 4️⃣ 새 비밀번호 암호화 후 저장
+      const encryptedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = encryptedPassword;
+      await user.save();
+
+      // ✅ 비밀번호 변경 완료 후 기존 세션 종료 (클라이언트에서 로그아웃 요청 필요)
+      res.status(200).json({ status: "ok", message: "비밀번호 변경 완료. 다시 로그인해주세요." });
+  } catch (error) {
+      console.error("비밀번호 변경 오류:", error);
+      res.status(500).json({ status: "error", message: "서버 오류 발생" });
+  }
+});
 
 
 

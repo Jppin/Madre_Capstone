@@ -7,7 +7,7 @@ import { AuthContext } from '../../context/AuthContext';
 
 const InfoComplete = () => {
     const navigation = useNavigation();
-    const { setUserData, getData, setIsNewUser } = useContext(AuthContext); // ✅ `setIsNewUser` 추가
+    const { setUserData, getData, setIsNewUser } = useContext(AuthContext);
     const [nickname, setNickname] = useState("사용자님");
     const [loading, setLoading] = useState(true);
 
@@ -38,15 +38,19 @@ const InfoComplete = () => {
                     concerns,
                 };
 
-                console.log("📢 백엔드로 전송할 데이터:", userData); // ✅ 데이터 로그 확인
+                console.log("📢 백엔드로 전송할 데이터:", userData);
 
                 // ✅ 백엔드로 사용자 데이터 저장 요청
                 const response = await axios.post("http://10.0.2.2:5001/save-user-info", userData);
 
                 if (response.data.status === "ok") {
                     console.log("✅ 사용자 데이터 저장 완료:", response.data);
-                    setUserData(userData); // 앱 전역 상태에 저장
-                    await AsyncStorage.setItem("isNewUser", "false"); // 온보딩 완료 설정
+                    
+                    // ✅ AsyncStorage & AuthContext 동기화
+                    await AsyncStorage.setItem("isNewUser", "false");
+                    setIsNewUser(false);
+                    
+                    setUserData(userData); // 앱 전역 상태 업데이트
                 } else {
                     throw new Error(response.data.message || "데이터 저장 실패");
                 }
@@ -61,18 +65,46 @@ const InfoComplete = () => {
         saveUserDataToBackend();
     }, []);
 
+    const updateIsNewUserInDB = async (email) => {
+        try {
+            console.log("📢 DB의 isNewUser 상태를 false로 업데이트 중...");
+
+            const response = await axios.post("http://10.0.2.2:5001/update-isnewuser", {
+                email,
+                isNewUser: false,  // DB 업데이트 요청
+            });
+
+            if (response.data.status === "ok") {
+                console.log("✅ DB의 isNewUser 업데이트 완료!");
+            } else {
+                throw new Error(response.data.message || "DB 업데이트 실패");
+            }
+        } catch (error) {
+            console.error("❌ DB 업데이트 오류:", error);
+        }
+    };
+
     const handleStart = async () => {
         try {
-            await AsyncStorage.setItem("isNewUser", "false");
-            setIsNewUser(false); // ✅ `setIsNewUser`이 존재하지 않던 문제 해결
-            getData();
+            const email = await AsyncStorage.getItem("user_email");
 
-            setTimeout(() => {
-                navigation.reset({
-                    index: 0,
-                    routes: [{ name: "MainNavigator" }], // ✅ 네비게이션 스택을 완전히 리셋
-                });
-            }, 500);
+            await AsyncStorage.setItem("isNewUser", "false");
+            setIsNewUser(false);
+
+            // ✅ `DB`에 `isNewUser: false`로 업데이트
+            if (email) {
+                await updateIsNewUserInDB(email);
+            }
+
+            // ✅ `getData()`를 실행해서 AuthContext 업데이트
+            await getData(); 
+
+            // ✅ 네비게이션 스택을 완전히 리셋 (딜레이 없이 즉시 실행)
+            navigation.reset({
+                index: 0,
+                routes: [{ name: "MainNavigator" }],
+            });
+
         } catch (error) {
             console.error("AsyncStorage 업데이트 실패:", error);
         }

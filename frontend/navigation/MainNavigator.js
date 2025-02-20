@@ -1,21 +1,23 @@
 //MainNavigator.js
 
 
-import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
+import React from 'react';
 import TabNavigator from './TabNavigator';
 import CameraScreen from '../screens/MedicineScreens/CameraScreen';
 import GalleryScreen from '../screens/MedicineScreens/GalleryScreen';
 import ManualEntryScreen from '../screens/MedicineScreens/ManualEntryScreen';
 import MedicineDetailScreen from "../screens/MedicineScreens/MedicineDetailScreen";
-import NameAgeEdit from "../screens/MyPage/NameAgeEdit";
-import AlcoholSmoking from "../screens/MyPage/AlcoholSmoking"
+import NameAgeEdit from '../screens/MyPage/NameAgeEdit';
+import AlcoholSmoking from "../screens/MyPage/AlcoholSmoking";
 import ConditionsEdit from '../screens/MyPage/ConditionsEdit';
 import ConcernsEdit from '../screens/MyPage/ConcernsEdit';
 import ProfilepicEdit from '../screens/MyPage/ProfilepicEdit'
 import Settings1 from '../screens/MyPage/Settings1';
+import ChangePassword from '../screens/MyPage/ChangePassword';
 import Settings2 from '../screens/MyPage/Settings2';
 import Settings3 from '../screens/MyPage/Settings3';
+import NutrientDetail from '../screens/NutrientDetail';
 
 
 const Stack = createStackNavigator();
@@ -31,12 +33,14 @@ export default function MainNavigator() {
             <Stack.Screen name="GalleryScreen" component={GalleryScreen} />
             <Stack.Screen name="ManualEntryScreen" component={ManualEntryScreen} />
             <Stack.Screen name="MedicineDetailScreen" component={MedicineDetailScreen} options={{ tabBarStyle: { display: 'none' } }}/> 
+            <Stack.Screen name="NutrientDetail" component={NutrientDetail} />
             <Stack.Screen name="NameAgeEdit" component={NameAgeEdit} />
             <Stack.Screen name="AlcoholSmoking" component={AlcoholSmoking} />
             <Stack.Screen name="ConditionsEdit" component={ConditionsEdit} />
             <Stack.Screen name="ConcernsEdit" component={ConcernsEdit}/>
             <Stack.Screen name="ProfilepicEdit" component={ProfilepicEdit}/>
             <Stack.Screen name="Settings1" component={Settings1}/>
+            <Stack.Screen name="ChangePassword" component={ChangePassword} />
             <Stack.Screen name="Settings2" component={Settings2}/>
             <Stack.Screen name="Settings3" component={Settings3}/>
 
