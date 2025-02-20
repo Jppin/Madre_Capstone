@@ -61,8 +61,16 @@ function Settings1() {
         <Feather name="chevron-left" size={28} color="#333" />
       </TouchableOpacity>
 
+      <TouchableOpacity 
+      style={styles.button} 
+      onPress={()=> navigation.navigate("ChangePassword")}
+      >
+        <Text style={styles.buttonText}>비밀번호 변경하기</Text>
+      </TouchableOpacity>
+
       {/* 로그아웃 버튼 */}
-      <TouchableOpacity style={styles.button} onPress={handleLogout}>
+      <TouchableOpacity 
+      style={styles.button} onPress={handleLogout}>
         <Text style={styles.buttonText}>로그아웃</Text>
       </TouchableOpacity>
 
