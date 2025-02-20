@@ -1,19 +1,41 @@
 # 기말 시연 핵심 요소기술 1: ocr->텍스트 처리
+# ocr_test.py
 import re
 import datetime
-import pytesseract
+import sys
+import uuid
 import requests
 import json
 from PIL import Image, ImageSequence
+import os
+import base64
+
+# ocr_test.py 파일이 backend/test에 있다고 가정하고, 부모 디렉토리(backend)를 sys.path에 추가
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from config.config import db, openai_api_key, openai_api_url
 
-# Tesseract 설정 (Windows 경로)
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+
+# 부모 디렉터리를 모듈 검색 경로에 추가
+sys.path.insert(0, parent_dir)
+
+from config.config import db, openai_api_key, openai_api_url
+
 
 # MongoDB 연결
 user_info_col = db["UserInfo"]
-medication_col = db["medication"]
-prescriptions_col = db["prescriptions"]
+medication_col = db["medicines"]
+
+
+
+
+# ✅ 네이버 클로바 OCR API 정보
+CLOVA_OCR_URL = "https://64nrlt36wx.apigw.ntruss.com/custom/v1/38666/507f569ea5238517c3acbe956e508e06e94c2e71a4abf80fbb00d8d44f4da6c3/general"
+CLOVA_SECRET_KEY = "UEZYcllRRWRrWHl4YXpSaFlybVh0Smt6b0lQR2JyT1g="  # 환경 변수에서 API 키 가져오기
+
+
 
 # OpenAI API 키 / URL 설정
 
@@ -23,20 +45,62 @@ def convert_mpo_to_png(image_path, output_path):
         image = Image.open(image_path)
         for frame in ImageSequence.Iterator(image):
             frame.convert("RGB").save(output_path, "PNG")
-            print(f"이미지가 {output_path}로 변환되었습니다.")
+            sys.stderr.write(f"이미지가 {output_path}로 변환되었습니다.\n")
             break
     except Exception as e:
-        print("MPO 변환 중 오류 발생:", e)
+        sys.stderr.write(f"MPO 변환 중 오류 발생: {e}\n")
+
+
 
 # 2. OCR 처리 함수
 def extract_text(image_path):
     try:
-        image = Image.open(image_path)
-        text = pytesseract.image_to_string(image, lang='kor')
-        return text
+
+        if not os.path.exists(image_path):
+            sys.stderr.write(f"❌ 이미지 파일이 존재하지 않음: {image_path}\n")
+            return None
+
+
+
+        with open(image_path, "rb") as image_file:
+            image_data = base64.b64encode(image_file.read()).decode("utf-8")
+
+        headers = {
+            "X-OCR-SECRET": CLOVA_SECRET_KEY,
+            "Content-Type": "application/json",
+        }
+
+        payload = {
+    "version": "V2",  # API 버전 명시
+    "requestId": str(uuid.uuid4()),  # 고유 요청 ID (UUID 사용)
+    "timestamp": int(datetime.datetime.now().timestamp() * 1000),  # 현재 시간 (밀리초 단위)
+    "images": [
+        {
+            "format": "jpg",
+            "name": "ocr_test",
+            "data": image_data  # Base64 인코딩된 이미지 데이터
+        }
+    ],
+}
+
+        response = requests.post(CLOVA_OCR_URL, headers=headers, json=payload)
+
+        if response.status_code == 200:
+            ocr_result = response.json()
+            extracted_text = " ".join(
+                field["inferText"] for field in ocr_result["images"][0]["fields"]
+            )
+            sys.stderr.write(f"OCR 추출 텍스트: {extracted_text}\n")
+            return extracted_text
+        else:
+            sys.stderr.write(f"❌ OCR 요청 실패: {response.text}\n")
+            return None
     except Exception as e:
-        print("OCR 처리 중 오류 발생:", e)
+        sys.stderr.write(f"OCR 처리 중 오류 발생: {e}\n")
         return None
+
+
+
 
 # 3. GPT API 호출 / JSON 처리 함수
 def process_text_with_gpt(ocr_text):
@@ -52,136 +116,108 @@ def process_text_with_gpt(ocr_text):
 다음은 OCR로 추출된 텍스트입니다:
 '{ocr_text}'
 
-주어진 텍스트에서 다음 정보를 반드시 JSON 형식으로만 추출하세요. 또한 단어 내의 불필요한 띄어쓰기는 제거해주세요.
+주어진 텍스트에서 다음 정보를 "반드시 JSON 형식으로만" 추출하세요. 
+`name` 필드는 필수이며, OCR 데이터에서 반드시 약 이름을 추출해야 합니다. 약과 관련없어보이는 단어는 제외해주세요.(반드시 존재하는 약 이름이어야 함)
+단어 내의 불필요한 띄어쓰기는 제거하고, null 값이 아닌 경우만 필드를 포함하세요.
 약물 정보는 여러 개가 있을 수 있으므로 반드시 모든 약물을 인식하여 반환해야 합니다.
 
 {{
-    "name": "환자 이름 (없으면 null)",
-    "age": "나이 (없으면 기존 값 유지)",
-    "prescription_info": {{
-        "medical_institution": "처방 의료기관 (없으면 null)",
-        "dispensing_date": "처방 날짜(없으면 null)",
-    }},
-    "medications": [
-        {{
-           "medication_name": "약물 이름 (없으면 null)",
-            "dosage": "복용법 (없으면 null)",
-            "duration": "복용 기간 (없으면 null)",
-            "general_info": "일반 정보 (없으면 null)",
-            "precautions": "주의사항 (없으면 null)",
-            "ingredients": [],
-            "conflicting_ingredients": []
-        }},
-    "cost": 
-        {{
-        "total": "총 금액(없으면 null)",
-        "covered_by_insurance": "보험 처리 금액(없으면 null)",
-        "patient_share": "환자 부담 금액(없으면 null)"
-        }}
-    ]
+    "name": "약 이름(사람 이름 아님. 약품 이름임에 주의)",
+    "prescriptionDate": "처방 날짜",
+    "registerDate": "{datetime.datetime.now().strftime('%Y-%m-%d')}",
+    "pharmacy": "처방 약국",
+    "dosageGuide": "복용법",
+    "warning": "주의사항",
+    "sideEffects": "부작용",
+    "active": true
 }}
-정보가 누락되면 null로 설정하세요. 나이 정보가 없으면 기존 값은 유지해야 하므로 `age` 필드는 반환하지 마세요. 오직 JSON 형식만 반환하고 다른 문장은 포함하지 마세요."""}
+오직 JSON 형식만 반환하고 다른 문장은 포함하지 마세요."""}
         ],
         "max_tokens": 700,
         "temperature": 0.0
     }
 
     response = requests.post(openai_api_url, headers=headers, json=data)
-    if response.status_code == 200:
-        gpt_response = response.json()["choices"][0]["message"]["content"].strip()
-        # 백틱 제거해
-        cleaned_response = re.sub(r'```json\s*|\s*```', '', gpt_response)
-        print("GPT API 응답 (정제):", cleaned_response)
-        return cleaned_response
-    else:
-        print("OpenAI API 요청 실패:", response.status_code, response.text)
+    if response.status_code != 200:
+        sys.stderr.write(f"❌ OpenAI API 요청 실패: {response.status_code}, {response.text}\n")
         return None
 
-# 4. DB 업데이트
+    gpt_response = response.json()["choices"][0]["message"]["content"].strip()
+    cleaned_response = re.sub(r'```json\s*|\s*```', '', gpt_response).strip()
+
+    try:
+        json_data = json.loads(cleaned_response)  # ✅ JSON 파싱 검증
+        sys.stderr.write(f"GPT API 응답 (정제): {json.dumps(json_data, ensure_ascii=False)}\n")
+        return json_data
+    except json.JSONDecodeError as e:
+        sys.stderr.write(f"❌ JSON 변환 오류: {e}, GPT 응답: {gpt_response}\n")
+        return None  # JSON 변환 실패 시 `None` 반환
+
+
+
+
+# 4. DB 업데이트 (중복 체크 후 저장)
 def update_database(ocr_data):
-    # 먼저 UserInfo에서 사용자 존재하는지
-    user = user_info_col.find_one({"name": ocr_data.get("name", None)})
-    if not user:
-        print("Error: 해당 사용자가 존재하지 않습니다.")
-        return
-    
-    user_id = user["_id"]
-    updated_age = ocr_data.get("age", None)
-    medication_ids = []
+    try:
+        existing_medicine = medication_col.find_one({"name": ocr_data.get("name")})
 
-    # medications 컬렉션에 약물 정보 있는지 / 없으면 추가
-    for med in ocr_data.get("medications", []):
-        med_name = med.get("medication_name", None)
-        if med_name:
-            existing_med = medication_col.find_one({"medication_name": med_name})
-            if not existing_med:
-                # 새로 추가
-                new_med = {
-                    "medication_name": med_name,
-                    "dosage": med.get("dosage", None),
-                    "duration": med.get("duration", None),
-                    "general_info": med.get("general_info", None),
-                    "precautions": med.get("precautions", None),
-                    "ingredients": med.get("ingredients", []),
-                    "conflicting_ingredients": med.get("conflicting_ingredients", [])
-                }
-                insert_result = medication_col.insert_one(new_med)
-                medication_ids.append(insert_result.inserted_id)  # 새로 추가된 약 ID
-            else:
-                medication_ids.append(existing_med["_id"])  # 기존 약 ID
-
-    # UserInfo: 나이가 있을 때만 업데이트
-    update_fields = {"current_medications": medication_ids}
-    if updated_age is not None:
-        update_fields["age"] = updated_age
-
-    user_info_col.update_one(
-        {"_id": user_id},
-        {"$set": update_fields}
-    )
-
-    # prescriptions
-    new_prescription = {
-        "patient": {
-            "name": ocr_data.get("name", None),
-            "age": updated_age if updated_age is not None else user.get("age")  # 나이가 없으면 기존 값 유지
-        },
-        "prescription_info": {
-            "medical_institution": ocr_data.get("prescription_info", {}).get("medical_institution", None),
-            "dispensing_date": ocr_data.get("prescription_info", {}).get("dispensing_date", None),
-        },
-        "medications": medication_ids,  # medications 컬렉션의 ID 참조
-        "cost": {
-            "total": ocr_data.get("cost", {}).get("total", None),
-            "covered_by_insurance": ocr_data.get("cost", {}).get("covered_by_insurance", None),
-            "patient_share": ocr_data.get("cost", {}).get("patient_share", None)
-        },
-        "created_at": datetime.datetime.now()
-    }
-
-    prescriptions_col.insert_one(new_prescription)
-    print("데이터베이스에 처방전이 성공적으로 저장되었습니다.")
+        if existing_medicine:
+            sys.stderr.write(f"⚠️ 이미 존재하는 약품: {ocr_data['name']}. 저장을 취소합니다.\n")
+        else:
+            new_medicine = medication_col.insert_one(ocr_data)
+            sys.stderr.write(f"✅ DB 저장 완료: {new_medicine.inserted_id}\n")
+    except Exception as e:
+        sys.stderr.write(f"❌ DB 저장 오류: {e}\n")
 
 
-# 5. 실행 코드
+
+from bson import ObjectId  # ✅ ObjectId 변환을 위해 추가
+
+def convert_objectid_to_str(data):
+    """ObjectId를 문자열로 변환하는 함수"""
+    if isinstance(data, dict):
+        return {k: convert_objectid_to_str(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [convert_objectid_to_str(v) for v in data]
+    elif isinstance(data, ObjectId):
+        return str(data)
+    return data
+
+
+
+
+
+# 5. 실행 코드 (업로드된 이미지 사용)
 if __name__ == "__main__":
-    mpo_image_path = "images/집에가고싶다.jpg"
-    converted_image_path = "images/집에가고싶다_변환.png"
+    if len(sys.argv) < 2:
+        sys.stderr.write("❌ 이미지 파일 경로가 제공되지 않음.\n")
+        sys.exit(1)
 
-    convert_mpo_to_png(mpo_image_path, converted_image_path)
-    ocr_text = extract_text(converted_image_path)
+    image_path = sys.argv[1]  # 업로드된 이미지 경로
+
+
+    if not os.path.exists(image_path):
+        sys.stderr.write(f"❌ 이미지 파일이 존재하지 않음: {image_path}\n")
+        sys.exit(1)
+
+    sys.stderr.write(f"🔍 OCR 실행 중... 파일 경로: {image_path}\n")
+
+
+    ocr_text = extract_text(image_path)
 
     if ocr_text:
-        print("OCR 결과:", ocr_text)
         gpt_result = process_text_with_gpt(ocr_text)
 
         if gpt_result:
-            try:
-                ocr_data = json.loads(gpt_result)
-                update_database(ocr_data)
-            except json.JSONDecodeError as e:
-                print("GPT 결과 JSON 변환 오류:", e)
+            update_database(gpt_result)
+
+            # ✅ ObjectId 변환 후 JSON으로 변환
+            safe_json_result = convert_objectid_to_str(gpt_result)
+            print(json.dumps(safe_json_result, ensure_ascii=False))
+
         else:
-            print("GPT 처리 실패")
+            sys.stderr.write("GPT 처리 실패 - JSON 변환 실패\n")
+            sys.exit(1)
     else:
-        print("OCR 처리 실패")
+        sys.stderr.write("OCR 처리 실패\n")
+        sys.exit(1)
