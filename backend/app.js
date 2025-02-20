@@ -6,11 +6,13 @@ const fs = require("fs");
 const express = require("express");
 const app = express();
 app.use(express.json());
+const { spawn } = require("child_process");
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const nodemailer = require("nodemailer");
+const Medicine = require("./models/Medicine"); // ✅ 약품 모델 추가
 
 const mongoUrl = 
   "mongodb+srv://dding921:1472uiop!!@graduationpj.w6wq3.mongodb.net/?retryWrites=true&w=majority&appName=graduationpj";
@@ -376,7 +378,7 @@ app.post("/update-user-concerns", async (req, res) => {
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
       const uploadDir = path.join(__dirname, "uploads");
-      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
       cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
@@ -390,6 +392,78 @@ const upload = multer({ storage });
 
 
 
+
+
+
+
+// ✅ 약품 이미지 업로드 엔드포인트 추가
+app.post("/upload", upload.single("image"), async (req, res) => {
+  console.log("📸 이미지 업로드 요청 도착!");
+  console.log("✅ 업로드된 파일 정보:", req.file);
+  if (!req.file) {
+    console.error("❌ 파일이 업로드되지 않았음.");
+    return res.status(400).json({ status: "error", message: "파일이 업로드되지 않았습니다." });
+  }
+
+  try {
+    const imagePath = path.join(__dirname, "uploads", req.file.filename);
+    console.log(`📸 업로드된 이미지 경로: ${imagePath}`);
+
+
+    // ✅ Python OCR 처리 실행
+    const pythonProcess = spawn("python", ["test/ocr_test.py", imagePath]);
+    console.log(`🛠 OCR 실행 시작: ${imagePath}`);
+
+
+
+    let stdoutData = "";
+    let stderrData = "";
+
+
+    pythonProcess.stdout.on("data", (data) => {
+      stdoutData += data.toString();
+      console.log("OCR 실행 결과:", data.toString());
+    });
+
+    pythonProcess.stderr.on("data", (data) => {
+      stderrData += data.toString();
+      console.error("OCR 실행 정보:", data.toString());
+    });
+
+    pythonProcess.on("close", (code) => {
+      console.log(`🛠 Python OCR 종료 코드: ${code}`);
+      if (code === 0) {
+        try {
+          const jsonData = JSON.parse(stdoutData);
+          res.json({ status: "ok", message: "OCR 처리 완료", medicine: jsonData });
+        } catch (parseError) {
+          console.error("❌ JSON 파싱 오류:", parseError);
+          res.status(500).json({ status: "error", message: "OCR 결과 파싱 실패" });
+        }
+      } else {
+        console.error("❌ Python OCR 스크립트 오류 발생:", stderrData);
+        res.status(500).json({ status: "error", message: "OCR 처리 실패", details: stderrData });
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ 서버 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+});
+
+// ✅ 서버에서 이미지 제공
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+
+
+
+
+
+
+
+
+//프로필사진 upload post
 app.post("/upload-profile", upload.single("image"), async (req, res) => {
   console.log("업로드된 파일:", req.file); // 추가: 파일이 제대로 수신됐는지 확인
   
@@ -508,6 +582,74 @@ app.post("/api/change-password", async (req, res) => {
       res.status(500).json({ status: "error", message: "서버 오류 발생" });
   }
 });
+
+
+
+// ✅ 디비에 있는 모든 약품 약보관함으로 가져오기 (프론트엔드 요청 대응)
+app.get("/medicines", async (req, res) => {
+  try {
+    const medicines = await Medicine.find(); // 모든 약 데이터를 가져옴
+    res.json(medicines); // JSON 형식으로 응답
+  } catch (error) {
+    console.error("❌ 약품 데이터 불러오기 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+});
+
+
+
+
+// ✅ 새 약품 추가 (프론트엔드에서 새 약 등록 시 사용)
+app.post("/medicines", async (req, res) => {
+  try {
+    const newMedicine = new Medicine(req.body);
+    await newMedicine.save();
+    res.status(201).json({ message: "약품이 추가되었습니다." });
+  } catch (error) {
+    console.error("❌ 약품 추가 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+});
+
+
+
+
+
+
+
+
+app.post("/medicines/:id/toggle", async (req, res) => {
+  try {
+    const medicine = await Medicine.findById(req.params.id);
+    if (!medicine) {
+      return res.status(404).json({ message: "약품을 찾을 수 없습니다." });
+    }
+
+    medicine.active = !medicine.active;
+    await medicine.save();
+
+    // ✅ 변경된 medicine 정보를 응답으로 반환
+    res.status(200).json(medicine);
+  } catch (error) {
+    console.error("복용 상태 변경 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
