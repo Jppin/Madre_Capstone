@@ -14,14 +14,16 @@ const MedicineDetailScreen = () => {
   // ✅ 스위치 상태를 위한 useState 추가
   const [localActive, setLocalActive] = useState(medicine.active);
 
-//꺅
 
   
   // ✅ 스위치 값이 변경되었을 때 실행되는 함수
-  const toggleSwitch = () => {
-    setLocalActive((prev) => !prev); // 스위치 상태 변경
-    toggleMedicine(medicine.id); // ✅ MedicineScreen.js와 연동!
+  const toggleSwitch = async () => {
+    setLocalActive((prev) => !prev); // ✅ UI 상태 업데이트
+  
+    await toggleMedicine(medicine._id); // ✅ 백엔드에 반영
+
   };
+  
 
 
   return (
@@ -41,8 +43,7 @@ const MedicineDetailScreen = () => {
         <View style={styles.medicineCard}>
           <View style={styles.medicineInfo}>
             <Text style={styles.medicineName}>{medicine.name}</Text>
-            <Text style={styles.medicineDate}>{medicine.date} 처방</Text>
-            <Text style={styles.medicineRemaining}>{medicine.active ? "복용 중" : "미복용"}</Text>
+            <Text style={styles.medicineRemaining}>{localActive ? "(복용 중)" : "(미복용)"}</Text>
           </View>
             
             
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
   medicineInfo: { flex: 1 },
   medicineName: { fontSize: 22, fontWeight: "bold" },
   medicineDate: { fontSize: 14, color: "#666", marginTop: 5 },
-  medicineRemaining: { fontSize: 14, color: "#333", marginTop: 5 },
+  medicineRemaining: { fontSize: 14, color: "#333", marginTop: 5, color:"#FBAF8B" },
   medicineSwitch: { transform: [{ scale: 1.3 }] },
   
 
