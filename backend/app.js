@@ -33,7 +33,8 @@ app.get("/", (req, res) => {
 
 
 
-
+// ✅ uploads 폴더의 이미지를 정적 파일로 제공
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 
 
@@ -219,7 +220,10 @@ app.get("/user-full-data", async (req, res) => {
     }
 
     const token = authHeader.split(" ")[1];
+    console.log("🟢 서버에서 받은 토큰:", token);
+
     const decoded = jwt.verify(token, JWT_SECRET);
+    console.log("🟢 토큰 해독 결과:", decoded);
     
     const user = await User.findOne({ email: decoded.email });
 
@@ -247,6 +251,11 @@ app.get("/user-full-data", async (req, res) => {
     res.status(401).json({ status: "error", message: "유효하지 않은 토큰입니다." });
   }
 });
+
+
+
+
+
 
 
 //마이페이지 이름성별나이&건강습관 업뎃
@@ -485,8 +494,18 @@ app.post("/upload-profile", upload.single("image"), async (req, res) => {
           return res.status(404).json({ message: "사용자 정보를 찾을 수 없습니다." });
       }
 
+
+      // ✅ 사용자 이메일을 기반으로 고유한 프로필 이미지 파일명 생성
+      const fileExtension = path.extname(req.file.originalname); // 파일 확장자 추출
+      const uniqueFilename = `${decoded.email.replace(/[^a-zA-Z0-9]/g, "_")}${fileExtension}`;
+      const newFilePath = path.join(__dirname, "uploads", uniqueFilename);
+
+      // ✅ 기존 파일을 사용자 이메일 기반으로 변경
+      fs.renameSync(req.file.path, newFilePath);
+
+
       // ✅ 업로드된 이미지 경로를 MongoDB에 저장
-      const fullUrl = `http://10.0.2.2:5001/uploads/${req.file.filename}`;
+      const fullUrl = `http://10.0.2.2:5001/uploads/${uniqueFilename}`;
       user.profileImage = fullUrl;
       await user.save();
 

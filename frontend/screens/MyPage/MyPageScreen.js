@@ -36,7 +36,10 @@ const MyPageScreen = () => {
         const result = await response.json();
         if (result.status === "ok" && result.data.profileImage) {
           setProfileImage({ uri: result.data.profileImage });
-        }
+      } else {
+          // ✅ 기본 프로필 이미지 설정 (서버 URL 사용)
+          setProfileImage({ uri: "http://10.0.2.2:5001/uploads/default_profile.png" });
+      }
     } catch (error) {
         console.error("❌ 프로필 이미지 로드 오류:", error);
     }
