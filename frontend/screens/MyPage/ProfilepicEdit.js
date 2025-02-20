@@ -75,6 +75,10 @@ const ProfilepicEdit = () => {
     }
   };
 
+
+
+
+  
   // 기본 이미지로 리셋하는 함수
   const resetToDefault = async () => {
     try {
@@ -122,18 +126,18 @@ const ProfilepicEdit = () => {
       <Text style={styles.title}>프로필 사진 변경</Text>
 
       <View style={styles.imageContainer}>
-        <Image
-          source={
-            imageUri
-              ? { uri: imageUri }
-              : currentProfileImage
-              ? (typeof currentProfileImage === "string"
-                  ? { uri: currentProfileImage }
-                  : currentProfileImage)
-              : require("../../assets/icons/capybara1.png")
-          }
-          style={styles.profileImage}
-        />
+      <Image
+  source={
+    imageUri
+      ? { uri: imageUri }
+      : currentProfileImage
+      ? (typeof currentProfileImage === "string"
+          ? { uri: currentProfileImage }
+          : currentProfileImage)
+      : { uri: "http://10.0.2.2:5001/uploads/default_profile.png" } // ✅ 기본 프로필 이미지 URL 적용
+  }
+  style={styles.profileImage}
+/>
 
 
           {/* 기본 이미지로 변경 버튼 */}
