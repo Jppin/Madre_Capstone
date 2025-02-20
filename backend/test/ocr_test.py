@@ -33,7 +33,7 @@ medication_col = db["medicines"]
 
 # ✅ 네이버 클로바 OCR API 정보
 CLOVA_OCR_URL = "https://64nrlt36wx.apigw.ntruss.com/custom/v1/38666/507f569ea5238517c3acbe956e508e06e94c2e71a4abf80fbb00d8d44f4da6c3/general"
-CLOVA_SECRET_KEY = "UEZYcllRRWRrWHl4YXpSaFlybVh0Smt6b0lQR2JyT1g="  # 환경 변수에서 API 키 가져오기
+  # 환경 변수에서 API 키 가져오기
 
 
 
