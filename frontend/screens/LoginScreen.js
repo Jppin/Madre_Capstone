@@ -249,16 +249,6 @@ const styles = StyleSheet.create({
         color: '#333',
     },
 
-    skipButton: {
-        marginTop: 20,
-        padding: 10,
-    },
-
-    skipText: {
-        fontSize: 14,
-        color: '#FBAF8B',
-        textDecorationLine: 'underline',
-    },
 });
 
 export default LoginScreen;
