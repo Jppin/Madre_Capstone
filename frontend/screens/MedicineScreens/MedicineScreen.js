@@ -1,7 +1,7 @@
 //MedicineScreen.js
 
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,90 +14,44 @@ import {
   Modal,
   Keyboard,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 
 const MedicineScreen = () => {
   const navigation = useNavigation();
-  const [medicines, setMedicines] = useState([
-    {
-      id: "1",
-      name: "디곡신",
-      date: "2024-10-22",
-      active: true,
-      warning: "심장질환 환자 주의", // ✅ 주의사항 추가
-      pharmacy: "서울 중앙 약국", // ✅ 약국 정보 추가
-      prescriptionDate: "2024-10-21", // ✅ 처방일 추가
-      registerDate: "2024-10-22", // ✅ 등록일 추가
-      appearance: "흰색의 원형정제", // ✅ 성상 추가
-      dosageGuide: "하루 2회, 식후 복용", // ✅ 복용 안내 추가
-      sideEffects: "어지러움, 졸음 유발 가능", // ✅ 부작용 추가
-    },
-    {
-      id: "2",
-      name: "이지엔6 프로 연질캡슐",
-      date: "2024-10-25",
-      active: false,
-      warning: "운전 전 복용 금지",
-      pharmacy: "강남 대형 약국",
-      prescriptionDate: "2024-10-24",
-      registerDate: "2024-10-25",
-      appearance: "연질 캡슐",
-      dosageGuide: "하루 1회, 식후 30분 내 복용",
-      sideEffects: "구토 및 속쓰림",
-    },
-    {
-      id: "3",
-      name: "타이레놀 500mg",
-      date: "2024-11-01",
-      active: true,
-      warning: "간 질환 환자 주의",
-      pharmacy: "한양 약국",
-      prescriptionDate: "2024-10-31",
-      registerDate: "2024-11-01",
-      appearance: "하얀색 알약",
-      dosageGuide: "6시간 간격, 1회 1정 복용",
-      sideEffects: "간 손상 위험",
-    },
-    {
-      id: "4",
-      name: "센트룸 멀티비타민",
-      date: "2024-11-05",
-      active: false,
-      warning: "과다 복용 주의",
-      pharmacy: "건강마을 약국",
-      prescriptionDate: "2024-11-04",
-      registerDate: "2024-11-05",
-      appearance: "노란색 타블렛",
-      dosageGuide: "하루 1정 복용",
-      sideEffects: "속쓰림 가능",
-    },
-    {
-      id: "5",
-      name: "알레그라 120mg",
-      date: "2024-11-10",
-      active: true,
-      warning: "졸음 유발 가능",
-      pharmacy: "서울 종로 약국",
-      prescriptionDate: "2024-11-09",
-      registerDate: "2024-11-10",
-      appearance: "연한 보라색 타블렛",
-      dosageGuide: "하루 1회, 식전 복용",
-      sideEffects: "졸음 및 어지러움",
-    },
-    {
-      id: "6",
-      name: "플루티코손 나잘 스프레이",
-      date: "2024-11-12",
-      active: false,
-      warning: "장기간 사용 주의",
-      pharmacy: "강남 메디칼 약국",
-      prescriptionDate: "2024-11-11",
-      registerDate: "2024-11-12",
-      appearance: "비강 스프레이",
-      dosageGuide: "하루 2회, 양쪽 콧구멍에 1회 분사",
-      sideEffects: "코 건조증, 코피 가능성",
-    },
-  ]);
+  const isFocused = useIsFocused(); // ✅ 화면 포커스 감지
+  const [medicines, setMedicines] = useState([]);
+
+
+
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchMedicines();
+    }
+  }, [isFocused]);
+
+
+
+  const fetchMedicines = async () => {
+    // ✅ MongoDB에서 현재 약품 목록 가져오기 (서버 API 호출)
+    try {
+      const response = await fetch("http://10.0.2.2:5001/medicines");
+  
+      // 응답이 JSON이 맞는지 확인하기 위해 텍스트 출력
+      const text = await response.text();
+      console.log("서버 응답:", text);
+  
+      // JSON 파싱 시도
+      const data = JSON.parse(text);
+      setMedicines(data);
+    } catch (error) {
+      console.error("약품 데이터를 불러오는 중 오류 발생:", error);
+    }
+  };
+
+
+
+
 
 
   const [isAddMedicineModalVisible, setAddMedicineModalVisible] = useState(false); // 추가 모달 상태
@@ -195,23 +149,21 @@ const MedicineScreen = () => {
 
   // 필터링된 약품 목록
   const filteredMedicines = medicines.filter((medicine) => {
+    if (!medicine || !medicine.name) return false; // 🔴 name 속성이 없는 경우 필터링에서 제외
+  
     const matchesFilter =
-    filterType === "모든 약품" ||
-    (filterType === "복용 중" && medicine.active) ||
-    (filterType === "미복용" && !medicine.active) ||
-    (filterType === "주의사항" && (
-      (medicine.warning && medicine.warning.trim() !== "") || 
-      (medicine.sideEffects && medicine.sideEffects.trim() !== "")
-    ));
-
-  const matchesSearch = medicine.name.includes(finalSearchQuery); // 🔍 검색어가 포함된 경우만 표시
-
-  return matchesFilter && matchesSearch; // 검색 & 필터 조건 모두 만족하는 경우만 표시
+      filterType === "모든 약품" ||
+      (filterType === "복용 중" && medicine.active) ||
+      (filterType === "미복용" && !medicine.active) ||
+      (filterType === "주의사항" && (
+        (medicine.warning && medicine.warning.trim() !== "") || 
+        (medicine.sideEffects && medicine.sideEffects.trim() !== "")
+      ));
+  
+    const matchesSearch = medicine.name.toLowerCase().includes(finalSearchQuery.toLowerCase()); // 🔍 검색어가 포함된 경우만 표시
+  
+    return matchesFilter && matchesSearch; // 검색 & 필터 조건 모두 만족하는 경우만 표시
   });
-
-
-
-
 
 
 
@@ -223,14 +175,35 @@ const MedicineScreen = () => {
     setFilterVisible(false);
   };
 
+
+
+
+
+
+
   // 약품 복용 여부 토글
-  const toggleMedicine = (id) => {
-    setMedicines((prev) =>
-      prev.map((medicine) =>
-        medicine.id === id ? { ...medicine, active: !medicine.active } : medicine
-      )
-    );
+  const toggleMedicine = async (id) => {
+    try {
+      const updatedMedicines = medicines.map((medicine) =>
+        medicine._id === id ? { ...medicine, active: !medicine.active } : medicine
+      );
+  
+      setMedicines(updatedMedicines);
+  
+      await fetch(`http://10.0.2.2:5001/medicines/${id}/toggle`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+  
+      // ✅ 최신 데이터 불러오기
+      fetchMedicines();
+  
+    } catch (error) {
+      console.error("복용 상태 업데이트 실패:", error);
+    }
   };
+  
+  
 
 
 
@@ -238,7 +211,7 @@ const MedicineScreen = () => {
 
 
 
-
+////////////////////////이거일단보류
   const getCurrentDate = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -416,7 +389,7 @@ const MedicineScreen = () => {
         {/* 약품 리스트 */}
         <FlatList
           data={filteredMedicines}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => String(item._id)}
           renderItem={({ item }) => (
             <MedicineCard medicine={item} toggleMedicine={toggleMedicine} navigation={navigation} />
           )}
@@ -483,7 +456,7 @@ const MedicineCard = ({ medicine, toggleMedicine, navigation }) => {
       <Switch
         style={styles.medicineSwitch}
         value={medicine.active}
-        onValueChange={() => toggleMedicine(medicine.id)}
+        onValueChange={() => toggleMedicine(medicine._id)}
         trackColor={{ false: "#E0E0E0", true: "#FBAF8B" }}
         thumbColor={"#FFF"}
       />
@@ -492,7 +465,7 @@ const MedicineCard = ({ medicine, toggleMedicine, navigation }) => {
       <TouchableOpacity
         onPress={() => navigation.navigate("MedicineDetailScreen", { 
           medicine, 
-          toggleMedicine: () => toggleMedicine(medicine.id) 
+          toggleMedicine: () => toggleMedicine(medicine._id) 
         })}
         style={styles.detailButtonWrapper}
       >
