@@ -10,7 +10,8 @@ import {
   StyleSheet,
   Modal,
   ScrollView,
-  Alert, Image
+  Alert,
+  Image
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -27,6 +28,7 @@ const ManualEntryScreen = () => {
   const [dosageGuide, setDosageGuide] = useState("");
   const [warning, setWarning] = useState("");
   const [sideEffects, setSideEffects] = useState("");
+  const [appearance, setAppearance] = useState(""); // ✅ 추가된 성상(appearance) 필드
 
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -54,7 +56,7 @@ const ManualEntryScreen = () => {
         return;
       }
 
-      // 백엔드로 보낼 데이터 구성
+      // 백엔드로 보낼 데이터 구성 (appearance 포함)
       const data = {
         name: name.trim(),
         prescriptionDate: prescriptionDate.trim() ? prescriptionDate : defaultValue,
@@ -63,6 +65,7 @@ const ManualEntryScreen = () => {
         dosageGuide: dosageGuide.trim() ? dosageGuide : defaultValue,
         warning: warning.trim() ? warning : defaultValue,
         sideEffects: sideEffects.trim() ? sideEffects : defaultValue,
+        appearance: appearance.trim() ? appearance : defaultValue, // ✅ 성상 추가
       };
 
       const response = await axios.post("http://10.0.2.2:5001/medicines", data, {
@@ -81,8 +84,6 @@ const ManualEntryScreen = () => {
         Alert.alert("실패", "약품 추가에 실패했습니다.");
       }
     } catch (error) {
-      
-      // 백엔드에서 중복약품 등록 시 보내는 메시지를 확인
       if (
         error.response &&
         error.response.data &&
@@ -98,9 +99,7 @@ const ManualEntryScreen = () => {
     }
   };
 
-
   const displayValue = (value) => (value.trim() ? value : defaultValue);
-
 
   return (
     <View style={styles.outerContainer}>
@@ -112,7 +111,7 @@ const ManualEntryScreen = () => {
             onPress={() => navigation.goBack()}
           >
             <Image
-              source={require("../../assets/icons/back.png")} // 백색 back icon
+              source={require("../../assets/icons/back.png")}
               style={styles.backIcon}
             />
           </TouchableOpacity>
@@ -145,6 +144,14 @@ const ManualEntryScreen = () => {
             onChangeText={setPharmacy}
           />
 
+          <Text style={styles.label}>🔍 성상 (appearance)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="예: 흰색 원형 정제"
+            value={appearance}
+            onChangeText={setAppearance}
+          />
+
           <Text style={styles.label}>📝 복용법</Text>
           <TextInput
             style={styles.input}
@@ -168,6 +175,8 @@ const ManualEntryScreen = () => {
             value={sideEffects}
             onChangeText={setSideEffects}
           />
+
+          
         </View>
 
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
@@ -187,27 +196,16 @@ const ManualEntryScreen = () => {
             <Text style={styles.modalHeader}>입력 내용을 확인해주세요!</Text>
             <ScrollView style={styles.modalContent}>
               <Text style={styles.modalText}>💊 약품명 : {name}</Text>
-              <Text style={styles.modalText}>
-                📅 처방일 : {displayValue(prescriptionDate)}
-              </Text>
-              <Text style={styles.modalText}>
-                🏥 처방 약국 : {displayValue(pharmacy)}
-              </Text>
-              <Text style={styles.modalText}>
-                📝 복용법 : {displayValue(dosageGuide)}
-              </Text>
-              <Text style={styles.modalText}>
-                ⚠️ 주의사항 : {displayValue(warning)}
-              </Text>
-              <Text style={styles.modalText}>
-                😷 부작용 : {displayValue(sideEffects)}
-              </Text>
+              <Text style={styles.modalText}>📅 처방일 : {displayValue(prescriptionDate)}</Text>
+              <Text style={styles.modalText}>🏥 처방 약국 : {displayValue(pharmacy)}</Text>
+              <Text style={styles.modalText}>🔍 성상 : {displayValue(appearance)}</Text>
+              <Text style={styles.modalText}>📝 복용법 : {displayValue(dosageGuide)}</Text>
+              <Text style={styles.modalText}>⚠️ 주의사항 : {displayValue(warning)}</Text>
+              <Text style={styles.modalText}>😷 부작용 : {displayValue(sideEffects)}</Text>
+               
             </ScrollView>
             <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => setConfirmVisible(false)}
-              >
+              <TouchableOpacity style={styles.modalButton} onPress={() => setConfirmVisible(false)}>
                 <Text style={styles.modalButtonText}>수정하기</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.modalButton} onPress={confirmSubmission}>
@@ -218,7 +216,6 @@ const ManualEntryScreen = () => {
         </View>
       </Modal>
 
-      {/* 로딩 오버레이 */}
       {loading && (
         <View style={styles.loadingOverlay}>
           <LoadingScreen />
@@ -227,6 +224,8 @@ const ManualEntryScreen = () => {
     </View>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   outerContainer: {

@@ -663,6 +663,7 @@ app.post("/medicines", async (req, res) => {
       dosageGuide,
       warning,
       sideEffects,
+      appearance,
     } = req.body;
 
 
@@ -686,6 +687,7 @@ app.post("/medicines", async (req, res) => {
       dosageGuide: dosageGuide && dosageGuide.trim() ? dosageGuide : defaultValue,
       warning: warning && warning.trim() ? warning : defaultValue,
       sideEffects: sideEffects && sideEffects.trim() ? sideEffects : defaultValue,
+      appearance: appearance && appearance.trim() ? appearance : defaultValue,
       user_id: user._id,
     });
 

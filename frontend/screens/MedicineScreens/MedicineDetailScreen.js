@@ -71,7 +71,7 @@ const MedicineDetailScreen = () => {
             <Text style={styles.value}>{medicine.registerDate}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>성상</Text>
+            <Text style={styles.label}>성상 - 약 모양</Text>
             <Text style={styles.value}>{medicine.appearance}</Text>
           </View>
           <View style={styles.row}>
