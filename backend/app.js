@@ -731,7 +731,31 @@ app.post("/medicines/:id/toggle", async (req, res) => {
 
 
 
+//마이페이지의 탈퇴하기 로직
+app.delete("/withdraw", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "인증 토큰이 필요합니다." });
+    }
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
 
+    // 사용자 삭제 (UserInfo 컬렉션)
+    const user = await User.findOneAndDelete({ email: decoded.email });
+    if (!user) {
+      return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+    }
+
+    // 선택사항: 해당 사용자의 약품 데이터 삭제 (Medicine 컬렉션)
+    await Medicine.deleteMany({ user_id: user._id });
+
+    res.status(200).json({ message: "회원 탈퇴가 완료되었습니다." });
+  } catch (error) {
+    console.error("회원 탈퇴 오류:", error);
+    res.status(500).json({ message: "회원 탈퇴 중 문제가 발생했습니다." });
+  }
+});
 
 
 
