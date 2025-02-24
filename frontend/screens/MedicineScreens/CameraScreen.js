@@ -6,7 +6,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, Platform, PermissionsA
 import { launchCamera } from "react-native-image-picker";
 import axios from "axios";
 import LoadingScreen from "../../components/LoadingScreen";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 const CameraScreen = ({ navigation }) => {
@@ -80,6 +80,21 @@ const CameraScreen = ({ navigation }) => {
       });
 
       console.log("서버 응답:", response.data);
+
+
+      // ✅ OCR 결과를 서버에 저장 (약 추가 API 호출)
+      const token = await AsyncStorage.getItem("token"); // 인증 토큰 가져오기
+      if (!token) return;
+
+      const saveResponse = await axios.post("http://10.0.2.2:5001/medicines", response.data.medicine, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+
+
       navigation.replace("MedicineDetailScreen", { medicine: response.data.medicine });
     } catch (error) {
       console.error("업로드 실패:", error);

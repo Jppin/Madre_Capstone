@@ -1,3 +1,5 @@
+//server.js(백엔드)
+
 require("dotenv").config();
 const express = require("express");
 const multer = require("multer");

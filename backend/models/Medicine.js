@@ -9,6 +9,7 @@ const MedicineSchema = new mongoose.Schema({
   warning: { type: String },
   sideEffects: { type: String },
   active: { type: Boolean, default: true }, // 복용 여부
+  user_id: { type: mongoose.Schema.Types.ObjectId, ref: "UserInfo" },
 });
 
 module.exports = mongoose.model("Medicine", MedicineSchema);

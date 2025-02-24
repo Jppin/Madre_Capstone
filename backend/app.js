@@ -604,11 +604,30 @@ app.post("/api/change-password", async (req, res) => {
 
 
 
+
+
+
 // ✅ 디비에 있는 모든 약품 약보관함으로 가져오기 (프론트엔드 요청 대응)
 app.get("/medicines", async (req, res) => {
   try {
-    const medicines = await Medicine.find(); // 모든 약 데이터를 가져옴
-    res.json(medicines); // JSON 형식으로 응답
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "인증 토큰이 필요합니다." });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    // ✅ 현재 로그인한 사용자의 ID 가져오기
+    const user = await User.findOne({ email: decoded.email });
+    if (!user) {
+      return res.status(404).json({ message: "사용자 정보를 찾을 수 없습니다." });
+    }
+
+    // ✅ 사용자가 등록한 약품만 반환
+    const medicines = await Medicine.find({ user_id: user._id });
+
+    res.json(medicines);
   } catch (error) {
     console.error("❌ 약품 데이터 불러오기 오류:", error);
     res.status(500).json({ message: "서버 오류 발생" });
@@ -618,17 +637,37 @@ app.get("/medicines", async (req, res) => {
 
 
 
+
 // ✅ 새 약품 추가 (프론트엔드에서 새 약 등록 시 사용)
 app.post("/medicines", async (req, res) => {
   try {
-    const newMedicine = new Medicine(req.body);
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "인증 토큰이 필요합니다." });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const user = await User.findOne({ email: decoded.email });
+    if (!user) {
+      return res.status(404).json({ message: "사용자 정보를 찾을 수 없습니다." });
+    }
+
+    const newMedicine = new Medicine({
+      ...req.body,
+      user_id: user._id, // ✅ 사용자 ID 추가
+      registerDate: new Date().toISOString().split("T")[0], // 등록일 자동 추가
+    });
+
     await newMedicine.save();
-    res.status(201).json({ message: "약품이 추가되었습니다." });
+    res.status(201).json({ message: "약품이 추가되었습니다.", medicine: newMedicine });
   } catch (error) {
     console.error("❌ 약품 추가 오류:", error);
     res.status(500).json({ message: "서버 오류 발생" });
   }
 });
+
 
 
 
