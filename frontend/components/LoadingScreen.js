@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import CustomSpinner from '../components/CustomSpinner'; // ✅ 커스텀 스피너 사용
 
 const LoadingScreen = ({ message = "정보를 처리 중입니다.", subMessage = "잠시만 기다려주세요." }) => {
@@ -29,6 +29,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: 'white',
         paddingHorizontal: 20,
+        width: "100%",
     },
     image: {
         width: 120, // ✅ 이미지 크기 조정
