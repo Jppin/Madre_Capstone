@@ -734,6 +734,9 @@ app.post("/medicines", async (req, res) => {
 
 
     await newMedicine.save();
+    const savedMedicine = newMedicine.toObject();
+    console.log("savedMedicine:", savedMedicine);  // _id 확인용 로그
+
     
     res.status(201).json({ message: "약품이 추가되었습니다.", medicine: newMedicine });
   } catch (error) {
