@@ -1,68 +1,73 @@
 import React,{useEffect,useState} from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
+import {  View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator,StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 
-const data = [
-  { id: '1', title: '영상 제목 1', description: '세부사항, 간략하게, 자세한 설명' },
-  { id: '2', title: '영상 제목 2', description: '세부사항, 간략하게, 자세한 설명' },
-  { id: '3', title: '영상 제목 3', description: '세부사항, 간략하게, 자세한 설명' },
-  { id: '4', title: '영상 제목 4', description: '세부사항, 간략하게, 자세한 설명' },
-  { id: '5', title: '영상 제목 5', description: '세부사항, 간략하게, 자세한 설명' },
-  { id: '6', title: '영상 제목 6', description: '세부사항, 간략하게, 자세한 설명' },
-  { id: '7', title: '영상 제목 7', description: '세부사항, 간략하게, 자세한 설명' },
-  { id: '8', title: '영상 제목 8', description: '세부사항, 간략하게, 자세한 설명' },
-];
+
+const API_URL = "http://10.0.2.2:5001/youtube"; // ✅ 백엔드 API 주소 (에뮬레이터용)
+
 
 const YoutubeScreen = () => {
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
-  const [nickname, setNickname] = useState(""); // 닉네임 상태 저장
+
 
   useEffect(() => {
-    const fetchUserData = async () => {
-        try {
-            const storedNickname = await AsyncStorage.getItem("user_nickname");
-            setNickname(storedNickname || "사용자");
-        } catch (error) {
-            console.error("닉네임 불러오기 오류:", error);
-            setNickname("사용자"); // 에러 발생 시 기본값 설정
-        }
+    const fetchVideos = async () => {
+      try {
+        const response = await axios.get(API_URL);
+        setVideos(response.data.videos); // 백엔드에서 받은 데이터 저장
+      } catch (error) {
+        console.error("Error fetching YouTube videos:", error);
+      } finally {
+        setLoading(false);
+      }
     };
-
-    fetchUserData();
+    fetchVideos();
   }, []);
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
+  }
+//카드에 썸네일 
   const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.card}>
+    <TouchableOpacity 
+      style={styles.card} 
+      onPress={() => navigation.navigate('PlayerScreen', { videoId: item.id })}
+    >
       <Image
-        source={require("../assets/icons/ex1.png")}
+        source={{ uri: item.snippet.thumbnails.high.url }}
         style={styles.thumbnail}
       />
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.description}>{item.description}</Text>
+      <Text style={styles.title}>{item.snippet.title}</Text>
+      <Text style={styles.description}>{item.snippet.channelTitle}</Text>
     </TouchableOpacity>
   );
+
 
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <Image
-          source={require("../assets/icons/redshorts.png")} 
+          source={require("../../assets/icons/redshorts.png")} 
           style={styles.iconStyle}
         />
          <View style={styles.textContainer}>
           <Text style={styles.header}>
-            <Text style={styles.whiteText}>{nickname}</Text>
+            <Text style={styles.whiteText}>홍길동동</Text>
             <Text style={styles.blackText}>님</Text>
             {'\n'}
             <Text style={styles.blackText}>맞춤 컨텐츠를 확인하세요!</Text>
           </Text>
         </View>
       </View>
+
       <FlatList
-        data={data}
+        data={videos}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.row}
       />

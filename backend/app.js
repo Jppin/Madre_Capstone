@@ -8,16 +8,23 @@ const app = express();
 app.use(express.json());
 const { spawn } = require("child_process");
 
+
+const axios = require("axios");
+const cors = require("cors");
+require("dotenv").config();
+
+
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const nodemailer = require("nodemailer");
 const Medicine = require("./models/Medicine"); // ✅ 약품 모델 추가
 
-const mongoUrl = 
-  "mongodb+srv://dding921:1472uiop!!@graduationpj.w6wq3.mongodb.net/?retryWrites=true&w=majority&appName=graduationpj";
+// ✅ .env에서 MongoDB URL 불러오기
+const mongoUrl = process.env.MONGO_URI;
 
-const JWT_SECRET = "sdfsdferrwsdkjhk12j34##$@^&dlfjsdjfersgiobkcm";
+// ✅ .env에서 JWT_SECRET 불러오기 (보안 강화)
+const JWT_SECRET = process.env.JWT_SECRET || "default_jwt_secret";
 
 mongoose
   .connect(mongoUrl)
@@ -31,6 +38,40 @@ app.get("/", (req, res) => {
   res.send({ status: "Started" });
 });
 
+
+app.use(cors()); // 프론트엔드 요청 허용
+app.use(express.json());
+
+// ✅ 여러 개의 키워드 설정
+const keywords = ["건강 팁", "영양제 추천", "운동 루틴", "약사", "비타민", "피부", "면역력"];
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY; // ✅ .env에서 YouTube API 키 가져오기
+
+// ✅ YouTube API 엔드포인트
+app.get("/youtube", async (req, res) => {
+  try {
+    // ✅ 모든 키워드에 대해 병렬로 API 요청
+    const videoResults = await Promise.all(
+      keywords.map(async (keyword) => {
+        const youtubeApiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(keyword)}&type=video&maxResults=10&key=${YOUTUBE_API_KEY}`;
+        
+        const response = await axios.get(youtubeApiUrl);
+        const videos = response.data.items.map((item) => ({
+          id: item.id.videoId,
+          title: item.snippet.title,
+          thumbnail: item.snippet.thumbnails.high.url,
+          channel: item.snippet.channelTitle,
+        }));
+
+        return { keyword, videos }; // ✅ 키워드별 결과 저장
+      })
+    );
+
+    res.json({ results: videoResults }); // ✅ 모든 키워드의 검색 결과 반환
+  } catch (error) {
+    console.error("YouTube API Error:", error);
+    res.status(500).json({ error: "YouTube API 호출 중 오류 발생" });
+  }
+});
 
 
 // ✅ uploads 폴더의 이미지를 정적 파일로 제공
@@ -789,8 +830,9 @@ app.delete("/medicines/:id", async (req, res) => {
 
 
 
+const PORT = process.env.PORT || 5001;
 
 // ✅ 서버 시작
-app.listen(5001, () => {
+app.listen(PORT, "0.0.0.0",() => {
   console.log("Node.js server started on port 5001.");
 });
