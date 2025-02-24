@@ -1,3 +1,5 @@
+//Medicine.js
+
 const mongoose = require("mongoose");
 
 const MedicineSchema = new mongoose.Schema({
