@@ -695,11 +695,43 @@ app.post("/medicines", async (req, res) => {
       return res.status(404).json({ message: "사용자 정보를 찾을 수 없습니다." });
     }
 
+    // OCR 결과(req.body)를 원하는 필드로 추출
+    const {
+      name,
+      prescriptionDate,
+      registerDate,
+      pharmacy,
+      dosageGuide,
+      warning,
+      sideEffects,
+      appearance,
+    } = req.body;
+
+
+    const defaultValue = "(알 수 없음)";
+
+    // 같은 이름의 약품이 이미 등록되어 있는지 확인 (해당 사용자 기준)
+    const duplicate = await Medicine.findOne({ name: name, user_id: user._id });
+    if (duplicate) {
+      return res.status(400).json({ message: "같은 이름의 약품" });
+    }
+
+
+
+    // registerDate는 기본값으로 오늘 날짜 설정
     const newMedicine = new Medicine({
-      ...req.body,
-      user_id: user._id, // ✅ 사용자 ID 추가
-      registerDate: new Date().toISOString().split("T")[0], // 등록일 자동 추가
+      name,
+      prescriptionDate: prescriptionDate && prescriptionDate.trim() ? prescriptionDate : defaultValue,
+      // registerDate는 빈 값이면 오늘 날짜를 사용 (여기선 빈 값은 있을 수 없으므로 그대로)
+      registerDate: registerDate || new Date().toISOString().split("T")[0],
+      pharmacy: pharmacy && pharmacy.trim() ? pharmacy : defaultValue,
+      dosageGuide: dosageGuide && dosageGuide.trim() ? dosageGuide : defaultValue,
+      warning: warning && warning.trim() ? warning : defaultValue,
+      sideEffects: sideEffects && sideEffects.trim() ? sideEffects : defaultValue,
+      appearance: appearance && appearance.trim() ? appearance : defaultValue,
+      user_id: user._id,
     });
+
 
     await newMedicine.save();
     res.status(201).json({ message: "약품이 추가되었습니다.", medicine: newMedicine });
@@ -742,11 +774,52 @@ app.post("/medicines/:id/toggle", async (req, res) => {
 
 
 
+//마이페이지의 탈퇴하기 로직
+app.delete("/withdraw", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "인증 토큰이 필요합니다." });
+    }
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    // 사용자 삭제 (UserInfo 컬렉션)
+    const user = await User.findOneAndDelete({ email: decoded.email });
+    if (!user) {
+      return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+    }
+
+    // 선택사항: 해당 사용자의 약품 데이터 삭제 (Medicine 컬렉션)
+    await Medicine.deleteMany({ user_id: user._id });
+
+    res.status(200).json({ message: "회원 탈퇴가 완료되었습니다." });
+  } catch (error) {
+    console.error("회원 탈퇴 오류:", error);
+    res.status(500).json({ message: "회원 탈퇴 중 문제가 발생했습니다." });
+  }
+});
 
 
 
 
 
+
+
+
+// ✅ 약품 삭제 엔드포인트
+app.delete("/medicines/:id", async (req, res) => {
+  try {
+    const medicine = await Medicine.findByIdAndDelete(req.params.id);
+    if (!medicine) {
+      return res.status(404).json({ message: "약품을 찾을 수 없습니다." });
+    }
+    res.status(200).json({ message: "약품이 삭제되었습니다." });
+  } catch (error) {
+    console.error("약품 삭제 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+});
 
 
 
