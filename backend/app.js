@@ -766,6 +766,23 @@ app.delete("/withdraw", async (req, res) => {
 
 
 
+// ✅ 약품 삭제 엔드포인트
+app.delete("/medicines/:id", async (req, res) => {
+  try {
+    const medicine = await Medicine.findByIdAndDelete(req.params.id);
+    if (!medicine) {
+      return res.status(404).json({ message: "약품을 찾을 수 없습니다." });
+    }
+    res.status(200).json({ message: "약품이 삭제되었습니다." });
+  } catch (error) {
+    console.error("약품 삭제 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+});
+
+
+
+
 
 
 

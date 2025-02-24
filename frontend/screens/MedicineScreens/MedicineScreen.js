@@ -13,6 +13,7 @@ import {
   Image,
   Modal,
   Keyboard,
+  Alert,
 } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -65,6 +66,27 @@ const MedicineScreen = () => {
 }
   };
   
+
+
+
+
+
+const deleteMedicine = async (id) => {
+  try {
+    await fetch(`http://10.0.2.2:5001/medicines/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+    // 삭제 후 최신 데이터 불러오기
+    fetchMedicines();
+  } catch (error) {
+    console.error("약품 삭제 오류:", error);
+    Alert.alert("삭제 오류", "약품 삭제 중 오류가 발생했습니다.");
+  }
+};
+
+
+
 
 
 
@@ -363,7 +385,11 @@ const MedicineScreen = () => {
           data={filteredMedicines}
           keyExtractor={(item) => String(item._id)}
           renderItem={({ item }) => (
-            <MedicineCard medicine={item} toggleMedicine={toggleMedicine} navigation={navigation} />
+            <MedicineCard 
+            medicine={item} 
+            toggleMedicine={toggleMedicine} 
+            navigation={navigation}
+            deleteMedicine={deleteMedicine} />
           )}
           showsVerticalScrollIndicator={false}// ✅ 스크롤바 숨기기
         />
@@ -410,9 +436,26 @@ const MedicineScreen = () => {
 };
 
 /** 개별 약품 카드 컴포넌트 */
-const MedicineCard = ({ medicine, toggleMedicine, navigation }) => {
+const MedicineCard = ({ medicine, toggleMedicine, deleteMedicine, navigation }) => {
   return (
     <View style={styles.medicineCard}>
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={() =>
+          Alert.alert(
+            "삭제 확인",
+            "약품을 정말 삭제하시겠습니까?",
+            [
+              { text: "취소", style: "cancel" },
+              { text: "삭제", onPress: () => deleteMedicine(medicine._id) },
+            ],
+            { cancelable: true }
+          )
+        }
+      >
+        <Text style={styles.deleteButtonText}>🗑</Text>
+      </TouchableOpacity>
+
       {/* 복용 상태 원형 표시 */}
       <View style={[styles.statusCircle, medicine.active ? styles.activeStatus : styles.inactiveStatus]}>
         <Text style={styles.statusText}>{medicine.active ? "복용 중" : "미복용"}</Text>
@@ -421,10 +464,12 @@ const MedicineCard = ({ medicine, toggleMedicine, navigation }) => {
       {/* 약품 정보 */}
       <View style={styles.medicineInfo}>
         <Text style={styles.medicineName}>{medicine.name}</Text>
-        <Text style={styles.medicineDate}>등록일: {medicine.registerDate || "날짜 없음"}</Text>
+        <Text style={styles.medicineDate}>
+          등록일: {medicine.registerDate || "날짜 없음"}
+        </Text>
       </View>
 
-      {/* 스위치 추가 (복용 여부 토글) */}
+      {/* 스위치 */}
       <Switch
         style={styles.medicineSwitch}
         value={medicine.active}
@@ -435,10 +480,12 @@ const MedicineCard = ({ medicine, toggleMedicine, navigation }) => {
 
       {/* 상세 정보 보기 버튼 */}
       <TouchableOpacity
-        onPress={() => navigation.navigate("MedicineDetailScreen", { 
-          medicine, 
-          toggleMedicine: () => toggleMedicine(medicine._id) 
-        })}
+        onPress={() =>
+          navigation.navigate("MedicineDetailScreen", {
+            medicine,
+            toggleMedicine: () => toggleMedicine(medicine._id),
+          })
+        }
         style={styles.detailButtonWrapper}
       >
         <Text style={styles.detailButton}>▸ 상세 정보 보기</Text>
@@ -598,14 +645,17 @@ const styles = StyleSheet.create({
 
 
   
+  medicineInfo: {
+    flex: 1,
+    marginRight: 60, // 스위치 영역 확보를 위해 오른쪽 여백 추가
+  },
   medicineName: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#000",
     paddingVertical: 6,
-    flexWrap: "wrap",     // 텍스트 줄바꿈 허용
-    flexShrink: 1,        // 공간이 부족하면 축소
-    // 필요한 경우 width를 지정할 수도 있음
+    flexWrap: "wrap",
+    flexShrink: 1,
   },
   medicineStatus: {
     fontSize: 14,
@@ -707,6 +757,34 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#FF6B6B",
   },
+
+
+
+
+
+  deleteButton: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    backgroundColor: "#FFFFFF",
+    width: 20,
+    height: 20,
+    borderRadius: 15,
+    borderWidth:1,
+    borderColor:"lightgrey",
+    justifyContent: "center",
+    alignItems: "center",
+
+  },
+  deleteButtonText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  
+    
+
+  
 
 });
 
