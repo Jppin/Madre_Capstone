@@ -92,7 +92,8 @@ const CameraScreen = ({ navigation }) => {
           Authorization: `Bearer ${token}`,
         },
       });
-
+      // 여기서 saveResponse.data.medicine는 MongoDB에 저장된 약품 객체이며 _id가 포함됨.
+      navigation.replace("MedicineDetailScreen", { medicine: saveResponse.data.medicine });
 
 
       navigation.replace("MedicineDetailScreen", { medicine: response.data.medicine });

@@ -22,6 +22,8 @@ const MedicineDetailScreen = () => {
   const { medicine, toggleMedicine } = route.params;
   
   
+  console.log("MedicineDetailScreen received medicine:", medicine);
+
   const defaultValue = "(알 수 없음)";
 
   // 초기 데이터: 각 필드가 비어있으면 기본값 할당
@@ -46,6 +48,12 @@ const MedicineDetailScreen = () => {
     await toggleMedicine(medicine._id);
   };
 
+
+
+
+
+
+
   // 수정 완료 후 업데이트 요청 및 페이지 reload
   const handleUpdate = async () => {
     try {
@@ -55,6 +63,7 @@ const MedicineDetailScreen = () => {
         return;
       }
       // PUT 요청: 모든 필드가 기본값 또는 수정된 값으로 보내짐
+      console.log("PUT 요청할 _id:", medicine._id);  // _id가 제대로 있는지 확인
       const response = await fetch(`http://10.0.2.2:5001/medicines/${medicine._id}`, {
         method: "PUT",
         headers: {
