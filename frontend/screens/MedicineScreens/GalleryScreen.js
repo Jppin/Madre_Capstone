@@ -49,23 +49,31 @@ const GalleryScreen = ({ navigation }) => {
 
     try {
       console.log("📤 업로드 시작:", formData);
+      // 첫 번째 호출: OCR 처리
       const response = await axios.post("http://10.0.2.2:5001/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       console.log("서버 응답:", response.data);
 
-      // OCR 결과로 약 추가 API 호출 (백엔드에 사용자 정보와 함께 저장)
+      // 두 번째 호출: OCR 결과를 바탕으로 약품 등록 (몽고디비 저장 후 _id 포함)
       const token = await AsyncStorage.getItem("token");
       if (!token) return;
 
-      await axios.post("http://10.0.2.2:5001/medicines", response.data.medicine, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const saveResponse = await axios.post(
+        "http://10.0.2.2:5001/medicines",
+        response.data.medicine,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      navigation.replace("MedicineDetailScreen", { medicine: response.data.medicine });
+      // 저장된 약품 객체( _id 포함 )를 MedicineDetailScreen에 전달
+      navigation.replace("MedicineDetailScreen", {
+        medicine: saveResponse.data.medicine,
+      });
     } catch (error) {
       console.error("업로드 실패:", error);
     } finally {
@@ -144,3 +152,4 @@ const styles = StyleSheet.create({
 });
 
 export default GalleryScreen;
+
