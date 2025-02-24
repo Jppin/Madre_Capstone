@@ -15,6 +15,11 @@ import {
   Keyboard,
 } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+
+
+
 
 const MedicineScreen = () => {
   const navigation = useNavigation();
@@ -32,22 +37,34 @@ const MedicineScreen = () => {
 
 
 
+
+
+
+
+
+  
   const fetchMedicines = async () => {
-    // ✅ MongoDB에서 현재 약품 목록 가져오기 (서버 API 호출)
     try {
-      const response = await fetch("http://10.0.2.2:5001/medicines");
+      const token = await AsyncStorage.getItem("token"); // ✅ 저장된 토큰 가져오기
+      if (!token) {
+        console.error("인증 토큰이 없습니다.");
+        return;
+      }
   
-      // 응답이 JSON이 맞는지 확인하기 위해 텍스트 출력
-      const text = await response.text();
-      console.log("서버 응답:", text);
-  
-      // JSON 파싱 시도
-      const data = JSON.parse(text);
-      setMedicines(data);
-    } catch (error) {
-      console.error("약품 데이터를 불러오는 중 오류 발생:", error);
+      const response = await fetch("http://10.0.2.2:5001/medicines", {
+        headers: { Authorization: `Bearer ${token}` }, // ✅ 요청 헤더에 토큰 포함
+      });
+      if (!response.ok) {
+        throw new Error(`서버 오류 발생: ${response.status}`);
     }
+
+    const data = await response.json(); // ✅ JSON 직접 파싱
+    setMedicines(Array.isArray(data) ? data : []); // ✅ 데이터가 배열인지 확인 후 저장
+} catch (error) {
+    console.error("약품 데이터를 불러오는 중 오류 발생:", error);
+}
   };
+  
 
 
 
@@ -209,51 +226,6 @@ const MedicineScreen = () => {
 
 
 
-
-
-////////////////////////이거일단보류
-  const getCurrentDate = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-
-  
-
-
-
-
-
-/////////////////////////////////////여기일단보류 건드리지말아줘
-/*
-
-  const addMedicine = () => {
-    const newMedicine = {
-      id: String(medicines.length + 1),
-      name: `새로운 약품 ${medicines.length + 1}`,
-      active: false,
-      registerDate: getCurrentDate(), // ✅ 새로 추가하는 약품만 등록일 자동 설정
-      prescriptionDate: "알 수 없음",
-      pharmacy: "알 수 없음", // 기본값 설정
-      appearance: "알 수 없음",
-      dosageGuide: "알 수 없음",
-      warning: "알 수 없음",
-      sideEffects: "알 수 없음",
-    };
-  
-    setMedicines([...medicines, newMedicine]);
-  
-    // 새로 추가된 약품의 상세 페이지로 바로 이동
-    navigation.navigate("MedicineDetailScreen", { medicine: newMedicine });
-  };
-  */
-
-
-
-
-    
 
 
 
