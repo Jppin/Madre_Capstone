@@ -8,6 +8,8 @@ import CameraScreen from '../screens/MedicineScreens/CameraScreen';
 import GalleryScreen from '../screens/MedicineScreens/GalleryScreen';
 import ManualEntryScreen from '../screens/MedicineScreens/ManualEntryScreen';
 import MedicineDetailScreen from "../screens/MedicineScreens/MedicineDetailScreen";
+import YoutubeScreen from "../screens/Youtube/YoutubeScreen";
+import PlayerScreen from "../screens/Youtube/PlayerScreen.js";
 import NameAgeEdit from '../screens/MyPage/NameAgeEdit';
 import AlcoholSmoking from "../screens/MyPage/AlcoholSmoking";
 import ConditionsEdit from '../screens/MyPage/ConditionsEdit';
@@ -43,6 +45,8 @@ export default function MainNavigator() {
             <Stack.Screen name="ChangePassword" component={ChangePassword} />
             <Stack.Screen name="Settings2" component={Settings2}/>
             <Stack.Screen name="Settings3" component={Settings3}/>
+            <Stack.Screen name="YoutubeScreen" component={YoutubeScreen}/>
+            <Stack.Screen name="PlayerScreen" component={PlayerScreen}/> 
 
         </Stack.Navigator>
     );
