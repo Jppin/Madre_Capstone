@@ -139,7 +139,7 @@ def process_text_with_gpt(ocr_text):
 }}
 🚨 "name" 필드는 무조건 포함해야 합니다.
 만약 약 이름을 인식하지 못하면 "name": "약물명 미확인"으로 반환하세요.
-오직 JSON 형식만 반환하고 다른 문장은 포함하지 마세요."""}
+오직 위 내용만을 담은 JSON 형식만 반환하고 다른 문장은 포함하지 마세요."""}
         ],
         "max_tokens": 700,
         "temperature": 0.0
@@ -217,7 +217,7 @@ if __name__ == "__main__":
         gpt_result = process_text_with_gpt(ocr_text)
 
         if gpt_result:
-            update_database(gpt_result)
+            #update_database(gpt_result)
 
             # ✅ ObjectId 변환 후 JSON으로 변환
             safe_json_result = convert_objectid_to_str(gpt_result)
