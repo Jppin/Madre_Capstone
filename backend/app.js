@@ -665,7 +665,16 @@ app.post("/medicines", async (req, res) => {
       sideEffects,
     } = req.body;
 
-    // 필요한 경우, registerDate는 기본값으로 오늘 날짜 설정
+
+    // 같은 이름의 약품이 이미 등록되어 있는지 확인 (해당 사용자 기준)
+    const duplicate = await Medicine.findOne({ name: name, user_id: user._id });
+    if (duplicate) {
+      return res.status(400).json({ message: "같은 이름의 약품" });
+    }
+
+
+
+    // registerDate는 기본값으로 오늘 날짜 설정
     const newMedicine = new Medicine({
       name, // 반드시 OCR 스크립트가 이 필드를 포함하도록 수정
       prescriptionDate,
