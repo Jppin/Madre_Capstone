@@ -734,6 +734,10 @@ app.post("/medicines", async (req, res) => {
 
 
     await newMedicine.save();
+    const savedMedicine = newMedicine.toObject();
+    console.log("savedMedicine:", savedMedicine);  // _id 확인용 로그
+
+    
     res.status(201).json({ message: "약품이 추가되었습니다.", medicine: newMedicine });
   } catch (error) {
     console.error("❌ 약품 추가 오류:", error);
@@ -817,6 +821,67 @@ app.delete("/medicines/:id", async (req, res) => {
     res.status(200).json({ message: "약품이 삭제되었습니다." });
   } catch (error) {
     console.error("약품 삭제 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+});
+
+
+
+
+
+
+
+
+
+//약품 상세정보페이지에서 약품 정보 수정할 때
+app.put("/medicines/:id", async (req, res) => {
+  try {
+    // 토큰 검증
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "인증 토큰이 필요합니다." });
+    }
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    // 사용자 확인
+    const user = await User.findOne({ email: decoded.email });
+    if (!user) {
+      return res.status(404).json({ message: "사용자 정보를 찾을 수 없습니다." });
+    }
+
+    // 해당 사용자의 약품 중에서 업데이트할 약품 조회
+    const medicine = await Medicine.findOne({ _id: req.params.id, user_id: user._id });
+    if (!medicine) {
+      return res.status(404).json({ message: "약품을 찾을 수 없습니다." });
+    }
+
+    // 요청 본문에서 업데이트할 필드 추출
+    const {
+      name,
+      prescriptionDate,
+      registerDate,
+      pharmacy,
+      dosageGuide,
+      warning,
+      sideEffects,
+      appearance,
+    } = req.body;
+
+    // 각 필드 업데이트 (전달된 값이 있다면)
+    if (name !== undefined) medicine.name = name;
+    if (prescriptionDate !== undefined) medicine.prescriptionDate = prescriptionDate;
+    if (registerDate !== undefined) medicine.registerDate = registerDate;
+    if (pharmacy !== undefined) medicine.pharmacy = pharmacy;
+    if (dosageGuide !== undefined) medicine.dosageGuide = dosageGuide;
+    if (warning !== undefined) medicine.warning = warning;
+    if (sideEffects !== undefined) medicine.sideEffects = sideEffects;
+    if (appearance !== undefined) medicine.appearance = appearance;
+
+    await medicine.save();
+    res.status(200).json({ message: "약품 정보가 업데이트되었습니다.", medicine });
+  } catch (error) {
+    console.error("PUT /medicines/:id 오류:", error);
     res.status(500).json({ message: "서버 오류 발생" });
   }
 });
