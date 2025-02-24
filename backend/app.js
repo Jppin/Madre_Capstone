@@ -666,6 +666,8 @@ app.post("/medicines", async (req, res) => {
     } = req.body;
 
 
+    const defaultValue = "(알 수 없음)";
+
     // 같은 이름의 약품이 이미 등록되어 있는지 확인 (해당 사용자 기준)
     const duplicate = await Medicine.findOne({ name: name, user_id: user._id });
     if (duplicate) {
@@ -676,13 +678,14 @@ app.post("/medicines", async (req, res) => {
 
     // registerDate는 기본값으로 오늘 날짜 설정
     const newMedicine = new Medicine({
-      name, // 반드시 OCR 스크립트가 이 필드를 포함하도록 수정
-      prescriptionDate,
+      name,
+      prescriptionDate: prescriptionDate && prescriptionDate.trim() ? prescriptionDate : defaultValue,
+      // registerDate는 빈 값이면 오늘 날짜를 사용 (여기선 빈 값은 있을 수 없으므로 그대로)
       registerDate: registerDate || new Date().toISOString().split("T")[0],
-      pharmacy,
-      dosageGuide,
-      warning,
-      sideEffects,
+      pharmacy: pharmacy && pharmacy.trim() ? pharmacy : defaultValue,
+      dosageGuide: dosageGuide && dosageGuide.trim() ? dosageGuide : defaultValue,
+      warning: warning && warning.trim() ? warning : defaultValue,
+      sideEffects: sideEffects && sideEffects.trim() ? sideEffects : defaultValue,
       user_id: user._id,
     });
 

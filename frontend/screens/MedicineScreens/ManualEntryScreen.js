@@ -31,6 +31,8 @@ const ManualEntryScreen = () => {
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const defaultValue = "(알 수 없음)";
+
   // "입력완료" 버튼 클릭 시
   const handleSubmit = () => {
     if (!name.trim()) {
@@ -54,13 +56,13 @@ const ManualEntryScreen = () => {
 
       // 백엔드로 보낼 데이터 구성
       const data = {
-        name,
-        prescriptionDate,
+        name: name.trim(),
+        prescriptionDate: prescriptionDate.trim() ? prescriptionDate : defaultValue,
         registerDate: new Date().toISOString().split("T")[0],
-        pharmacy,
-        dosageGuide,
-        warning,
-        sideEffects,
+        pharmacy: pharmacy.trim() ? pharmacy : defaultValue,
+        dosageGuide: dosageGuide.trim() ? dosageGuide : defaultValue,
+        warning: warning.trim() ? warning : defaultValue,
+        sideEffects: sideEffects.trim() ? sideEffects : defaultValue,
       };
 
       const response = await axios.post("http://10.0.2.2:5001/medicines", data, {
@@ -95,6 +97,10 @@ const ManualEntryScreen = () => {
       setLoading(false);
     }
   };
+
+
+  const displayValue = (value) => (value.trim() ? value : defaultValue);
+
 
   return (
     <View style={styles.outerContainer}>
@@ -181,11 +187,21 @@ const ManualEntryScreen = () => {
             <Text style={styles.modalHeader}>입력 내용을 확인해주세요!</Text>
             <ScrollView style={styles.modalContent}>
               <Text style={styles.modalText}>💊 약품명 : {name}</Text>
-              <Text style={styles.modalText}>📅 처방일 : {prescriptionDate}</Text>
-              <Text style={styles.modalText}>🏥 처방 약국 : {pharmacy}</Text>
-              <Text style={styles.modalText}>📝 복용법 : {dosageGuide}</Text>
-              <Text style={styles.modalText}>⚠️ 주의사항 : {warning}</Text>
-              <Text style={styles.modalText}>😷 부작용 : {sideEffects}</Text>
+              <Text style={styles.modalText}>
+                📅 처방일 : {displayValue(prescriptionDate)}
+              </Text>
+              <Text style={styles.modalText}>
+                🏥 처방 약국 : {displayValue(pharmacy)}
+              </Text>
+              <Text style={styles.modalText}>
+                📝 복용법 : {displayValue(dosageGuide)}
+              </Text>
+              <Text style={styles.modalText}>
+                ⚠️ 주의사항 : {displayValue(warning)}
+              </Text>
+              <Text style={styles.modalText}>
+                😷 부작용 : {displayValue(sideEffects)}
+              </Text>
             </ScrollView>
             <View style={styles.modalButtons}>
               <TouchableOpacity

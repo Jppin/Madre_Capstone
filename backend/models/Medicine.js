@@ -7,6 +7,7 @@ const MedicineSchema = new mongoose.Schema({
   pharmacy: { type: String },
   dosageGuide: { type: String },
   warning: { type: String },
+  shape: {type:String},
   sideEffects: { type: String },
   active: { type: Boolean, default: true }, // 복용 여부
   user_id: { type: mongoose.Schema.Types.ObjectId, ref: "UserInfo" },
