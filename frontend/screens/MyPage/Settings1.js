@@ -1,8 +1,12 @@
+//Settings1.js
+
+
 import React, { useContext } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthContext } from "../../context/AuthContext";
 import Feather from "react-native-vector-icons/Feather";
+import axios from "axios";
 import { useNavigation } from "@react-navigation/native"; // ← 추가
 
 function Settings1() {
@@ -36,10 +40,23 @@ function Settings1() {
         text: "탈퇴",
         onPress: async () => {
           try {
-            // 여기서 실제 회원 탈퇴 API 호출 등 로직 추가
+            const token = await AsyncStorage.getItem("token");
+            if (!token) {
+              Alert.alert("오류", "인증 토큰이 없습니다.");
+              return;
+            }
+            // 회원 탈퇴 API 호출 (DELETE 메서드)
+            await axios.delete("http://10.0.2.2:5001/withdraw", {
+              headers: {
+                "Authorization": `Bearer ${token}`,
+              },
+            });
+            // 탈퇴 성공 시 토큰 제거 및 상태 초기화
             await AsyncStorage.removeItem("token");
             setUserData(null);
-            Alert.alert("알림", "탈퇴가 완료되었습니다.");
+            Alert.alert("알림", "회원 탈퇴가 완료되었습니다.");
+            // 로그인 화면(또는 초기 화면)으로 이동 (Stack reset 방식 추천)
+            navigation.reset({ index: 0, routes: [{ name: "Login" }] });
           } catch (error) {
             console.error("회원 탈퇴 오류:", error);
             Alert.alert("오류", "회원 탈퇴 중 문제가 발생했습니다.");
@@ -75,7 +92,7 @@ function Settings1() {
       </TouchableOpacity>
 
       {/* 탈퇴하기 버튼 */}
-      <TouchableOpacity style={styles.button} onPress={handleWithdraw}>
+      <TouchableOpacity style={styles.byebutton} onPress={handleWithdraw}>
         <Text style={styles.buttonText}>탈퇴하기</Text>
       </TouchableOpacity>
     </View>
@@ -106,6 +123,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginVertical: 10,
+  },
+  byebutton: {
+    width: "80%",
+    height: 50,
+    backgroundColor: "red",
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 10,
+
   },
   buttonText: {
     color: "#000",
