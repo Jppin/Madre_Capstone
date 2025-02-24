@@ -654,11 +654,29 @@ app.post("/medicines", async (req, res) => {
       return res.status(404).json({ message: "사용자 정보를 찾을 수 없습니다." });
     }
 
+    // OCR 결과(req.body)를 원하는 필드로 추출
+    const {
+      name,
+      prescriptionDate,
+      registerDate,
+      pharmacy,
+      dosageGuide,
+      warning,
+      sideEffects,
+    } = req.body;
+
+    // 필요한 경우, registerDate는 기본값으로 오늘 날짜 설정
     const newMedicine = new Medicine({
-      ...req.body,
-      user_id: user._id, // ✅ 사용자 ID 추가
-      registerDate: new Date().toISOString().split("T")[0], // 등록일 자동 추가
+      name, // 반드시 OCR 스크립트가 이 필드를 포함하도록 수정
+      prescriptionDate,
+      registerDate: registerDate || new Date().toISOString().split("T")[0],
+      pharmacy,
+      dosageGuide,
+      warning,
+      sideEffects,
+      user_id: user._id,
     });
+
 
     await newMedicine.save();
     res.status(201).json({ message: "약품이 추가되었습니다.", medicine: newMedicine });
