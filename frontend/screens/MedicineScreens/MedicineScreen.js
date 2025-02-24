@@ -603,6 +603,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#000",
     paddingVertical: 6,
+    flexWrap: "wrap",     // 텍스트 줄바꿈 허용
+    flexShrink: 1,        // 공간이 부족하면 축소
+    // 필요한 경우 width를 지정할 수도 있음
   },
   medicineStatus: {
     fontSize: 14,
