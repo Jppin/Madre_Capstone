@@ -53,6 +53,7 @@ const GalleryScreen = ({ navigation }) => {
         headers: { "Content-Type": "multipart/form-data" },
       });
       console.log("서버 응답:", response.data);
+      
 
       // OCR 결과로 약 추가 API 호출 (백엔드에 사용자 정보와 함께 저장)
       const token = await AsyncStorage.getItem("token");
