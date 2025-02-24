@@ -11,5 +11,7 @@ module.exports = (async () => {
   if (!defaultConfig.resolver.assetExts.includes('png')) {
     defaultConfig.resolver.assetExts.push('png');
   }
+    // ✅ JSX 및 TSX 파일을 인식하도록 확장자 설정 추가
+    defaultConfig.resolver.sourceExts = [...defaultConfig.resolver.sourceExts, 'jsx', 'tsx'];
   return mergeConfig(defaultConfig, {});
 })();

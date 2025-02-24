@@ -1,0 +1,2 @@
+node_modules/
+.env  # ✅ .env 파일을 Git에 업로드되지 않도록 설정
