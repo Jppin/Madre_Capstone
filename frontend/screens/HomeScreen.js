@@ -81,7 +81,12 @@ const HomeScreen = () => {
   return (
     <>
     <View style={styles.headerContainer}>
-      <Text style={styles.logo}>NutriBox</Text>
+    
+      <Image
+            source={require('../assets/icons/logo2.png')}
+            style={styles.logoIcon}
+          />
+     <Text style={styles.logoText}>NutriBox</Text>
     </View>
     <ScrollView style={styles.scrollContainer}>
         <View style={styles.carouselContainer}>
@@ -157,10 +162,25 @@ const HomeScreen = () => {
         <View style={styles.buttonContainer}>
 
           <TouchableOpacity style={styles.squareButton}>
-            <Text style={styles.buttonText}>{nickname}님 추천 & 비추천 성분 확인</Text>
+          <View style={styles.iconContainer}>
+        </View>
+        <Text style={styles.buttonText}>{nickname}님{'\n'}추천 & 비추천{'\n'} 바로가기</Text>
+            <Image
+            source={require('../assets/icons/likes.png')}
+            style={styles.icon}
+           />
           </TouchableOpacity>
+
           <TouchableOpacity style={styles.squareButton}>
-            <Text style={styles.buttonText}>{nickname}님 맞춤 영양성분 복용가이드</Text>
+             <View style={styles.iconContainer}>
+        </View>
+        <Text style={styles.buttonText}>
+          맞춤 영양성분{'\n'}복용가이드{'\n'}바로가기
+          </Text>
+          <Image
+            source={require('../assets/icons/guide.png')}
+            style={styles.icon}
+          />
           </TouchableOpacity>
 
         </View>
@@ -184,14 +204,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    height: 90,
-    justifyContent: 'flex-end',
+    height: 100,
+    justifyContent: 'flex-start',
+    flexDirection: 'row', // 아이콘과 텍스트를 수평으로 나열
     alignItems: 'center',
   },
-  logo: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    color: '#000',
+  logoText: {
+    fontSize: 40, // 텍스트 크기
+    fontWeight: 'bold', // 텍스트 굵기
+    color: '#422C14',
+    marginTop : 15
+  },
+  logoIcon : {
+    width: 85, // 로고의 너비
+    height: 75, // 로고의 높이
+    marginRight: 10, // 로고와 텍스트 사이의 간격
+
   },
   carouselContainer: {
     alignItems: 'center',
@@ -252,23 +280,42 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginVertical: 20,
+    marginVertical: 10,
   },
   squareButton: {
     backgroundColor: '#FFF5EE',
-    padding: 20,
-    borderRadius: 10,
-    width: '45%',
-    aspectRatio: 1,
-    alignItems: 'center',
+    alignItems: 'left',
     justifyContent: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    elevation: 3,
+    shadowOffset: { width: 1, height: 1 },
+    shadowColor: '#333',
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    width: 175, // 버튼의 너비
   },
   buttonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FF4500',
+    fontSize: 14,
     textAlign: 'center',
+    color: '#333',
+    textAlign : 'left'
+
   },
+  icon : {
+    width: 40, // 아이콘 크기 조정
+    height: 40,
+    position: 'absolute', // 절대 위치 설정
+    right: 10, // 오른쪽에서 10px 떨어진 곳
+    bottom: 10, // 아래에서 10px 떨어진 곳
+    
+  },
+  iconContainer : {
+    marginBottom: 20, // 아이콘과 텍스트 사이의 간격
+  
+  },
+
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',

@@ -8,7 +8,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import MedicineNavigator from "./MedicineNavigator";
 import NutritionScreen from '../screens/NutritionScreen';
-import YoutubeScreen from '../screens/YoutubeScreen';
+import YoutubeScreen from '../screens/Youtube/YoutubeScreen';
 import MyPageScreen from "../screens/MyPage/MyPageScreen";
 
 
