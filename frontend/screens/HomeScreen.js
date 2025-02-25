@@ -1,9 +1,13 @@
+//HomeScreen.js
+
+//HomeScreen.js
+
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { AuthContext } from '../context/AuthContext';
 
 const { width } = Dimensions.get('window');
@@ -34,41 +38,48 @@ const HomeScreen = () => {
     return () => clearInterval(interval);
   }, [pageIndex, images.length]);
 
+  const isFocused = useIsFocused();
+
   useEffect(() => {
-    if (userConcerns.length > 0 && !selectedConcern) {
-      setSelectedConcern(userConcerns[0]);
-  }
+    // 백엔드에서 사용자 정보를 불러오는 함수 (AsyncStorage의 토큰 사용)
     const fetchUserData = async () => {
       try {
-          const storedNickname = await AsyncStorage.getItem("user_nickname");
-          const storedConcerns = await AsyncStorage.getItem("user_concerns");
-          const storedLikes = await AsyncStorage.getItem("liked_nutrients");
-          setNickname(storedNickname || "사용자");
-          const parsedConcerns = storedConcerns ? JSON.parse(storedConcerns) : [];
-          setUserConcerns(parsedConcerns);
-          if (parsedConcerns.length > 0) {
-              setSelectedConcern(parsedConcerns[0]);
+        const token = await AsyncStorage.getItem("token");
+        const response = await fetch("http://10.0.2.2:5001/user-full-data", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
           }
-          setLikedNutrients(storedLikes ? JSON.parse(storedLikes) : {});
+        });
+        const json = await response.json();
+        if (json.status === "ok") {
+          setNickname(json.data.nickname || "사용자");
+          setUserConcerns(json.data.concerns || []);
+          if (json.data.concerns && json.data.concerns.length > 0) {
+            setSelectedConcern(json.data.concerns[0]);
+          }
+        } else {
+          console.error("사용자 데이터를 불러오는 중 오류:", json.message);
+        }
+        // 기존에 저장된 좋아요 정보는 AsyncStorage에서 불러옴
+        const storedLikes = await AsyncStorage.getItem("liked_nutrients");
+        setLikedNutrients(storedLikes ? JSON.parse(storedLikes) : {});
       } catch (error) {
-          console.error("데이터 불러오기 오류:", error);
+        console.error("데이터 불러오기 오류:", error);
       }
     };
 
     fetchUserData();
-    if (userConcerns.length > 0) {
-      setSelectedConcern(userConcerns[0]);
-    }
-  }, []);
+  }, [isFocused]);
 
   const toggleLike = async (nutrient) => {
     setLikedNutrients(prev => {
-        const updatedLikes = { ...prev, [nutrient]: !prev[nutrient] };
-        AsyncStorage.setItem("liked_nutrients", JSON.stringify(updatedLikes));
-        return updatedLikes;
+      const updatedLikes = { ...prev, [nutrient]: !prev[nutrient] };
+      AsyncStorage.setItem("liked_nutrients", JSON.stringify(updatedLikes));
+      return updatedLikes;
     });
   };
-
 
   const toggleConcern = (concern) => {
     setSelectedConcern(prev => (prev === concern ? null : concern));
@@ -80,15 +91,14 @@ const HomeScreen = () => {
 
   return (
     <>
-    <View style={styles.headerContainer}>
-    
-      <Image
-            source={require('../assets/icons/logo2.png')}
-            style={styles.logoIcon}
-          />
-     <Text style={styles.logoText}>NutriBox</Text>
-    </View>
-    <ScrollView style={styles.scrollContainer}>
+      <View style={styles.headerContainer}>
+        <Image
+          source={require('../assets/icons/logo2.png')}
+          style={styles.logoIcon}
+        />
+        <Text style={styles.logoText}>NutriBox</Text>
+      </View>
+      <ScrollView style={styles.scrollContainer}>
         <View style={styles.carouselContainer}>
           <PagerView
             ref={pagerRef}
@@ -110,7 +120,6 @@ const HomeScreen = () => {
         </View>
 
         <View style={styles.recommendationSection}>
-
           <Text style={styles.sectionTitle} numberOfLines={2} adjustsFontSizeToFit>
             {nickname}님의 건강 고민에 딱 맞는 영양성분 추천
           </Text>
@@ -118,7 +127,6 @@ const HomeScreen = () => {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagScroll}>
             {userConcerns.length > 0 ? (
               userConcerns.map((tag, index) => (
-
                 <TouchableOpacity key={index} style={[styles.tag, selectedConcern === tag && styles.selectedTag]} onPress={() => toggleConcern(tag)}>
                   <Text style={[styles.tagText, selectedConcern === tag && styles.selectedTagText]}>{tag}</Text>
                 </TouchableOpacity>
@@ -129,7 +137,6 @@ const HomeScreen = () => {
           </ScrollView>
 
           {selectedConcern && (
-
             <View>
               <View style={styles.recommendationBox}>
                 <Text style={styles.recommendationTitle}>추천 이유</Text>
@@ -141,7 +148,6 @@ const HomeScreen = () => {
                   <TouchableOpacity key={index} style={styles.nutrientBox} onPress={() => navigateToDetail(nutrient)}>
                     <Image source={require('../assets/icons/nutrientEx1.png')} style={styles.nutrientIcon} />
                     <Text style={styles.nutrientText} numberOfLines={1} ellipsizeMode="tail">{nutrient}</Text>
-
                     {/* 하트 아이콘을 우측 상단에 고정 */}
                     <TouchableOpacity onPress={() => toggleLike(nutrient)} style={styles.heartButton}>
                       <Icon 
@@ -150,45 +156,38 @@ const HomeScreen = () => {
                         color="red" 
                       />
                     </TouchableOpacity>
-                </TouchableOpacity>
-
+                  </TouchableOpacity>
                 ))}
               </ScrollView>
             </View>
-
           )}
         </View>
 
         <View style={styles.buttonContainer}>
-
           <TouchableOpacity style={styles.squareButton}>
-          <View style={styles.iconContainer}>
-        </View>
-        <Text style={styles.buttonText}>{nickname}님{'\n'}추천 & 비추천{'\n'} 바로가기</Text>
+            <View style={styles.iconContainer}></View>
+            <Text style={styles.buttonText}>
+              {nickname}님{'\n'}추천 & 비추천{'\n'} 바로가기
+            </Text>
             <Image
-            source={require('../assets/icons/likes.png')}
-            style={styles.icon}
-           />
+              source={require('../assets/icons/likes.png')}
+              style={styles.icon}
+            />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.squareButton}>
-             <View style={styles.iconContainer}>
-        </View>
-        <Text style={styles.buttonText}>
-          맞춤 영양성분{'\n'}복용가이드{'\n'}바로가기
-          </Text>
-          <Image
-            source={require('../assets/icons/guide.png')}
-            style={styles.icon}
-          />
+            <View style={styles.iconContainer}></View>
+            <Text style={styles.buttonText}>
+              맞춤 영양성분{'\n'}복용가이드{'\n'}바로가기
+            </Text>
+            <Image
+              source={require('../assets/icons/guide.png')}
+              style={styles.icon}
+            />
           </TouchableOpacity>
-
         </View>
-
-
-    </ScrollView>
+      </ScrollView>
     </>
-    
   );
 };
 
@@ -219,7 +218,6 @@ const styles = StyleSheet.create({
     width: 85, // 로고의 너비
     height: 75, // 로고의 높이
     marginRight: 10, // 로고와 텍스트 사이의 간격
-
   },
   carouselContainer: {
     alignItems: 'center',
@@ -301,7 +299,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333',
     textAlign : 'left'
-
   },
   icon : {
     width: 40, // 아이콘 크기 조정
@@ -309,13 +306,10 @@ const styles = StyleSheet.create({
     position: 'absolute', // 절대 위치 설정
     right: 10, // 오른쪽에서 10px 떨어진 곳
     bottom: 10, // 아래에서 10px 떨어진 곳
-    
   },
   iconContainer : {
     marginBottom: 20, // 아이콘과 텍스트 사이의 간격
-  
   },
-
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -365,7 +359,7 @@ const styles = StyleSheet.create({
     top: 8,
     right: 8,
     zIndex: 10,
-  },  
+  },
   recommendationBox: {
     backgroundColor: '#F0F8FF',
     padding: 15,
@@ -381,7 +375,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
   },
-  
 });
 
 export default HomeScreen;
