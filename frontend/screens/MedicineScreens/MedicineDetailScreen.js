@@ -1,7 +1,7 @@
 //MedicineDetailScreen.js
 
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -20,51 +20,118 @@ const MedicineDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { medicine, toggleMedicine } = route.params;
-  
-  
-  console.log("MedicineDetailScreen received medicine:", medicine);
 
+
+// 안전하게 medicine 데이터 초기화: 값이 없으면 빈 배열로 설정
+let initialList = [];
+if (medicine) {
+  initialList = Array.isArray(medicine) ? medicine : [medicine];
+}
+
+  
+  // 다중 모드 여부 판단: medicine이 배열이면 true, 아니면 false
+  const isMultiMode = Array.isArray(medicine);
+  
+  // 다중 모드면 medicineList 상태에 배열을, 단일 모드면 배열에 단일 객체를 저장
+  const [medicineList, setMedicineList] = useState(isMultiMode ? medicine : [medicine]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  // 현재 선택된 약품
+  const currentMedicine = medicineList[currentIndex] || null;
+  
+  // 기본값 설정
   const defaultValue = "(알 수 없음)";
-
-  // 초기 데이터: 각 필드가 비어있으면 기본값 할당
-  const initialData = {
-    name: medicine.name && medicine.name.trim() ? medicine.name : defaultValue,
-    pharmacy: medicine.pharmacy && medicine.pharmacy.trim() ? medicine.pharmacy : defaultValue,
-    prescriptionDate: medicine.prescriptionDate && medicine.prescriptionDate.trim() ? medicine.prescriptionDate : defaultValue,
-    registerDate: medicine.registerDate && medicine.registerDate.trim() ? medicine.registerDate : defaultValue,
-    dosageGuide: medicine.dosageGuide && medicine.dosageGuide.trim() ? medicine.dosageGuide : defaultValue,
-    warning: medicine.warning && medicine.warning.trim() ? medicine.warning : defaultValue,
-    sideEffects: medicine.sideEffects && medicine.sideEffects.trim() ? medicine.sideEffects : defaultValue,
-    appearance: medicine.appearance && medicine.appearance.trim() ? medicine.appearance : defaultValue,
+  
+  // 현재 약품으로부터 초기 편집 데이터를 생성하는 함수
+  const getInitialData = (med) => {
+    if (!med) {
+      return {
+        name: defaultValue,
+        pharmacy: defaultValue,
+        prescriptionDate: defaultValue,
+        registerDate: defaultValue,
+        dosageGuide: defaultValue,
+        warning: defaultValue,
+        sideEffects: defaultValue,
+        appearance: defaultValue,
+      };
+    }
+    return {
+      name: med.name && med.name.trim() ? med.name : defaultValue,
+      pharmacy: med.pharmacy && med.pharmacy.trim() ? med.pharmacy : defaultValue,
+      prescriptionDate:
+        med.prescriptionDate && med.prescriptionDate.trim()
+          ? med.prescriptionDate
+          : defaultValue,
+      registerDate:
+        med.registerDate && med.registerDate.trim()
+          ? med.registerDate
+          : defaultValue,
+      dosageGuide:
+        med.dosageGuide && med.dosageGuide.trim()
+          ? med.dosageGuide
+          : defaultValue,
+      warning:
+        med.warning && med.warning.trim() ? med.warning : defaultValue,
+      sideEffects:
+        med.sideEffects && med.sideEffects.trim()
+          ? med.sideEffects
+          : defaultValue,
+      appearance:
+        med.appearance && med.appearance.trim()
+          ? med.appearance
+          : defaultValue,
+    };
   };
-
-  // 수정 모드 여부와 수정할 데이터 상태
+  
+  // 편집 데이터와 복용 상태는 현재 약품이 바뀔 때마다 업데이트
+  const [editedData, setEditedData] = useState(getInitialData(currentMedicine));
+  const [localActive, setLocalActive] = useState(() => {
+    return medicineList.length > 0 && medicineList[currentIndex]
+      ? medicineList[currentIndex].active
+      : false;
+  });
+  
   const [editMode, setEditMode] = useState(false);
-  const [editedData, setEditedData] = useState(initialData);
-  const [localActive, setLocalActive] = useState(medicine.active);
+  
 
+
+  useEffect(() => {
+  if (medicineList.length > 0 && medicineList[currentIndex]) {
+    setEditedData(getInitialData(medicineList[currentIndex]));
+    setLocalActive(medicineList[currentIndex].active);
+  } else {
+    // 데이터가 없을 경우 기본값으로 설정
+    setEditedData(getInitialData(null));
+    setLocalActive(false);
+  }
+}, [currentIndex, medicineList]);
+  
+
+
+
+  // 복용 상태 토글 함수: 현재 약품 id 사용
   const toggleSwitch = async () => {
     setLocalActive((prev) => !prev);
-    await toggleMedicine(medicine._id);
+    if (toggleMedicine && typeof toggleMedicine === "function") {
+      await toggleMedicine(currentMedicine._id);
+    }
+    // 로컬에서 현재 약품 상태 업데이트
+    const updatedList = [...medicineList];
+    updatedList[currentIndex] = { ...currentMedicine, active: !currentMedicine.active };
+    setMedicineList(updatedList);
   };
-
-
-
-
-
-
-
-  // 수정 완료 후 업데이트 요청 및 페이지 reload
+  
+  // 수정 요청: 현재 약품의 id를 사용하여 PUT 요청을 보냄
   const handleUpdate = async () => {
+    if (!currentMedicine) return;
     try {
       const token = await AsyncStorage.getItem("token");
       if (!token) {
         Alert.alert("오류", "인증 토큰이 없습니다. 다시 로그인 해주세요.");
         return;
       }
-      // PUT 요청: 모든 필드가 기본값 또는 수정된 값으로 보내짐
-      console.log("PUT 요청할 _id:", medicine._id);  // _id가 제대로 있는지 확인
-      const response = await fetch(`http://10.0.2.2:5001/medicines/${medicine._id}`, {
+      const response = await fetch(`http://10.0.2.2:5001/medicines/${currentMedicine._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -76,10 +143,11 @@ const MedicineDetailScreen = () => {
         const updatedData = await response.json();
         Alert.alert("완료", "약품 정보가 수정되었습니다.");
         setEditMode(false);
-        navigation.replace("MedicineDetailScreen", {
-          medicine: updatedData.medicine,
-          toggleMedicine: toggleMedicine,
-        });
+        // 현재 약품 업데이트 후 리스트에 반영
+        const updatedMedicine = updatedData.medicine;
+        const updatedList = [...medicineList];
+        updatedList[currentIndex] = updatedMedicine;
+        setMedicineList(updatedList);
       } else {
         Alert.alert("오류", "수정에 실패했습니다.");
       }
@@ -88,10 +156,42 @@ const MedicineDetailScreen = () => {
       Alert.alert("오류", "수정 중 문제가 발생했습니다.");
     }
   };
+  
+  
+  
+  // 다중 모드일 때 이전/다음 버튼 핸들러
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+      setEditMode(false);
+    }
+  };
+  
+  const handleNext = () => {
+    if (currentIndex < medicineList.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+      setEditMode(false);
+    }
+  };
 
-  // displayValue 함수: 화면에 출력할 때 사용 (수정 모드가 아닐 때)
+// 만약 medicineList에 데이터가 없다면 로딩 또는 에러 메시지 표시
+if (!currentMedicine) {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.headerTitle}>약품 데이터가 없습니다.</Text>
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <Text style={{ color: "#fff" }}>뒤로가기</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+  // 단순 출력 시 기본값 처리 함수
   const displayValue = (value) =>
     value && value.trim().length > 0 ? value : defaultValue;
+
+
+
 
   return (
     <View style={styles.container}>
@@ -111,7 +211,44 @@ const MedicineDetailScreen = () => {
           </TouchableOpacity>
         )}
       </View>
-
+      
+      {/* 다중 모드일 때만 이전/다음 네비게이션 버튼 표시 */}
+      {isMultiMode && (
+        <View style={styles.multiNav}>
+          <TouchableOpacity
+            onPress={handlePrevious}
+            disabled={currentIndex === 0}
+            style={styles.navButton}
+          >
+            <Text
+              style={[
+                styles.navButtonText,
+                currentIndex === 0 && styles.navButtonDisabled,
+              ]}
+            >
+              이전
+            </Text>
+          </TouchableOpacity>
+          <Text style={styles.navIndicator}>
+            {currentIndex + 1} / {medicineList.length}
+          </Text>
+          <TouchableOpacity
+            onPress={handleNext}
+            disabled={currentIndex === medicineList.length - 1}
+            style={styles.navButton}
+          >
+            <Text
+              style={[
+                styles.navButtonText,
+                currentIndex === medicineList.length - 1 && styles.navButtonDisabled,
+              ]}
+            >
+              다음
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      
       <View style={styles.wrapper}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {/* 약품 정보 카드 */}
@@ -121,11 +258,13 @@ const MedicineDetailScreen = () => {
                 <TextInput
                   style={[styles.medicineName, { padding: 0 }]}
                   value={editedData.name}
-                  onChangeText={(text) => setEditedData({ ...editedData, name: text })}
+                  onChangeText={(text) =>
+                    setEditedData({ ...editedData, name: text })
+                  }
                   multiline
                 />
               ) : (
-                <Text style={styles.medicineName}>{displayValue(medicine.name)}</Text>
+                <Text style={styles.medicineName}>{displayValue(currentMedicine.name)}</Text>
               )}
               <Text style={styles.medicineRemaining}>
                 {localActive ? "(복용 중)" : "(미복용)"}
@@ -139,7 +278,7 @@ const MedicineDetailScreen = () => {
               thumbColor={"#fff"}
             />
           </View>
-
+          
           {/* 약품 상세 테이블 */}
           <View style={styles.detailTable}>
             <View style={styles.row}>
@@ -153,7 +292,7 @@ const MedicineDetailScreen = () => {
                   }
                 />
               ) : (
-                <Text style={styles.value}>{displayValue(medicine.pharmacy)}</Text>
+                <Text style={styles.value}>{displayValue(currentMedicine.pharmacy)}</Text>
               )}
             </View>
             <View style={styles.row}>
@@ -167,7 +306,7 @@ const MedicineDetailScreen = () => {
                   }
                 />
               ) : (
-                <Text style={styles.value}>{displayValue(medicine.prescriptionDate)}</Text>
+                <Text style={styles.value}>{displayValue(currentMedicine.prescriptionDate)}</Text>
               )}
             </View>
             <View style={styles.row}>
@@ -181,7 +320,7 @@ const MedicineDetailScreen = () => {
                   }
                 />
               ) : (
-                <Text style={styles.value}>{displayValue(medicine.registerDate)}</Text>
+                <Text style={styles.value}>{displayValue(currentMedicine.registerDate)}</Text>
               )}
             </View>
             <View style={styles.row}>
@@ -195,7 +334,7 @@ const MedicineDetailScreen = () => {
                   }
                 />
               ) : (
-                <Text style={styles.value}>{displayValue(medicine.appearance)}</Text>
+                <Text style={styles.value}>{displayValue(currentMedicine.appearance)}</Text>
               )}
             </View>
             <View style={styles.row}>
@@ -209,7 +348,7 @@ const MedicineDetailScreen = () => {
                   }
                 />
               ) : (
-                <Text style={styles.importantText}>{displayValue(medicine.dosageGuide)}</Text>
+                <Text style={styles.importantText}>{displayValue(currentMedicine.dosageGuide)}</Text>
               )}
             </View>
             <View style={styles.row}>
@@ -223,7 +362,7 @@ const MedicineDetailScreen = () => {
                   }
                 />
               ) : (
-                <Text style={styles.warningText}>{displayValue(medicine.warning)}</Text>
+                <Text style={styles.warningText}>{displayValue(currentMedicine.warning)}</Text>
               )}
             </View>
             <View style={styles.row}>
@@ -237,7 +376,7 @@ const MedicineDetailScreen = () => {
                   }
                 />
               ) : (
-                <Text style={styles.warningText}>{displayValue(medicine.sideEffects)}</Text>
+                <Text style={styles.warningText}>{displayValue(currentMedicine.sideEffects)}</Text>
               )}
             </View>
           </View>
@@ -274,15 +413,27 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   editButtonText: { color: "#FBAF8B", fontSize: 14, fontWeight: "bold" },
-  updateButton: {
-    backgroundColor: "#FF8E72",
-    paddingVertical: 12,
-    borderRadius: 10,
+  multiNav: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 20,
     marginHorizontal: 20,
+    marginVertical: 10,
   },
-  updateButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  navButton: {
+    padding: 10,
+  },
+  navButtonText: {
+    fontSize: 16,
+    color: "#fff",
+  },
+  navButtonDisabled: {
+    opacity: 0.5,
+  },
+  navIndicator: {
+    fontSize: 16,
+    color: "#fff",
+  },
   content: { flexGrow: 1, padding: 20 },
   medicineCard: {
     backgroundColor: "#fff",
@@ -304,6 +455,9 @@ const styles = StyleSheet.create({
   },
   medicineRemaining: { fontSize: 14, color: "#FBAF8B", marginTop: 5 },
   medicineSwitch: { transform: [{ scale: 1.3 }] },
+  detailTable: {
+    marginTop: 20,
+  },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -324,67 +478,6 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ccc",
     flex: 1,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  modalContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    width: "100%",
-    maxHeight: "80%",
-    padding: 20,
-  },
-  modalHeader: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  modalContent: { marginBottom: 20 },
-  modalText: {
-    fontSize: 16,
-    marginBottom: 5,
-    color: "#333",
-    marginLeft: 20,
-  },
-  modalButtons: { flexDirection: "row", justifyContent: "space-between" },
-  detailButtonWrapper: { position: "absolute", bottom: 12, right: 15 },
-  detailButton: {
-    fontSize: 12,
-    color: "#666",
-    includeFontPadding: false,
-    textAlignVertical: "center",
-  },
-  deleteButton: {
-    position: "absolute",
-    top: 5,
-    right: 5,
-    backgroundColor: "#ff4d4d",
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 4,
-    zIndex: 2,
-  },
-  deleteButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
 });
 
 export default MedicineDetailScreen;
-
-
-
-
