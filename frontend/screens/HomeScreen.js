@@ -1,7 +1,5 @@
 //HomeScreen.js
 
-//HomeScreen.js
-
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import PagerView from 'react-native-pager-view';
