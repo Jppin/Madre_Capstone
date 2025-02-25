@@ -19,30 +19,26 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 const MedicineDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { medicine, toggleMedicine } = route.params;
+  // 부모에서 "medicine", "currentIndex", "toggleMedicine"을 전달합니다.
+  const { medicine, currentIndex: initialIndex = 0, toggleMedicine } = route.params || {};
 
-
-// 안전하게 medicine 데이터 초기화: 값이 없으면 빈 배열로 설정
-let initialList = [];
-if (medicine) {
-  initialList = Array.isArray(medicine) ? medicine : [medicine];
-}
-
-  
-  // 다중 모드 여부 판단: medicine이 배열이면 true, 아니면 false
-  const isMultiMode = Array.isArray(medicine);
-  
-  // 다중 모드면 medicineList 상태에 배열을, 단일 모드면 배열에 단일 객체를 저장
-  const [medicineList, setMedicineList] = useState(isMultiMode ? medicine : [medicine]);
+  // medicine이 있으면 배열로 변환, 없으면 빈 배열
+  const initialList = medicine ? (Array.isArray(medicine) ? medicine : [medicine]) : [];
+  const [medicineList, setMedicineList] = useState(initialList);
   const [currentIndex, setCurrentIndex] = useState(0);
-  
-  // 현재 선택된 약품
+  const isMultiMode = medicineList.length > 1;
   const currentMedicine = medicineList[currentIndex] || null;
-  
-  // 기본값 설정
   const defaultValue = "(알 수 없음)";
-  
-  // 현재 약품으로부터 초기 편집 데이터를 생성하는 함수
+
+  console.log("MedicineDetailScreen route.params:", route.params);
+
+  // route.params의 medicine 값이 변경될 때마다 state 업데이트
+  useEffect(() => {
+    const newList = medicine ? (Array.isArray(medicine) ? medicine : [medicine]) : [];
+    setMedicineList(newList);
+    setCurrentIndex(initialIndex);
+  }, [medicine, initialIndex]);
+
   const getInitialData = (med) => {
     if (!med) {
       return {
@@ -64,65 +60,47 @@ if (medicine) {
           ? med.prescriptionDate
           : defaultValue,
       registerDate:
-        med.registerDate && med.registerDate.trim()
-          ? med.registerDate
-          : defaultValue,
+        med.registerDate && med.registerDate.trim() ? med.registerDate : defaultValue,
       dosageGuide:
-        med.dosageGuide && med.dosageGuide.trim()
-          ? med.dosageGuide
-          : defaultValue,
+        med.dosageGuide && med.dosageGuide.trim() ? med.dosageGuide : defaultValue,
       warning:
         med.warning && med.warning.trim() ? med.warning : defaultValue,
       sideEffects:
-        med.sideEffects && med.sideEffects.trim()
-          ? med.sideEffects
-          : defaultValue,
+        med.sideEffects && med.sideEffects.trim() ? med.sideEffects : defaultValue,
       appearance:
-        med.appearance && med.appearance.trim()
-          ? med.appearance
-          : defaultValue,
+        med.appearance && med.appearance.trim() ? med.appearance : defaultValue,
     };
   };
-  
-  // 편집 데이터와 복용 상태는 현재 약품이 바뀔 때마다 업데이트
-  const [editedData, setEditedData] = useState(getInitialData(currentMedicine));
-  const [localActive, setLocalActive] = useState(() => {
-    return medicineList.length > 0 && medicineList[currentIndex]
-      ? medicineList[currentIndex].active
-      : false;
-  });
-  
-  const [editMode, setEditMode] = useState(false);
-  
 
+  const [editedData, setEditedData] = useState(getInitialData(currentMedicine));
+  const [localActive, setLocalActive] = useState(
+    medicineList.length > 0 && medicineList[currentIndex]
+      ? medicineList[currentIndex].active
+      : false
+  );
+  const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
-  if (medicineList.length > 0 && medicineList[currentIndex]) {
-    setEditedData(getInitialData(medicineList[currentIndex]));
-    setLocalActive(medicineList[currentIndex].active);
-  } else {
-    // 데이터가 없을 경우 기본값으로 설정
-    setEditedData(getInitialData(null));
-    setLocalActive(false);
-  }
-}, [currentIndex, medicineList]);
-  
+    if (medicineList.length > 0 && medicineList[currentIndex]) {
+      setEditedData(getInitialData(medicineList[currentIndex]));
+      setLocalActive(medicineList[currentIndex].active);
+    } else {
+      setEditedData(getInitialData(null));
+      setLocalActive(false);
+    }
+  }, [currentIndex, medicineList]);
 
-
-
-  // 복용 상태 토글 함수: 현재 약품 id 사용
   const toggleSwitch = async () => {
+    if (!currentMedicine) return;
     setLocalActive((prev) => !prev);
     if (toggleMedicine && typeof toggleMedicine === "function") {
       await toggleMedicine(currentMedicine._id);
     }
-    // 로컬에서 현재 약품 상태 업데이트
     const updatedList = [...medicineList];
     updatedList[currentIndex] = { ...currentMedicine, active: !currentMedicine.active };
     setMedicineList(updatedList);
   };
-  
-  // 수정 요청: 현재 약품의 id를 사용하여 PUT 요청을 보냄
+
   const handleUpdate = async () => {
     if (!currentMedicine) return;
     try {
@@ -143,7 +121,6 @@ if (medicine) {
         const updatedData = await response.json();
         Alert.alert("완료", "약품 정보가 수정되었습니다.");
         setEditMode(false);
-        // 현재 약품 업데이트 후 리스트에 반영
         const updatedMedicine = updatedData.medicine;
         const updatedList = [...medicineList];
         updatedList[currentIndex] = updatedMedicine;
@@ -156,17 +133,14 @@ if (medicine) {
       Alert.alert("오류", "수정 중 문제가 발생했습니다.");
     }
   };
-  
-  
-  
-  // 다중 모드일 때 이전/다음 버튼 핸들러
+
   const handlePrevious = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
       setEditMode(false);
     }
   };
-  
+
   const handleNext = () => {
     if (currentIndex < medicineList.length - 1) {
       setCurrentIndex(currentIndex + 1);
@@ -174,24 +148,19 @@ if (medicine) {
     }
   };
 
-// 만약 medicineList에 데이터가 없다면 로딩 또는 에러 메시지 표시
-if (!currentMedicine) {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.headerTitle}>약품 데이터가 없습니다.</Text>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-        <Text style={{ color: "#fff" }}>뒤로가기</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
+  if (!currentMedicine) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.headerTitle}>약품 데이터가 없습니다.</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Text style={{ color: "#fff" }}>뒤로가기</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
-  // 단순 출력 시 기본값 처리 함수
   const displayValue = (value) =>
     value && value.trim().length > 0 ? value : defaultValue;
-
-
-
 
   return (
     <View style={styles.container}>
@@ -211,44 +180,25 @@ if (!currentMedicine) {
           </TouchableOpacity>
         )}
       </View>
-      
-      {/* 다중 모드일 때만 이전/다음 네비게이션 버튼 표시 */}
+
       {isMultiMode && (
         <View style={styles.multiNav}>
-          <TouchableOpacity
-            onPress={handlePrevious}
-            disabled={currentIndex === 0}
-            style={styles.navButton}
-          >
-            <Text
-              style={[
-                styles.navButtonText,
-                currentIndex === 0 && styles.navButtonDisabled,
-              ]}
-            >
+          <TouchableOpacity onPress={handlePrevious} disabled={currentIndex === 0} style={styles.navButton}>
+            <Text style={[styles.navButtonText, currentIndex === 0 && styles.navButtonDisabled]}>
               이전
             </Text>
           </TouchableOpacity>
           <Text style={styles.navIndicator}>
             {currentIndex + 1} / {medicineList.length}
           </Text>
-          <TouchableOpacity
-            onPress={handleNext}
-            disabled={currentIndex === medicineList.length - 1}
-            style={styles.navButton}
-          >
-            <Text
-              style={[
-                styles.navButtonText,
-                currentIndex === medicineList.length - 1 && styles.navButtonDisabled,
-              ]}
-            >
+          <TouchableOpacity onPress={handleNext} disabled={currentIndex === medicineList.length - 1} style={styles.navButton}>
+            <Text style={[styles.navButtonText, currentIndex === medicineList.length - 1 && styles.navButtonDisabled]}>
               다음
             </Text>
           </TouchableOpacity>
         </View>
       )}
-      
+
       <View style={styles.wrapper}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {/* 약품 정보 카드 */}
@@ -258,9 +208,7 @@ if (!currentMedicine) {
                 <TextInput
                   style={[styles.medicineName, { padding: 0 }]}
                   value={editedData.name}
-                  onChangeText={(text) =>
-                    setEditedData({ ...editedData, name: text })
-                  }
+                  onChangeText={(text) => setEditedData({ ...editedData, name: text })}
                   multiline
                 />
               ) : (
@@ -278,7 +226,7 @@ if (!currentMedicine) {
               thumbColor={"#fff"}
             />
           </View>
-          
+
           {/* 약품 상세 테이블 */}
           <View style={styles.detailTable}>
             <View style={styles.row}>
@@ -287,9 +235,7 @@ if (!currentMedicine) {
                 <TextInput
                   style={styles.valueInput}
                   value={editedData.pharmacy}
-                  onChangeText={(text) =>
-                    setEditedData({ ...editedData, pharmacy: text })
-                  }
+                  onChangeText={(text) => setEditedData({ ...editedData, pharmacy: text })}
                 />
               ) : (
                 <Text style={styles.value}>{displayValue(currentMedicine.pharmacy)}</Text>
@@ -301,9 +247,7 @@ if (!currentMedicine) {
                 <TextInput
                   style={styles.valueInput}
                   value={editedData.prescriptionDate}
-                  onChangeText={(text) =>
-                    setEditedData({ ...editedData, prescriptionDate: text })
-                  }
+                  onChangeText={(text) => setEditedData({ ...editedData, prescriptionDate: text })}
                 />
               ) : (
                 <Text style={styles.value}>{displayValue(currentMedicine.prescriptionDate)}</Text>
@@ -315,9 +259,7 @@ if (!currentMedicine) {
                 <TextInput
                   style={styles.valueInput}
                   value={editedData.registerDate}
-                  onChangeText={(text) =>
-                    setEditedData({ ...editedData, registerDate: text })
-                  }
+                  onChangeText={(text) => setEditedData({ ...editedData, registerDate: text })}
                 />
               ) : (
                 <Text style={styles.value}>{displayValue(currentMedicine.registerDate)}</Text>
@@ -329,9 +271,7 @@ if (!currentMedicine) {
                 <TextInput
                   style={styles.valueInput}
                   value={editedData.appearance}
-                  onChangeText={(text) =>
-                    setEditedData({ ...editedData, appearance: text })
-                  }
+                  onChangeText={(text) => setEditedData({ ...editedData, appearance: text })}
                 />
               ) : (
                 <Text style={styles.value}>{displayValue(currentMedicine.appearance)}</Text>
@@ -343,9 +283,7 @@ if (!currentMedicine) {
                 <TextInput
                   style={styles.valueInput}
                   value={editedData.dosageGuide}
-                  onChangeText={(text) =>
-                    setEditedData({ ...editedData, dosageGuide: text })
-                  }
+                  onChangeText={(text) => setEditedData({ ...editedData, dosageGuide: text })}
                 />
               ) : (
                 <Text style={styles.importantText}>{displayValue(currentMedicine.dosageGuide)}</Text>
@@ -357,9 +295,7 @@ if (!currentMedicine) {
                 <TextInput
                   style={styles.valueInput}
                   value={editedData.warning}
-                  onChangeText={(text) =>
-                    setEditedData({ ...editedData, warning: text })
-                  }
+                  onChangeText={(text) => setEditedData({ ...editedData, warning: text })}
                 />
               ) : (
                 <Text style={styles.warningText}>{displayValue(currentMedicine.warning)}</Text>
@@ -371,9 +307,7 @@ if (!currentMedicine) {
                 <TextInput
                   style={styles.valueInput}
                   value={editedData.sideEffects}
-                  onChangeText={(text) =>
-                    setEditedData({ ...editedData, sideEffects: text })
-                  }
+                  onChangeText={(text) => setEditedData({ ...editedData, sideEffects: text })}
                 />
               ) : (
                 <Text style={styles.warningText}>{displayValue(currentMedicine.sideEffects)}</Text>
@@ -420,20 +354,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginVertical: 10,
   },
-  navButton: {
-    padding: 10,
-  },
-  navButtonText: {
-    fontSize: 16,
-    color: "#fff",
-  },
-  navButtonDisabled: {
-    opacity: 0.5,
-  },
-  navIndicator: {
-    fontSize: 16,
-    color: "#fff",
-  },
+  navButton: { padding: 10 },
+  navButtonText: { fontSize: 16, color: "#fff" },
+  navButtonDisabled: { opacity: 0.5 },
+  navIndicator: { fontSize: 16, color: "#fff" },
   content: { flexGrow: 1, padding: 20 },
   medicineCard: {
     backgroundColor: "#fff",
@@ -455,9 +379,7 @@ const styles = StyleSheet.create({
   },
   medicineRemaining: { fontSize: 14, color: "#FBAF8B", marginTop: 5 },
   medicineSwitch: { transform: [{ scale: 1.3 }] },
-  detailTable: {
-    marginTop: 20,
-  },
+  detailTable: { marginTop: 20 },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -481,3 +403,4 @@ const styles = StyleSheet.create({
 });
 
 export default MedicineDetailScreen;
+
