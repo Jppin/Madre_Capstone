@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 40, // 텍스트 크기
     fontWeight: 'bold', // 텍스트 굵기
-    color: '#422C14',
+    color: '#ffffff',
     marginTop : 15
   },
   logoIcon : {
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   activeDot: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#FBAF8B',
   },
   recommendationSection: {
     paddingHorizontal: 20,
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   tag: {
-    backgroundColor: '#E8F1FA',
+    backgroundColor: '#FCDDCE',
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 20,
@@ -265,10 +265,10 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontSize: 14,
-    color: '#007AFF',
+    color: '#ffffff',
   },
   selectedTag: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#F68b50',
   },
   selectedTagText: {
     color: '#fff',
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginVertical: 10,
+    marginBottom: 10,
   },
   squareButton: {
     backgroundColor: '#FFF5EE',
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     shadowColor: '#333',
     shadowOpacity: 0.3,
     shadowRadius: 2,
-    width: 175, // 버튼의 너비
+    width: 165, // 버튼의 너비
   },
   buttonText: {
     fontSize: 14,
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   recommendationBox: {
-    backgroundColor: '#F0F8FF',
+    backgroundColor: '#FCDDCE',
     padding: 15,
     borderRadius: 10,
     marginVertical: 10,
