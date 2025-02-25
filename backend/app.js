@@ -679,6 +679,8 @@ app.get("/medicines", async (req, res) => {
 
 
 
+
+
 // ✅ 새 약품 추가 (프론트엔드에서 새 약 등록 시 사용)
 app.post("/medicines", async (req, res) => {
   try {
@@ -695,55 +697,74 @@ app.post("/medicines", async (req, res) => {
       return res.status(404).json({ message: "사용자 정보를 찾을 수 없습니다." });
     }
 
-    // OCR 결과(req.body)를 원하는 필드로 추출
-    const {
-      name,
-      prescriptionDate,
-      registerDate,
-      pharmacy,
-      dosageGuide,
-      warning,
-      sideEffects,
-      appearance,
-    } = req.body;
-
-
-    const defaultValue = "(알 수 없음)";
-
-    // 같은 이름의 약품이 이미 등록되어 있는지 확인 (해당 사용자 기준)
-    const duplicate = await Medicine.findOne({ name: name, user_id: user._id });
-    if (duplicate) {
-      return res.status(400).json({ message: "같은 이름의 약품" });
+    // req.body가 배열이 아닐 경우 배열로 변환
+    let medicinesData = req.body;
+    if (!Array.isArray(medicinesData)) {
+      medicinesData = [medicinesData];
     }
 
+    // 모든 약품 정보에 name 필드가 있는지 검증 (없으면 즉시 오류 반환)
+    for (const med of medicinesData) {
+      if (!med.name) {
+        return res.status(400).json({
+          message:
+            "약품 이름이 인식되지 않았습니다. 보다 정확한 사진으로 다시 시도해 주세요.",
+        });
+      }
+    }
 
+    const defaultValue = "(알 수 없음)";
+    const addedMedicines = [];
 
-    // registerDate는 기본값으로 오늘 날짜 설정
-    const newMedicine = new Medicine({
-      name,
-      prescriptionDate: prescriptionDate && prescriptionDate.trim() ? prescriptionDate : defaultValue,
-      // registerDate는 빈 값이면 오늘 날짜를 사용 (여기선 빈 값은 있을 수 없으므로 그대로)
-      registerDate: registerDate || new Date().toISOString().split("T")[0],
-      pharmacy: pharmacy && pharmacy.trim() ? pharmacy : defaultValue,
-      dosageGuide: dosageGuide && dosageGuide.trim() ? dosageGuide : defaultValue,
-      warning: warning && warning.trim() ? warning : defaultValue,
-      sideEffects: sideEffects && sideEffects.trim() ? sideEffects : defaultValue,
-      appearance: appearance && appearance.trim() ? appearance : defaultValue,
-      user_id: user._id,
-    });
+    // 각 약품에 대해 저장 진행
+    for (const med of medicinesData) {
+      const {
+        name,
+        prescriptionDate,
+        registerDate,
+        pharmacy,
+        dosageGuide,
+        warning,
+        sideEffects,
+        appearance,
+      } = med;
 
+      // 같은 이름의 약품이 이미 등록되어 있는지 확인 (해당 사용자 기준)
+      const duplicate = await Medicine.findOne({ name: name, user_id: user._id });
+      if (duplicate) {
+        return res.status(400).json({ message: "같은 이름의 약품" });
+      }
 
-    await newMedicine.save();
-    const savedMedicine = newMedicine.toObject();
-    console.log("savedMedicine:", savedMedicine);  // _id 확인용 로그
+      // registerDate는 기본값으로 오늘 날짜 설정
+      const newMedicine = new Medicine({
+        name,
+        prescriptionDate: prescriptionDate && prescriptionDate.trim() ? prescriptionDate : defaultValue,
+        registerDate: registerDate || new Date().toISOString().split("T")[0],
+        pharmacy: pharmacy && pharmacy.trim() ? pharmacy : defaultValue,
+        dosageGuide: dosageGuide && dosageGuide.trim() ? dosageGuide : defaultValue,
+        warning: warning && warning.trim() ? warning : defaultValue,
+        sideEffects: sideEffects && sideEffects.trim() ? sideEffects : defaultValue,
+        appearance: appearance && appearance.trim() ? appearance : defaultValue,
+        user_id: user._id,
+      });
 
-    
-    res.status(201).json({ message: "약품이 추가되었습니다.", medicine: newMedicine });
+      await newMedicine.save();
+      console.log("savedMedicine:", newMedicine.toObject());  // _id 확인용 로그
+      addedMedicines.push(newMedicine);
+    }
+
+    // 하나의 약품만 추가된 경우 기존 구조대로 단일 객체 반환, 그 외에는 배열 반환
+    if (addedMedicines.length === 1) {
+      return res.status(201).json({ message: "약품이 추가되었습니다.", medicine: addedMedicines[0] });
+    } else {
+      return res.status(201).json({ message: "약품이 추가되었습니다.", medicines: addedMedicines });
+    }
   } catch (error) {
     console.error("❌ 약품 추가 오류:", error);
-    res.status(500).json({ message: "서버 오류 발생" });
+    return res.status(500).json({ message: "서버 오류 발생" });
   }
 });
+
 
 
 
