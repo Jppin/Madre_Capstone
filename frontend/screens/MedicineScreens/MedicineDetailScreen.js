@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginHorizontal: 20,
-    marginVertical: 10,
+    marginVertical: -10,
   },
   navButton: { padding: 10 },
   navButtonText: { fontSize: 16, color: "#fff" },

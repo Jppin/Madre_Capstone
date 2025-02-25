@@ -72,8 +72,8 @@ const GalleryScreen = ({ navigation }) => {
 
       // 저장된 약품 객체( _id 포함 )를 MedicineDetailScreen에 전달
       const medicineData = saveResponse.data.medicine || saveResponse.data.medicines;
-navigation.replace("MedicineDetailScreen", {
-  medicine: medicineData,
+      navigation.replace("MedicineDetailScreen", {
+      medicine: medicineData,
       });
     } catch (error) {
       console.error("업로드 실패:", error);
