@@ -86,17 +86,16 @@ const CameraScreen = ({ navigation }) => {
       const token = await AsyncStorage.getItem("token"); // 인증 토큰 가져오기
       if (!token) return;
 
-      const saveResponse = await axios.post("http://10.0.2.2:5001/medicines", response.data.medicine, {
+      const saveResponse = await axios.post(
+        "http://10.0.2.2:5001/medicines", response.data.medicine, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
       // 여기서 saveResponse.data.medicine는 MongoDB에 저장된 약품 객체이며 _id가 포함됨.
-      navigation.replace("MedicineDetailScreen", { medicine: saveResponse.data.medicine });
-
-
-      navigation.replace("MedicineDetailScreen", { medicine: response.data.medicine });
+      const medicineData = saveResponse.data.medicine || saveResponse.data.medicines;
+      navigation.replace("MedicineDetailScreen", { medicine: medicineData });
     } catch (error) {
       console.error("업로드 실패:", error);
     } finally {
