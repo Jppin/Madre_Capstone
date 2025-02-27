@@ -19,7 +19,7 @@ const YoutubeScreen = () => {
     const fetchVideos = async () => {
       try {
         console.log("🔄 Fetching YouTube Shorts...");
-/*       const response = await axios.get(API_URL);
+   const response = await axios.get(API_URL);
         console.log("✅ API Response:", response.data);
         if (response.data && response.data.results) {
           const extractedVideos = response.data.results.flatMap(item => item.videos || []);
@@ -29,12 +29,19 @@ const YoutubeScreen = () => {
           console.warn("⚠️ Unexpected API response:", response.data);
           setVideos([]);
         }
+        setLikedVideos([
+          { id: "liked1", title: "집에가고싶어지는영상집가고싶음", thumbnail: "../../assets/icons/redshorts.png", channel: "펫TV" },
+        ]);
       } catch (error) {
         console.error("❌ Error fetching YouTube videos:", error);
       } finally {
         setLoading(false);
-      } */
-        setVideos([
+      }      
+  };
+  fetchVideos();
+}, []);
+
+ /*       setVideos([
           {
             id: "test1",
             title: "테스트 영상 1",
@@ -77,19 +84,8 @@ const YoutubeScreen = () => {
             channel: "테스트 채널",
             views: "1,234회",
           },
-        ]);
-        setLikedVideos([
-          { id: "liked1", title: "집에가고싶어지는영상집가고싶음", thumbnail: "../../assets/icons/redshorts.png", channel: "펫TV" },
-        ]);
-      } catch (error) {
-        console.error("❌ Error fetching YouTube videos:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchVideos();
-  }, []);
-
+        ]);  */
+       
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
   }
