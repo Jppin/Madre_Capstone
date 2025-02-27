@@ -31,8 +31,10 @@ mongoose
   .then(() => console.log("Database Connected"))
   .catch((e) => console.log(e));
 
-require("./UserDetails");
+require("./models/UserDetails");
 const User = mongoose.model("UserInfo");
+
+require("./fetchDrugs");
 
 app.get("/", (req, res) => {
   res.send({ status: "Started" });
@@ -45,7 +47,7 @@ app.use(express.json());
 // ✅ 여러 개의 키워드 설정
 const keywords = ["건강 팁", "영양제 추천", "운동 루틴", "약사", "비타민", "피부", "면역력"];
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY; // ✅ .env에서 YouTube API 키 가져오기
-console.log("📢 현재 사용 중인 YOUTUBE_API_KEY:", YOUTUBE_API_KEY)
+//console.log("📢 현재 사용 중인 YOUTUBE_API_KEY:", YOUTUBE_API_KEY)
 
 // ✅ YouTube API 엔드포인트
 app.get("/youtube", async (req, res) => {
@@ -264,10 +266,10 @@ app.get("/user-full-data", async (req, res) => {
     }
 
     const token = authHeader.split(" ")[1];
-    console.log("🟢 서버에서 받은 토큰:", token);
+    //console.log("🟢 서버에서 받은 토큰:", token);
 
     const decoded = jwt.verify(token, JWT_SECRET);
-    console.log("🟢 토큰 해독 결과:", decoded);
+    //console.log("🟢 토큰 해독 결과:", decoded);
     
     const user = await User.findOne({ email: decoded.email });
 
