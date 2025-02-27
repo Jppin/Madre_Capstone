@@ -45,16 +45,19 @@ app.use(express.json());
 // ✅ 여러 개의 키워드 설정
 const keywords = ["건강 팁", "영양제 추천", "운동 루틴", "약사", "비타민", "피부", "면역력"];
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY; // ✅ .env에서 YouTube API 키 가져오기
+console.log("📢 현재 사용 중인 YOUTUBE_API_KEY:", YOUTUBE_API_KEY)
 
 // ✅ YouTube API 엔드포인트
 app.get("/youtube", async (req, res) => {
   try {
+    console.log(" youtube api 호출 시작 ");
     // ✅ 모든 키워드에 대해 병렬로 API 요청
     const videoResults = await Promise.all(
       keywords.map(async (keyword) => {
         const youtubeApiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(keyword)}&type=video&maxResults=10&key=${YOUTUBE_API_KEY}`;
         
         const response = await axios.get(youtubeApiUrl);
+        console.log("✅ YouTube API 응답 수신:", response.data); // ✅ 응답 확인
         const videos = response.data.items.map((item) => ({
           id: item.id.videoId,
           title: item.snippet.title,

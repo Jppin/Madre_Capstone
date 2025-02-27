@@ -12,15 +12,77 @@ const YoutubeScreen = () => {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
+  const [likedVideos, setLikedVideos] = useState([]); // ✅ 사용자가 좋아한 영상 목록 추가
 
 
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const response = await axios.get(API_URL);
-        setVideos(response.data.videos); // 백엔드에서 받은 데이터 저장
+        console.log("🔄 Fetching YouTube Shorts...");
+/*       const response = await axios.get(API_URL);
+        console.log("✅ API Response:", response.data);
+        if (response.data && response.data.results) {
+          const extractedVideos = response.data.results.flatMap(item => item.videos || []);
+          console.log("✅ Extracted Videos:", extractedVideos);
+          setVideos(extractedVideos);
+        } else {
+          console.warn("⚠️ Unexpected API response:", response.data);
+          setVideos([]);
+        }
       } catch (error) {
-        console.error("Error fetching YouTube videos:", error);
+        console.error("❌ Error fetching YouTube videos:", error);
+      } finally {
+        setLoading(false);
+      } */
+        setVideos([
+          {
+            id: "test1",
+            title: "테스트 영상 1",
+            thumbnail: "https://via.placeholder.com/480x360.png?text=Thumbnail",
+            channel: "테스트 채널",
+            views: "1,234회",
+          },
+          {
+            id: "test2",
+            title: "테스트 영상 1",
+            thumbnail: "https://via.placeholder.com/480x360.png?text=Thumbnail",
+            channel: "테스트 채널",
+            views: "1,234회",
+          },
+          {
+            id: "test3",
+            title: "테스트 영상 1",
+            thumbnail: "https://via.placeholder.com/480x360.png?text=Thumbnail",
+            channel: "테스트 채널",
+            views: "1,234회",
+          },
+          {
+            id: "test4",
+            title: "테스트 영상 1",
+            thumbnail: "https://via.placeholder.com/480x360.png?text=Thumbnail",
+            channel: "테스트 채널 왼쪽으로정렬",
+            views: "1,234회",
+          },
+          {
+            id: "test5",
+            title: "테스트 영상 1",
+            thumbnail: "https://via.placeholder.com/480x360.png?text=Thumbnail",
+            channel: "테스트 채널",
+            views: "1,234회",
+          },
+          {
+            id: "test6",
+            title: "테스트 영상 1",
+            thumbnail: "https://via.placeholder.com/480x360.png?text=Thumbnail",
+            channel: "테스트 채널",
+            views: "1,234회",
+          },
+        ]);
+        setLikedVideos([
+          { id: "liked1", title: "집에가고싶어지는영상집가고싶음", thumbnail: "../../assets/icons/redshorts.png", channel: "펫TV" },
+        ]);
+      } catch (error) {
+        console.error("❌ Error fetching YouTube videos:", error);
       } finally {
         setLoading(false);
       }
@@ -37,17 +99,22 @@ const YoutubeScreen = () => {
       style={styles.card} 
       onPress={() => navigation.navigate('PlayerScreen', { videoId: item.id })}
     >
-      <Image
-        source={{ uri: item.snippet.thumbnails.high.url }}
-        style={styles.thumbnail}
-      />
-      <Text style={styles.title}>{item.snippet.title}</Text>
-      <Text style={styles.description}>{item.snippet.channelTitle}</Text>
+      <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
+      <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
+      
+
+     
+      {/* 🔹 채널명과 조회수 (왼쪽 정렬) */}
+      <View style={styles.videoInfo}>
+        <Text style={styles.channel}>{item.channel}</Text>
+        <Text style={styles.views}>{item.views ? `${item.views}회` : ""}</Text>
+      </View>
     </TouchableOpacity>
   );
 
 
   return (
+
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <Image
@@ -64,6 +131,31 @@ const YoutubeScreen = () => {
         </View>
       </View>
 
+  {/* ✅ 사용자가 좋아한 영상 (최상단 카드) */}
+  <View style={styles.likedContainer}>
+      {likedVideos.length > 0 && (
+        <TouchableOpacity
+          style={styles.likedCard}
+          onPress={() => navigation.navigate('LikedVideosScreen')} // ✅ 클릭 시 좋아한 동영상 목록 페이지로 이동
+        >
+          <Image source={{ uri: likedVideos[0].thumbnail }} style={styles.likedThumbnail} />
+
+          {/* ✅ 중앙 Like 아이콘 */}
+        <View style={styles.likeOverlay}>
+           <Image source={require("../../assets/icons/orangelike.png")} style={styles.likeIcon} />
+             <Text style={styles.likeText}>Likes</Text>
+         </View>
+        </TouchableOpacity>
+         
+      )}
+      {/* ✅ "Likes" 라벨 (카드 옆 공간에 배치) */}
+
+    <Text style={styles.likeLabelText}>▶   내가 좋아한 동영상 </Text>
+
+
+</View>
+  
+  {/* ✅ 쇼츠 영상 (그리드) */}
       <FlatList
         data={videos}
         renderItem={renderItem}
@@ -123,27 +215,106 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   card: {
-    backgroundColor: 'white',
-    borderRadius: 8,
-    padding: 10,
+    backgroundColor: 'black',
+    borderRadius: 10,
     flex: 1,
     alignItems: 'center',
     margin: 5,
     elevation: 3, // 그림자 효과
   },
   thumbnail: {
-    width: 150,
+    width: "100%", // ✅ 썸네일 꽉 차게
     height: 250,
-    borderRadius: 10,
+    borderTopLeftRadius: 10, // 모서리 둥글게
+    borderTopRightRadius: 8,
   },
   title: {
     fontSize: 14,
-    fontWeight: 'bold',
-    marginTop: 8,
+    fontWeight: "bold",
+    paddingHorizontal: 10,
+    textAlign: "left", // ✅ 제목 왼쪽 정렬
+    color: 'white'
   },
-  description: {
+
+  videoInfo : {
+    flexDirection: "column", // ✅ 채널명 & 조회수 왼쪽 정렬을 위해 column 사용
+    paddingHorizontal: 10,
+    paddingBottom: 10,
+  
+
+  },
+  channel : {
     fontSize: 12,
+    color: "white",
+    textAlign: "left",
+    marginBottom: 2, // 간격 조정
+
   },
+  views : {
+    fontSize: 12,
+    color: "white",
+    textAlign: "left",
+
+  },
+  likedContainer :{ 
+    flexDirection: "row", // ✅ 카드와 Likes 라벨을 가로 정렬
+    alignItems: "center", // ✅ 수직 중앙 정렬
+    marginLeft: 20, // ✅ 전체 왼쪽 배치
+  },
+  likedCard : {
+    marginHorizontal: 10,
+    marginVertical: 20,
+    width : 200,
+    height : 110 , 
+    borderRadius: 15,
+    overflow: "hidden",
+    position: "relative",
+    backgroundColor: "#fff",
+    elevation: 5, // ✅ 그림자 효과 추가
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+
+  
+  },
+  likedThumbnail : {
+    width: "100%",
+    height: 130,
+    borderRadius: 15,
+  },
+  likeOverlay : {
+
+    position: "absolute",
+    top: 26, // ✅ 카드 내부 상단 중앙 배치
+    left: "50%",
+    transform: [{ translateX: -25 }], // 정확히 중앙 정렬
+    alignItems: "center",
+    borderRadius: 50,
+    width: 50,
+    height: 50,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+  },
+
+  likeIcon:{
+    width: 30,
+    height: 30,
+   
+  },
+  likeText : {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: "#FF6F4C",
+    marginTop: 2,
+  }, 
+  likeLabelText : { 
+    color:"gray"
+  }
+
+
 });
 
 export default YoutubeScreen;
