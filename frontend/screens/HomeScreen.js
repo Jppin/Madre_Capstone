@@ -119,7 +119,7 @@ const HomeScreen = () => {
 
         <View style={styles.recommendationSection}>
           <Text style={styles.sectionTitle} numberOfLines={2} adjustsFontSizeToFit>
-            {nickname}님의 건강 고민에 딱 맞는 영양성분 추천
+            {nickname}님의 건강고민 맞춤 영양성분 추천
           </Text>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagScroll}>
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: 'left',
   },
   noConcernsText: {
     fontSize: 14,
@@ -359,18 +359,19 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   recommendationBox: {
-    backgroundColor: '#FCDDCE',
+    backgroundColor: '#A4E0E5',
     padding: 15,
     borderRadius: 10,
     marginVertical: 10,
   },
   recommendationTitle: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: 'bold',
     marginBottom: 5,
+    color : "#117389"
   },
   recommendationText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#555',
   },
 });
