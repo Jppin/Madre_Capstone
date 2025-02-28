@@ -2,6 +2,7 @@ import React,{useEffect,useState} from 'react';
 import {  View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator,StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
@@ -13,6 +14,8 @@ const YoutubeScreen = () => {
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
   const [likedVideos, setLikedVideos] = useState([]); // ✅ 사용자가 좋아한 영상 목록 추가
+  const [nickname, setNickname] = useState("사용자");
+
 
 
   useEffect(() => {
@@ -40,6 +43,30 @@ const YoutubeScreen = () => {
   };
   fetchVideos();
 }, []);
+
+
+
+//사용자 이름 불러오는 유스이펙트
+useEffect(() => {
+  const fetchUserData = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const response = await axios.get("http://10.0.2.2:5001/user-full-data", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if(response.data.status === "ok") {
+        setNickname(response.data.data.nickname || "사용자");
+      } else {
+        console.warn("사용자 데이터 불러오기 실패:", response.data.message);
+      }
+    } catch (error) {
+      console.error("사용자 데이터 불러오기 오류:", error);
+    }
+  };
+  fetchUserData();
+}, []);
+
+
 
  /*       setVideos([
           {
@@ -87,7 +114,7 @@ const YoutubeScreen = () => {
         ]);  */
        
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
+    return <ActivityIndicator size="large" color="#FBAF8B" style={{ flex: 1, justifyContent: 'center' }} />;
   }
 //카드에 썸네일 
   const renderItem = ({ item }) => (
@@ -119,7 +146,7 @@ const YoutubeScreen = () => {
         />
          <View style={styles.textContainer}>
           <Text style={styles.header}>
-            <Text style={styles.whiteText}>홍길동동</Text>
+            <Text style={styles.whiteText}>{nickname}</Text>
             <Text style={styles.blackText}>님</Text>
             {'\n'}
             <Text style={styles.blackText}>맞춤 컨텐츠를 확인하세요!</Text>
