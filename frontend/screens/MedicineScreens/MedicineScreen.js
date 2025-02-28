@@ -14,6 +14,7 @@ import {
   Modal,
   Keyboard,
   Alert,
+  ActivityIndicator
 } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -26,7 +27,7 @@ const MedicineScreen = () => {
   const navigation = useNavigation();
   const isFocused = useIsFocused(); // ✅ 화면 포커스 감지
   const [medicines, setMedicines] = useState([]);
-
+  const [loadingMedicines, setLoadingMedicines] = useState(true);
 
 
 
@@ -46,6 +47,7 @@ const MedicineScreen = () => {
   
   const fetchMedicines = async () => {
     try {
+      setLoadingMedicines(true);
       const token = await AsyncStorage.getItem("token"); // ✅ 저장된 토큰 가져오기
       if (!token) {
         console.error("인증 토큰이 없습니다.");
@@ -63,6 +65,9 @@ const MedicineScreen = () => {
     setMedicines(Array.isArray(data) ? data : []); // ✅ 데이터가 배열인지 확인 후 저장
 } catch (error) {
     console.error("약품 데이터를 불러오는 중 오류 발생:", error);
+}
+finally {
+  setLoadingMedicines(false); // 로딩 종료
 }
   };
   
@@ -282,6 +287,7 @@ const deleteMedicine = async (id) => {
 
 
       {/* 본문 */}
+      
       <View style={styles.container}>
         {/* 추가 및 필터 + 정렬 버튼 */}
         <View style={styles.buttonRow}>
@@ -379,8 +385,13 @@ const deleteMedicine = async (id) => {
 
 
 
-
+        
         {/* 약품 리스트 */}
+        {loadingMedicines ? (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <ActivityIndicator size="large" color="#FBAF8B" />
+  </View>
+  ) : (
         <FlatList
           data={filteredMedicines}
           keyExtractor={(item) => String(item._id)}
@@ -393,6 +404,7 @@ const deleteMedicine = async (id) => {
           )}
           showsVerticalScrollIndicator={false}// ✅ 스크롤바 숨기기
         />
+      )}
       </View>
 
       {/* 필터 팝업 메뉴 */}
