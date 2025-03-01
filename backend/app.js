@@ -7,6 +7,8 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 const { spawn } = require("child_process");
+const Drug = require("./models/Drug");
+const stringSimilarity = require("string-similarity");
 
 
 const axios = require("axios");
@@ -734,25 +736,64 @@ app.post("/medicines", async (req, res) => {
         appearance,
       } = med;
 
+      
+      // ★★ string-similarity를 이용한 drugs 컬렉션 검색 ★★
+      let matchedDrug = null;
+      try {
+        // 후보군을 가져옵니다 (최대 10개)
+        const candidateDrugs = await Drug.find({
+          ITEM_NAME: { $regex: name, $options: "i" },
+        }).limit(10);
+
+        if (candidateDrugs.length > 0) {
+          const candidateNames = candidateDrugs.map((d) => d.ITEM_NAME);
+          const bestMatchResult = stringSimilarity.findBestMatch(name, candidateNames);
+          // 유사도 기준(threshold)은 필요에 따라 조정 (여기서는 0.5로 설정)
+          if (bestMatchResult.bestMatch.rating >= 0.5) {
+            matchedDrug = candidateDrugs.find(
+              (d) => d.ITEM_NAME === bestMatchResult.bestMatch.target
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Drug matching error:", err);
+      }
+
+
+
+/////?????
+      // drugs 컬렉션에서 검색된 결과가 있으면 해당 값을 사용, 없으면 원래 값을 사용
+      const finalName = matchedDrug ? matchedDrug.ITEM_NAME : name;
+      const finalWarning = matchedDrug
+        ? matchedDrug.TYPE_NAME
+        : (warning && warning.trim() ? warning : defaultValue);
+      const finalAppearance = matchedDrug
+        ? matchedDrug.CHART
+        : (appearance && appearance.trim() ? appearance : defaultValue);
+
+
+
       // 같은 이름의 약품이 이미 등록되어 있는지 확인 (해당 사용자 기준)
-      const duplicate = await Medicine.findOne({ name: name, user_id: user._id });
+      const duplicate = await Medicine.findOne({ name: finalName || name, user_id: user._id });
       if (duplicate) {
         return res.status(400).json({ message: "같은 이름의 약품" });
       }
 
       // registerDate는 기본값으로 오늘 날짜 설정
       const newMedicine = new Medicine({
-        name,
+        name: finalName || name,
         prescriptionDate: prescriptionDate && prescriptionDate.trim() ? prescriptionDate : defaultValue,
         registerDate: registerDate || new Date().toISOString().split("T")[0],
         pharmacy: pharmacy && pharmacy.trim() ? pharmacy : defaultValue,
         dosageGuide: dosageGuide && dosageGuide.trim() ? dosageGuide : defaultValue,
-        warning: warning && warning.trim() ? warning : defaultValue,
+        warning: finalWarning || ((warning && warning.trim()) ? warning : defaultValue),
         sideEffects: sideEffects && sideEffects.trim() ? sideEffects : defaultValue,
-        appearance: appearance && appearance.trim() ? appearance : defaultValue,
+        appearance: finalAppearance || ((appearance && appearance.trim()) ? appearance : defaultValue),
         user_id: user._id,
       });
 
+
+      //저장 후 배열에 추가
       await newMedicine.save();
       console.log("savedMedicine:", newMedicine.toObject());  // _id 확인용 로그
       addedMedicines.push(newMedicine);
