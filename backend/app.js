@@ -7,6 +7,7 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 const { spawn } = require("child_process");
+const Drug = require("./models/Drug");
 
 
 const axios = require("axios");
@@ -734,6 +735,16 @@ app.post("/medicines", async (req, res) => {
         appearance,
       } = med;
 
+      // ★ drugs 컬렉션에서 가장 유사한 약품 검색 (대소문자 무시)
+      const matchedDrug = await Drug.findOne({ ITEM_NAME: { $regex: name, $options: "i" } });
+
+      // 매칭된 약이 있으면 해당 데이터를 사용
+      const finalName = matchedDrug ? matchedDrug.ITEM_NAME : name;
+      const finalWarning = matchedDrug ? matchedDrug.TYPE_NAME : (warning && warning.trim() ? warning : defaultValue);
+      const finalAppearance = matchedDrug ? matchedDrug.CHART : (appearance && appearance.trim() ? appearance : defaultValue);
+
+
+
       // 같은 이름의 약품이 이미 등록되어 있는지 확인 (해당 사용자 기준)
       const duplicate = await Medicine.findOne({ name: name, user_id: user._id });
       if (duplicate) {
@@ -742,14 +753,14 @@ app.post("/medicines", async (req, res) => {
 
       // registerDate는 기본값으로 오늘 날짜 설정
       const newMedicine = new Medicine({
-        name,
+        name: finalName || name,
         prescriptionDate: prescriptionDate && prescriptionDate.trim() ? prescriptionDate : defaultValue,
         registerDate: registerDate || new Date().toISOString().split("T")[0],
         pharmacy: pharmacy && pharmacy.trim() ? pharmacy : defaultValue,
         dosageGuide: dosageGuide && dosageGuide.trim() ? dosageGuide : defaultValue,
-        warning: warning && warning.trim() ? warning : defaultValue,
+        warning: finalWarning || ((warning && warning.trim()) ? warning : defaultValue),
         sideEffects: sideEffects && sideEffects.trim() ? sideEffects : defaultValue,
-        appearance: appearance && appearance.trim() ? appearance : defaultValue,
+        appearance: finalAppearance || ((appearance && appearance.trim()) ? appearance : defaultValue),
         user_id: user._id,
       });
 
