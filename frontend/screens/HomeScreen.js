@@ -119,7 +119,7 @@ const HomeScreen = () => {
 
         <View style={styles.recommendationSection}>
           <Text style={styles.sectionTitle} numberOfLines={2} adjustsFontSizeToFit>
-            {nickname}님의 건강 고민에 딱 맞는 영양성분 추천
+            {nickname}님의 건강고민 맞춤 영양성분 추천
           </Text>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagScroll}>
@@ -165,7 +165,7 @@ const HomeScreen = () => {
           <TouchableOpacity style={styles.squareButton}>
             <View style={styles.iconContainer}></View>
             <Text style={styles.buttonText}>
-              {nickname}님{'\n'}추천 & 비추천{'\n'} 바로가기
+              영양성분{'\n'}최고조합 확인하기
             </Text>
             <Image
               source={require('../assets/icons/likes.png')}
@@ -257,18 +257,22 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   tag: {
-    backgroundColor: '#FCDDCE',
+    backgroundColor: 'white',
     paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    borderRadius: 16,
     marginRight: 10,
+    borderWidth: 1, // ✅ 테두리 추가
+    borderColor: '#91969A', // ✅ 테두리 색상 적용
+  
   },
   tagText: {
     fontSize: 14,
-    color: '#ffffff',
+    color:'#s91969A',
   },
   selectedTag: {
-    backgroundColor: '#F68b50',
+    backgroundColor: '#FBAF8B',
+    borderColor : "#FBAF8B"
   },
   selectedTagText: {
     color: '#fff',
@@ -312,7 +316,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: 'left',
   },
   noConcernsText: {
     fontSize: 14,
@@ -359,19 +363,20 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   recommendationBox: {
-    backgroundColor: '#FCDDCE',
+    backgroundColor: '#A4E0E580',
     padding: 15,
     borderRadius: 10,
-    marginVertical: 10,
+    marginVertical: 10, 
   },
   recommendationTitle: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: 'bold',
     marginBottom: 5,
+    color : "#117389"
   },
   recommendationText: {
-    fontSize: 14,
-    color: '#555',
+    fontSize: 12,
+    color: 'black',
   },
 });
 

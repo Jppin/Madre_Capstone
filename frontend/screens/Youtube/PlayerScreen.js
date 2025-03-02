@@ -10,8 +10,13 @@ const PlayerScreen = () => {
   return (
     <View style={{ flex: 1 }}>
       <WebView 
-        source={{ uri: `https://www.youtube.com/embed/${videoId}` }} 
+        source={{ uri: `https://www.youtube.com/embed/${videoId}?autoplay=1&playsinline=1` }} 
         style={{ flex: 1 }} 
+        javaScriptEnabled={true} 
+        domStorageEnabled={true} 
+        allowsInlineMediaPlayback={true}  
+        mediaPlaybackRequiresUserAction={false}  
+        originWhitelist={['*']}
       />
     </View>
   );
