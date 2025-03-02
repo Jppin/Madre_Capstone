@@ -1,194 +1,148 @@
-import React,{useEffect,useState} from 'react';
-import {  View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator,StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+  import React,{useEffect,useState,useContext} from 'react';
+  import {  View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator,StyleSheet } from 'react-native';
+  import { useNavigation } from '@react-navigation/native';
+  import axios from 'axios';
+  import AsyncStorage from '@react-native-async-storage/async-storage'; // ✅ 추가
+  import { AuthContext } from '../../context/AuthContext';
 
 
-
-const API_URL = "http://10.0.2.2:5001/youtube"; // ✅ 백엔드 API 주소 (에뮬레이터용)
-
-
-const YoutubeScreen = () => {
-  const [videos, setVideos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const navigation = useNavigation();
-  const [likedVideos, setLikedVideos] = useState([]); // ✅ 사용자가 좋아한 영상 목록 추가
-  const [nickname, setNickname] = useState("사용자");
+  const API_URL = "http://10.0.2.2:5001/youtube"; // ✅ 백엔드 API 주소 (에뮬레이터용)
 
 
-
-  useEffect(() => {
-    const fetchVideos = async () => {
-      try {
-        console.log("🔄 Fetching YouTube Shorts...");
-   const response = await axios.get(API_URL);
-        console.log("✅ API Response:", response.data);
-        if (response.data && response.data.results) {
-          const extractedVideos = response.data.results.flatMap(item => item.videos || []);
-          console.log("✅ Extracted Videos:", extractedVideos);
-          setVideos(extractedVideos);
-        } else {
-          console.warn("⚠️ Unexpected API response:", response.data);
-          setVideos([]);
-        }
-        setLikedVideos([
-          { id: "liked1", title: "집에가고싶어지는영상집가고싶음", thumbnail: "../../assets/icons/redshorts.png", channel: "펫TV" },
-        ]);
-      } catch (error) {
-        console.error("❌ Error fetching YouTube videos:", error);
-      } finally {
-        setLoading(false);
-      }      
-  };
-  fetchVideos();
-}, []);
-
-
-
-//사용자 이름 불러오는 유스이펙트
-useEffect(() => {
-  const fetchUserData = async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-      const response = await axios.get("http://10.0.2.2:5001/user-full-data", {
-        headers: { "Authorization": `Bearer ${token}` }
+  const YoutubeScreen = () => {
+    const [videos, setVideos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const navigation = useNavigation();
+    const [likedVideos, setLikedVideos] = useState([]); // ✅ 사용자가 좋아한 영상 목록 추가
+    const { getData } = useContext(AuthContext);
+    const [nickname, setNickname] = useState("");
+    useEffect(() => {
+      const fetchUserData = async () => {
+        try {
+          const token = await AsyncStorage.getItem("token");
+          const response = await fetch("http://10.0.2.2:5001/user-full-data", {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+        }   
       });
-      if(response.data.status === "ok") {
-        setNickname(response.data.data.nickname || "사용자");
+      const json = await response.json() ;
+      if (json.status == "ok"){
+        setNickname(json.data.nickname || "사용자");
+
       } else {
-        console.warn("사용자 데이터 불러오기 실패:", response.data.message);
+        console.error("사용자 데이터를 불러오는 중 오류",json.message);
       }
-    } catch (error) {
-      console.error("사용자 데이터 불러오기 오류:", error);
-    }
-  };
-  fetchUserData();
-}, []);
+      }catch (error) {
+          console.error("데이터 불러오기 오류:", error);
+        }
 
+    };
+      fetchUserData() ;
 
-
- /*       setVideos([
-          {
-            id: "test1",
-            title: "테스트 영상 1",
-            thumbnail: "https://via.placeholder.com/480x360.png?text=Thumbnail",
-            channel: "테스트 채널",
-            views: "1,234회",
-          },
-          {
-            id: "test2",
-            title: "테스트 영상 1",
-            thumbnail: "https://via.placeholder.com/480x360.png?text=Thumbnail",
-            channel: "테스트 채널",
-            views: "1,234회",
-          },
-          {
-            id: "test3",
-            title: "테스트 영상 1",
-            thumbnail: "https://via.placeholder.com/480x360.png?text=Thumbnail",
-            channel: "테스트 채널",
-            views: "1,234회",
-          },
-          {
-            id: "test4",
-            title: "테스트 영상 1",
-            thumbnail: "https://via.placeholder.com/480x360.png?text=Thumbnail",
-            channel: "테스트 채널 왼쪽으로정렬",
-            views: "1,234회",
-          },
-          {
-            id: "test5",
-            title: "테스트 영상 1",
-            thumbnail: "https://via.placeholder.com/480x360.png?text=Thumbnail",
-            channel: "테스트 채널",
-            views: "1,234회",
-          },
-          {
-            id: "test6",
-            title: "테스트 영상 1",
-            thumbnail: "https://via.placeholder.com/480x360.png?text=Thumbnail",
-            channel: "테스트 채널",
-            views: "1,234회",
-          },
-        ]);  */
-       
-  if (loading) {
-    return <ActivityIndicator size="large" color="#FBAF8B" style={{ flex: 1, justifyContent: 'center' }} />;
-  }
-//카드에 썸네일 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.card} 
-      onPress={() => navigation.navigate('PlayerScreen', { videoId: item.id })}
-    >
-      <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
-      <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
       
-
-     
-      {/* 🔹 채널명과 조회수 (왼쪽 정렬) */}
-      <View style={styles.videoInfo}>
-        <Text style={styles.channel}>{item.channel}</Text>
-        <Text style={styles.views}>{item.views ? `${item.views}회` : ""}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-
-
-  return (
-
-    <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Image
-          source={require("../../assets/icons/redshorts.png")} 
-          style={styles.iconStyle}
-        />
-         <View style={styles.textContainer}>
-          <Text style={styles.header}>
-            <Text style={styles.whiteText}>{nickname}</Text>
-            <Text style={styles.blackText}>님</Text>
-            {'\n'}
-            <Text style={styles.blackText}>맞춤 컨텐츠를 확인하세요!</Text>
-          </Text>
-        </View>
-      </View>
-
-  {/* ✅ 사용자가 좋아한 영상 (최상단 카드) */}
-  <View style={styles.likedContainer}>
-      {likedVideos.length > 0 && (
-        <TouchableOpacity
-          style={styles.likedCard}
-          onPress={() => navigation.navigate('LikedVideosScreen')} // ✅ 클릭 시 좋아한 동영상 목록 페이지로 이동
-        >
-          <Image source={{ uri: likedVideos[0].thumbnail }} style={styles.likedThumbnail} />
-
-          {/* ✅ 중앙 Like 아이콘 */}
-        <View style={styles.likeOverlay}>
-           <Image source={require("../../assets/icons/orangelike.png")} style={styles.likeIcon} />
-             <Text style={styles.likeText}>Likes</Text>
-         </View>
-        </TouchableOpacity>
-         
-      )}
-      {/* ✅ "Likes" 라벨 (카드 옆 공간에 배치) */}
-
-    <Text style={styles.likeLabelText}>▶   내가 좋아한 동영상 </Text>
-
-
-</View>
+      const fetchVideos = async () => {
+        try {
+          console.log("🔄 Fetching YouTube Shorts...");
+    const response = await axios.get(API_URL);
+          console.log("✅ API Response:", response.data);
+          if (response.data && response.data.results) {
+            const extractedVideos = response.data.results.flatMap(item => item.videos || []);
+            console.log("✅ Extracted Videos:", extractedVideos);
+            setVideos(extractedVideos);
+          } else {
+            console.warn("⚠️ Unexpected API response:", response.data);
+            setVideos([]);
+          }
+          setLikedVideos([
+            { id: "liked1", title: "집에가고싶어지는영상집가고싶음", thumbnail: "../../assets/icons/redshorts.png", channel: "펫TV" },
+          ]);
+        } catch (error) {
+          console.error("❌ Error fetching YouTube videos:", error);
+        } finally {
+          setLoading(false);
+        }      
+    };
+    fetchVideos();
+  }, []);
   
-  {/* ✅ 쇼츠 영상 (그리드) */}
-      <FlatList
-        data={videos}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-      />
-    </View>
-  );
-};
+    if (loading) {
+      return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
+    }
+  //카드에 썸네일 
+    const renderItem = ({ item }) => (
+      <TouchableOpacity 
+        style={styles.card} 
+        onPress={() => navigation.navigate('PlayerScreen', { videoId: item.id })}
+      >
+        <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
+        <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
+        
+
+      
+        {/* 🔹 채널명과 조회수 (왼쪽 정렬) */}
+        <View style={styles.videoInfo}>
+          <Text style={styles.channel}>{item.channel}</Text>
+          <Text style={styles.views}>{item.views ? `${item.views}회` : ""}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+
+
+    return (
+
+      <View style={styles.container}>
+        <View style={styles.headerContainer}>
+          <Image
+            source={require("../../assets/icons/redshorts.png")} 
+            style={styles.iconStyle}
+          />
+          <View style={styles.textContainer}>
+            <Text style={styles.header}>
+              <Text style={styles.whiteText}>{nickname}</Text>
+              <Text style={styles.blackText}>님</Text>
+              {'\n'}
+              <Text style={styles.blackText}>맞춤 컨텐츠를 확인하세요!</Text>
+            </Text>
+          </View>
+        </View>
+
+    {/* ✅ 사용자가 좋아한 영상 (최상단 카드) */}
+    <View style={styles.likedContainer}>
+        {likedVideos.length > 0 && (
+          <TouchableOpacity
+            style={styles.likedCard}
+            onPress={() => navigation.navigate('LikedVideosScreen')} // ✅ 클릭 시 좋아한 동영상 목록 페이지로 이동
+          >
+            <Image source={{ uri: likedVideos[0].thumbnail }} style={styles.likedThumbnail} />
+
+            {/* ✅ 중앙 Like 아이콘 */}
+          <View style={styles.likeOverlay}>
+            <Image source={require("../../assets/icons/orangelike.png")} style={styles.likeIcon} />
+              <Text style={styles.likeText}>Likes</Text>
+          </View>
+          </TouchableOpacity>
+          
+        )}
+        {/* ✅ "Likes" 라벨 (카드 옆 공간에 배치) */}
+
+      <Text style={styles.likeLabelText}>▶   내가 좋아한 동영상 </Text>
+
+
+  </View>
+    
+    {/* ✅ 쇼츠 영상 (그리드) */}
+        <FlatList
+          data={videos}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+        />
+      </View>
+    );
+  };
 
 const styles = StyleSheet.create({
   container: {
