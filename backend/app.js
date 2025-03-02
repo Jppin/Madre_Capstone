@@ -43,7 +43,19 @@ app.get("/", (req, res) => {
 
 app.use(cors()); // 프론트엔드 요청 허용
 app.use(express.json());
+//24시간에 한번만 youtube api 호출하게 하기 
+// ✅ Redis 클라이언트 설정
+const redis = require("redis");
+const client = redis.createClient();
+client.connect().catch(console.error);
 
+
+const CACHE_KEY = "youtube_videos";
+const CACHE_DURATION = 86400; // 24시간 (초)
+// ✅ Redis 연결
+client.on("error", (err) => {
+  console.error("❌ Redis Error:", err);
+});
 // ✅ 여러 개의 키워드 설정
 const keywords = ["건강 팁", "영양제 추천", "운동 루틴", "약사", "비타민", "피부", "면역력"];
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY; // ✅ .env에서 YouTube API 키 가져오기
@@ -52,14 +64,24 @@ const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY; // ✅ .env에서 YouTube A
 // ✅ YouTube API 엔드포인트
 app.get("/youtube", async (req, res) => {
   try {
-    console.log(" youtube api 호출 시작 ");
-    // ✅ 모든 키워드에 대해 병렬로 API 요청
+    console.log("📌 Redis에서 캐시된 데이터 확인 중...");
+    const cachedData = await client.get(CACHE_KEY);
+
+    if (cachedData) {
+      console.log("✅ Redis 캐시 데이터 반환");
+      return res.json({ results: JSON.parse(cachedData) });
+    }
+
+    console.log("🔄 YouTube API 호출 시작...");
+
+    // 🔹 YouTube API 호출 (병렬 요청)
     const videoResults = await Promise.all(
       keywords.map(async (keyword) => {
-        const youtubeApiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(keyword)}&type=video&maxResults=10&key=${YOUTUBE_API_KEY}`;
-        
+        const youtubeApiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(keyword)}&type=video&maxResults=10&videoDuration=short&key=${YOUTUBE_API_KEY}`;
+
         const response = await axios.get(youtubeApiUrl);
-        console.log("✅ YouTube API 응답 수신:", response.data); // ✅ 응답 확인
+        console.log("✅ YouTube API 응답 수신:", response.data);
+
         const videos = response.data.items.map((item) => ({
           id: item.id.videoId,
           title: item.snippet.title,
@@ -67,13 +89,16 @@ app.get("/youtube", async (req, res) => {
           channel: item.snippet.channelTitle,
         }));
 
-        return { keyword, videos }; // ✅ 키워드별 결과 저장
+        return { keyword, videos };
       })
     );
 
-    res.json({ results: videoResults }); // ✅ 모든 키워드의 검색 결과 반환
+    // 🔹 Redis에 데이터 저장 (24시간 캐싱)
+    await client.setEx(CACHE_KEY, CACHE_DURATION, JSON.stringify(videoResults));
+
+    res.json({ results: videoResults });
   } catch (error) {
-    console.error("YouTube API Error:", error);
+    console.error("❌ YouTube API Error:", error?.response?.data || error.message);
     res.status(500).json({ error: "YouTube API 호출 중 오류 발생" });
   }
 });
@@ -926,4 +951,4 @@ const PORT = process.env.PORT || 5001;
 // ✅ 서버 시작
 app.listen(PORT, "0.0.0.0",() => {
   console.log("Node.js server started on port 5001.");
-});
+}) ;
