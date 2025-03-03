@@ -6,15 +6,15 @@ import PagerView from 'react-native-pager-view';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useIsFocused } from '@react-navigation/native';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 
 const { width } = Dimensions.get('window');
 
 const HomeScreen = () => {
   const images = [
-    require('../assets/image1.jpg'),
-    require('../assets/image2.jpg'),
-    require('../assets/image3.jpg')
+    require('../../assets/image1.jpg'),
+    require('../../assets/image2.jpg'),
+    require('../../assets/image3.jpg')
   ];
   const [pageIndex, setPageIndex] = useState(0);
   const pagerRef = useRef(null);
@@ -91,7 +91,7 @@ const HomeScreen = () => {
     <>
       <View style={styles.headerContainer}>
         <Image
-          source={require('../assets/icons/logo2.png')}
+          source={require('../../assets/icons/logo2.png')}
           style={styles.logoIcon}
         />
         <Text style={styles.logoText}>NutriBox</Text>
@@ -144,7 +144,7 @@ const HomeScreen = () => {
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: 'row' }} style={styles.nutrientsScroll}>
                 {allNutrients.map((nutrient, index) => (
                   <TouchableOpacity key={index} style={styles.nutrientBox} onPress={() => navigateToDetail(nutrient)}>
-                    <Image source={require('../assets/icons/nutrientEx1.png')} style={styles.nutrientIcon} />
+                    <Image source={require('../../assets/icons/nutrientEx1.png')} style={styles.nutrientIcon} />
                     <Text style={styles.nutrientText} numberOfLines={1} ellipsizeMode="tail">{nutrient}</Text>
                     {/* 하트 아이콘을 우측 상단에 고정 */}
                     <TouchableOpacity onPress={() => toggleLike(nutrient)} style={styles.heartButton}>
@@ -168,7 +168,7 @@ const HomeScreen = () => {
               영양성분{'\n'}최고조합 확인하기
             </Text>
             <Image
-              source={require('../assets/icons/likes.png')}
+              source={require('../../assets/icons/likes.png')}
               style={styles.icon}
             />
           </TouchableOpacity>
@@ -179,7 +179,7 @@ const HomeScreen = () => {
               맞춤 영양성분{'\n'}복용가이드{'\n'}바로가기
             </Text>
             <Image
-              source={require('../assets/icons/guide.png')}
+              source={require('../../assets/icons/guide.png')}
               style={styles.icon}
             />
           </TouchableOpacity>

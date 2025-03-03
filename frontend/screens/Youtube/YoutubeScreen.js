@@ -68,7 +68,7 @@
   }, []);
   
     if (loading) {
-      return <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center' }} />;
+      return <ActivityIndicator size="large" color="#FBAF8B" style={{ flex: 1, justifyContent: 'center' }} />;
     }
   //카드에 썸네일 
     const renderItem = ({ item }) => (
