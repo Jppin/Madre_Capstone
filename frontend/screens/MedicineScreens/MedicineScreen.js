@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "#FFF",
-    marginVertical: 15,
+    marginVertical: 10,
   },
   searchContainer: {
     position: "relative",
@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     width: "100%",
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#FFFFFF",
     borderRadius: 20,
     paddingHorizontal: 40,
     paddingVertical: 10,
