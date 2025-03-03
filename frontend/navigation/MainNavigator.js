@@ -19,7 +19,7 @@ import Settings1 from '../screens/MyPage/Settings1';
 import ChangePassword from '../screens/MyPage/ChangePassword';
 import Settings2 from '../screens/MyPage/Settings2';
 import Settings3 from '../screens/MyPage/Settings3';
-import NutrientDetail from '../screens/NutrientDetail';
+import NutrientDetail from '../screens/Home/NutrientDetail';
 
 
 const Stack = createStackNavigator();
