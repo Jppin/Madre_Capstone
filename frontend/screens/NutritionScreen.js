@@ -22,7 +22,7 @@ const { width } = Dimensions.get("window");
 const NutrientRecommendationScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [nickname, setNickname] = useState("사용자");
-  const [selectedButton, setSelectedButton] = useState(null);
+  const [selectedButton, setSelectedButton] = useState("recommend");
   const [nutrients, setNutrients] = useState([]);
   const [likedNutrients, setLikedNutrients] = useState({});
   
@@ -326,15 +326,15 @@ const styles = StyleSheet.create({
   },
 
   recommendButtonActive: {
-    backgroundColor: "#A6E3A1",
-    borderColor: "#A6E3A1",
+    backgroundColor: "#238B45",
+    borderColor: "#41AB5D",
   },
   recommendButtonTextActive: {
     color: "#FFF",
   },
   warningButtonActive: {
     backgroundColor: "#FF6B6B",
-    borderColor: "#FF6B6B",
+    borderColor: "#fb6a4a",
   },
   warningButtonTextActive: {
     color: "#FFF",

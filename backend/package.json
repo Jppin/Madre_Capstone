@@ -21,11 +21,8 @@
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.10.0",
     "nodemon": "^3.1.9",
-<<<<<<< HEAD
-    "redis": "^4.7.0"
-=======
+    "redis": "^4.7.0",
     "string-similarity": "^4.0.4"
->>>>>>> main
   },
   "directories": {
     "test": "test"
