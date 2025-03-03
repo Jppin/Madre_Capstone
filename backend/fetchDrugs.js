@@ -62,6 +62,7 @@ async function fetchDataAndUpdateDB() {
                     ENTP_NAME: item.ENTP_NAME,
                     ETC_OTC_CODE: item.ETC_OTC_CODE,
                     CLASS_NO: item.CLASS_NO,
+                    CHART: item.CHART|| "정보 없음",
                     MATERIAL_NAME: item.MATERIAL_NAME?.split(",")[0] || "", // 첫 번째 성분만 저장
                     TYPE_NAME: item["TYPE_NAME  "]?.trim() || "",
                     STORAGE_METHOD: item.STORAGE_METHOD,

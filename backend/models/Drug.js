@@ -7,6 +7,7 @@ const DrugSchema = new mongoose.Schema({
   ENTP_NAME: { type: String, required: true }, // 제조사
   ETC_OTC_CODE: String, // 전문의약품 / 일반의약품
   CLASS_NO: String, // 약품 분류
+  CHART: { type: String },
   MATERIAL_NAME: String, // 주요 성분 (첫 번째 성분만 저장)
   TYPE_NAME: String, // 금기 정보 (예: 임부금기, 첨가제 주의)
   STORAGE_METHOD: String, // 보관 방법
