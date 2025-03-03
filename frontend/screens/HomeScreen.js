@@ -165,7 +165,7 @@ const HomeScreen = () => {
           <TouchableOpacity style={styles.squareButton}>
             <View style={styles.iconContainer}></View>
             <Text style={styles.buttonText}>
-              {nickname}님{'\n'}추천 & 비추천{'\n'} 바로가기
+              {nickname}님{'\n'}추천 & 비추천{'\n'}바로가기
             </Text>
             <Image
               source={require('../assets/icons/likes.png')}
