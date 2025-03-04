@@ -10,6 +10,7 @@ import ManualEntryScreen from '../screens/MedicineScreens/ManualEntryScreen';
 import MedicineDetailScreen from "../screens/MedicineScreens/MedicineDetailScreen";
 import YoutubeScreen from "../screens/Youtube/YoutubeScreen";
 import PlayerScreen from "../screens/Youtube/PlayerScreen.js";
+import LikedvideoScreen from '../screens/Youtube/LikedVideoScreen.js';
 import NameAgeEdit from '../screens/MyPage/NameAgeEdit';
 import AlcoholSmoking from "../screens/MyPage/AlcoholSmoking";
 import ConditionsEdit from '../screens/MyPage/ConditionsEdit';
@@ -19,7 +20,7 @@ import Settings1 from '../screens/MyPage/Settings1';
 import ChangePassword from '../screens/MyPage/ChangePassword';
 import Settings2 from '../screens/MyPage/Settings2';
 import Settings3 from '../screens/MyPage/Settings3';
-import NutrientDetail from '../screens/Home/NutrientDetail';
+import NutrientDetail from '../screens/Home/NutrientDetail';    
 
 
 const Stack = createStackNavigator();
@@ -47,6 +48,7 @@ export default function MainNavigator() {
             <Stack.Screen name="Settings3" component={Settings3}/>
             <Stack.Screen name="YoutubeScreen" component={YoutubeScreen}/>
             <Stack.Screen name="PlayerScreen" component={PlayerScreen}/> 
+            <Stack.Screen name="LikedVideoScreen" component={LikedvideoScreen}/>
 
         </Stack.Navigator>
     );
