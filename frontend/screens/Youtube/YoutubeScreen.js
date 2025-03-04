@@ -55,9 +55,31 @@
             console.warn("⚠️ Unexpected API response:", response.data);
             setVideos([]);
           }
-          setLikedVideos([
-            { id: "liked1", title: "집에가고싶어지는영상집가고싶음", thumbnail: "../../assets/icons/redshorts.png", channel: "펫TV" },
-          ]);
+
+        // ✅ 좋아요한 동영상 (임의의 유튜브 영상 데이터 추가)
+    setLikedVideos([
+      { 
+        id: "liked1", 
+        title: "집에 가고 싶어지는 영상", 
+        thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/0.jpg", 
+        channel: "펫TV", 
+        videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" 
+      },
+      { 
+        id: "liked2", 
+        title: "강아지가 좋아하는 음악", 
+        thumbnail: "https://img.youtube.com/vi/3JZ_D3ELwOQ/0.jpg", 
+        channel: "힐링사운드", 
+        videoUrl: "https://www.youtube.com/watch?v=3JZ_D3ELwOQ" 
+      },
+      { 
+        id: "liked3", 
+        title: "고양이가 반응하는 소리", 
+        thumbnail: "https://img.youtube.com/vi/tgbNymZ7vqY/0.jpg", 
+        channel: "캣TV", 
+        videoUrl: "https://www.youtube.com/watch?v=tgbNymZ7vqY" 
+      },
+    ]);
         } catch (error) {
           console.error("❌ Error fetching YouTube videos:", error);
         } finally {
@@ -113,7 +135,7 @@
         {likedVideos.length > 0 && (
           <TouchableOpacity
             style={styles.likedCard}
-            onPress={() => navigation.navigate('LikedVideosScreen')} // ✅ 클릭 시 좋아한 동영상 목록 페이지로 이동
+            onPress={() => navigation.navigate('LikedVideoScreen',{ likedVideos })} // ✅ 클릭 시 좋아한 동영상 목록 페이지로 이동
           >
             <Image source={{ uri: likedVideos[0].thumbnail }} style={styles.likedThumbnail} />
 
