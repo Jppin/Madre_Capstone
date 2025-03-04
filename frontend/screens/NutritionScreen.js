@@ -141,7 +141,7 @@ useEffect(() => {
         {nickname}님의 대표적인{"\n"}추천/비추천 영양성분이에요
         </Text>
         <View style={styles.buttonRow}>
-          <TouchableOpacity
+          <TouchableOpacity 
             style={[
               styles.buttonBase,
               selectedButton === "recommend" ? styles.recommendButtonActive : null,
@@ -326,8 +326,8 @@ const styles = StyleSheet.create({
   },
 
   recommendButtonActive: {
-    backgroundColor: "#238B45",
-    borderColor: "#41AB5D",
+    backgroundColor: "#BBDA6C",
+    borderColor: "#BBDA6C",
   },
   recommendButtonTextActive: {
     color: "#FFF",
