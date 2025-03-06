@@ -6,15 +6,15 @@ import PagerView from 'react-native-pager-view';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useIsFocused } from '@react-navigation/native';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 
 const { width } = Dimensions.get('window');
 
 const HomeScreen = () => {
   const images = [
-    require('../assets/image1.jpg'),
-    require('../assets/image2.jpg'),
-    require('../assets/image3.jpg')
+    require('../../assets/image1.jpg'),
+    require('../../assets/image2.jpg'),
+    require('../../assets/image3.jpg')
   ];
   const [pageIndex, setPageIndex] = useState(0);
   const pagerRef = useRef(null);
@@ -91,7 +91,7 @@ const HomeScreen = () => {
     <>
       <View style={styles.headerContainer}>
         <Image
-          source={require('../assets/icons/logo2.png')}
+          source={require('../../assets/icons/logo2.png')}
           style={styles.logoIcon}
         />
         <Text style={styles.logoText}>NutriBox</Text>
@@ -119,7 +119,7 @@ const HomeScreen = () => {
 
         <View style={styles.recommendationSection}>
           <Text style={styles.sectionTitle} numberOfLines={2} adjustsFontSizeToFit>
-            {nickname}님의 건강 고민에 딱 맞는 영양성분 추천
+            {nickname}님의 건강고민 맞춤 영양성분 추천
           </Text>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagScroll}>
@@ -144,7 +144,7 @@ const HomeScreen = () => {
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: 'row' }} style={styles.nutrientsScroll}>
                 {allNutrients.map((nutrient, index) => (
                   <TouchableOpacity key={index} style={styles.nutrientBox} onPress={() => navigateToDetail(nutrient)}>
-                    <Image source={require('../assets/icons/nutrientEx1.png')} style={styles.nutrientIcon} />
+                    <Image source={require('../../assets/icons/nutrientEx1.png')} style={styles.nutrientIcon} />
                     <Text style={styles.nutrientText} numberOfLines={1} ellipsizeMode="tail">{nutrient}</Text>
                     {/* 하트 아이콘을 우측 상단에 고정 */}
                     <TouchableOpacity onPress={() => toggleLike(nutrient)} style={styles.heartButton}>
@@ -165,10 +165,10 @@ const HomeScreen = () => {
           <TouchableOpacity style={styles.squareButton}>
             <View style={styles.iconContainer}></View>
             <Text style={styles.buttonText}>
-              {nickname}님{'\n'}추천 & 비추천{'\n'} 바로가기
+              영양성분{'\n'}최고조합 확인하기
             </Text>
             <Image
-              source={require('../assets/icons/likes.png')}
+              source={require('../../assets/icons/likes.png')}
               style={styles.icon}
             />
           </TouchableOpacity>
@@ -179,7 +179,7 @@ const HomeScreen = () => {
               맞춤 영양성분{'\n'}복용가이드{'\n'}바로가기
             </Text>
             <Image
-              source={require('../assets/icons/guide.png')}
+              source={require('../../assets/icons/guide.png')}
               style={styles.icon}
             />
           </TouchableOpacity>
@@ -257,18 +257,22 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   tag: {
-    backgroundColor: '#FCDDCE',
+    backgroundColor: 'white',
     paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    borderRadius: 16,
     marginRight: 10,
+    borderWidth: 1, // ✅ 테두리 추가
+    borderColor: '#91969A', // ✅ 테두리 색상 적용
+  
   },
   tagText: {
     fontSize: 14,
-    color: '#ffffff',
+    color:'#s91969A',
   },
   selectedTag: {
-    backgroundColor: '#F68b50',
+    backgroundColor: '#FBAF8B',
+    borderColor : "#FBAF8B"
   },
   selectedTagText: {
     color: '#fff',
@@ -312,7 +316,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: 'left',
   },
   noConcernsText: {
     fontSize: 14,
@@ -359,19 +363,20 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   recommendationBox: {
-    backgroundColor: '#FCDDCE',
+    backgroundColor: '#A4E0E580',
     padding: 15,
     borderRadius: 10,
-    marginVertical: 10,
+    marginVertical: 10, 
   },
   recommendationTitle: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: 'bold',
     marginBottom: 5,
+    color : "#117389"
   },
   recommendationText: {
-    fontSize: 14,
-    color: '#555',
+    fontSize: 12,
+    color: 'black',
   },
 });
 
