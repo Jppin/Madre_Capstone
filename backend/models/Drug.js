@@ -1,3 +1,5 @@
+//Drug.js
+
 const mongoose = require("mongoose");
 
 // ✅ 약품 데이터 모델 (최소한의 필드만 저장)
@@ -12,6 +14,7 @@ const DrugSchema = new mongoose.Schema({
   TYPE_NAME: String, // 금기 정보 (예: 임부금기, 첨가제 주의)
   STORAGE_METHOD: String, // 보관 방법
   VALID_TERM: String, // 유효 기간
+  CHART: String, //성상
   UPDATE_DATE: { type: Date, default: Date.now, index: -1 },  // ✅ 날짜 인덱스 (최신순 정렬 최적화)
 });
 
