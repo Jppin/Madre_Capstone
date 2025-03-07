@@ -122,7 +122,7 @@ const ConcernsEdit = () => {
                 onPress={() => navigation.goBack()} 
                 style={styles.backButton}
             >
-                <Feather name="chevron-left" size={28} color="#333" />
+                <Feather name="chevron-left" size={40} color="gray" />
             </TouchableOpacity>
 
 
@@ -176,8 +176,8 @@ const styles = StyleSheet.create({
     },
     backButton: {
         position: 'absolute',
-        top: 50,
-        left: 10,
+        top: 20,
+        left: 5,
         zIndex: 10,
         padding: 10,
     },
