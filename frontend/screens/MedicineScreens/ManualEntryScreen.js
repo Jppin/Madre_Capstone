@@ -106,14 +106,8 @@ const ManualEntryScreen = () => {
       <ScrollView contentContainerStyle={styles.container}>
         {/* 헤더 영역에 back button 추가 */}
         <View style={styles.headerContainer}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Image
-              source={require("../../assets/icons/back.png")}
-              style={styles.backIcon}
-            />
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+              <Feather name="chevron-left" size={28} color="white" />
           </TouchableOpacity>
           <Text style={styles.header}>약품 직접 입력</Text>
         </View>
@@ -257,11 +251,7 @@ const styles = StyleSheet.create({
     left: 20,
     zIndex: 1, // 다른 요소보다 위에 있게 합니다.
   },
-  backIcon: {
-    width: 24,
-    height: 24,
-    tintColor: "#FFF",
-  },
+ 
 
   header: {
     fontSize: 24,

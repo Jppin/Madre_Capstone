@@ -119,7 +119,7 @@ const ProfilepicEdit = () => {
                 onPress={() => navigation.goBack()} 
                 style={styles.backButton}
             >
-                <Feather name="chevron-left" size={28} color="#333" />
+                <Feather name="chevron-left" size={40} color="gray" />
             </TouchableOpacity>
 
 
@@ -153,7 +153,7 @@ const ProfilepicEdit = () => {
 
 
         <TouchableOpacity style={styles.cameraButton} onPress={pickImage}>
-          <Text style={styles.buttonText}>📷 갤러리에서 선택</Text>
+          <Text style={styles.buttonText}>📷갤러리에서 선택</Text>
         </TouchableOpacity>
       </View>
 
@@ -174,7 +174,7 @@ const ProfilepicEdit = () => {
           }
         }}
       >
-        <Text style={styles.confirmText}>확인</Text>
+        <Text style={styles.confirmText}>저장</Text>
       </TouchableOpacity>
 
       
@@ -185,8 +185,8 @@ const ProfilepicEdit = () => {
 const styles = StyleSheet.create({
   backButton: {
     position: 'absolute',
-    top: 43,
-    left: 10,
+    top: 20,
+    left: 5,
     zIndex: 10,
     padding: 10,
 },
@@ -194,11 +194,11 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: "bold", marginBottom: 20 },
   imageContainer: { alignItems: "center" },
   profileImage: { width: 180, height: 270, borderWidth: 1, borderColor: "lightgrey" },
-  cameraButton: { marginTop: 10, backgroundColor: "#FBAF8B", padding: 10, borderRadius: 8, width: 200 },
+  cameraButton: { marginTop: 10, backgroundColor: "#D9D9D9", padding: 10, borderRadius: 5, width: 200 },
   buttonText: { color: "white", fontWeight: "bold", textAlign:"center" },
-  confirmButton: { marginTop: 10, backgroundColor: "#FBAF8B", padding: 10, borderRadius: 8, width: 200 },
+  confirmButton: { marginTop: 10, backgroundColor: "#FBAF8B", padding: 10, borderRadius: 5, width: 200 },
   confirmText: { color: "white", fontWeight: "bold", textAlign:"center" },
-  resetButton: { marginTop: 22, backgroundColor: "#aaa", padding: 10, borderRadius: 8, width: 200 },
+  resetButton: { marginTop: 22, backgroundColor: "#B3B6B8", padding: 10, borderRadius: 5, width: 200 },
   resetText: { color: "white", fontWeight: "bold", textAlign:"center" },
 });
 

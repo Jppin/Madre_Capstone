@@ -77,7 +77,7 @@ const SignupScreen = () => {
     return (
         <SafeAreaView style={styles.safeArea}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                <Feather name="chevron-left" size={28} color="#333" />
+                <Feather name="chevron-left" size={28} color="white" />
             </TouchableOpacity>
 
             <View style={styles.container}>

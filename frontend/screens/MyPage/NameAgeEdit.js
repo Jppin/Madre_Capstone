@@ -114,7 +114,7 @@ const NameAgeEdit = () => {
                 }} 
                 style={styles.backButton}
             >
-                <Feather name="chevron-left" size={28} color="#333" />
+                <Feather name="chevron-left" size={30} color="gray" />
             </TouchableOpacity>
 
 
@@ -205,8 +205,8 @@ const styles = StyleSheet.create({
 
     backButton: {
         position: 'absolute',
-        top: 10,
-        left: 10,
+        top: 20,
+        left: 5,
         zIndex: 10,
         padding: 10,
     },

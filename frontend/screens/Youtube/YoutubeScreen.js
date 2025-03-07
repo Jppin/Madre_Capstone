@@ -60,23 +60,23 @@
     setLikedVideos([
       { 
         id: "liked1", 
-        title: "집에 가고 싶어지는 영상", 
-        thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/0.jpg", 
-        channel: "펫TV", 
-        videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" 
+        title: "명진아 힘내", 
+        thumbnail: "https://img.youtube.com/vi/nW0yrwh5H68/0.jpg ", 
+        channel: "jppin tv", 
+        videoUrl: "https://www.youtube.com/shorts/nW0yrwh5H68" 
       },
       { 
         id: "liked2", 
-        title: "강아지가 좋아하는 음악", 
-        thumbnail: "https://img.youtube.com/vi/3JZ_D3ELwOQ/0.jpg", 
-        channel: "힐링사운드", 
-        videoUrl: "https://www.youtube.com/watch?v=3JZ_D3ELwOQ" 
+        title: "현서야 힘내", 
+        thumbnail: "https://img.youtube.com/vi/lnhiqUN8kw0/0.jpg", 
+        channel: "jppin tv", 
+        videoUrl: "https://www.youtube.com/watch?v=lnhiqUN8kw0" 
       },
       { 
         id: "liked3", 
-        title: "고양이가 반응하는 소리", 
+        title: "주예야 힘내", 
         thumbnail: "https://img.youtube.com/vi/tgbNymZ7vqY/0.jpg", 
-        channel: "캣TV", 
+        channel: "jppin tv", 
         videoUrl: "https://www.youtube.com/watch?v=tgbNymZ7vqY" 
       },
     ]);
@@ -115,6 +115,7 @@
     return (
 
       <View style={styles.container}>
+         {/* 상단 배너 */}
         <View style={styles.headerContainer}>
           <Image
             source={require("../../assets/icons/redshorts.png")} 
@@ -141,7 +142,7 @@
 
             {/* ✅ 중앙 Like 아이콘 */}
           <View style={styles.likeOverlay}>
-            <Image source={require("../../assets/icons/orangelike.png")} style={styles.likeIcon} />
+            <Image source={require("../../assets/icons/like.png")} style={styles.likeIcon} />
               <Text style={styles.likeText}>Likes</Text>
           </View>
           </TouchableOpacity>
@@ -299,14 +300,14 @@ const styles = StyleSheet.create({
   },
 
   likeIcon:{
-    width: 30,
-    height: 30,
+    width: 40,
+    height: 40,
    
   },
   likeText : {
-    fontSize: 12,
+    fontSize: 15,
     fontWeight: "bold",
-    color: "#FF6F4C",
+    color: "white",
     marginTop: 2,
   }, 
   likeLabelText : { 
