@@ -82,7 +82,7 @@ function ChangePassword() {
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-        <Feather name="chevron-left" size={28} color="#333" />
+        <Feather name="chevron-left" size={40} color="gray" />
       </TouchableOpacity>
 
       <Text style={styles.title}>비밀번호 변경</Text>
@@ -147,14 +147,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 20,
   },
-
   backButton: {
-    position: "absolute",
-    top: 15,
-    left: 15,
+    position: 'absolute',
+    top: 20,
+    left: 5,
     zIndex: 10,
-    padding: 5,
-  },
+    padding: 10,
+},
 
   title: {
     fontSize: 24,

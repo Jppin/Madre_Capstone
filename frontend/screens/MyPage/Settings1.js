@@ -75,7 +75,7 @@ function Settings1() {
         }}
         style={styles.backButton}
       >
-        <Feather name="chevron-left" size={28} color="#333" />
+        <Feather name="chevron-left" size={40} color="gray" />
       </TouchableOpacity>
 
       <TouchableOpacity 
@@ -93,7 +93,7 @@ function Settings1() {
 
       {/* 탈퇴하기 버튼 */}
       <TouchableOpacity style={styles.byebutton} onPress={handleWithdraw}>
-        <Text style={styles.buttonText}>탈퇴하기</Text>
+        <Text style={styles.byebuttonText}>탈퇴하기</Text>
       </TouchableOpacity>
     </View>
   );
@@ -109,16 +109,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   backButton: {
-    position: "absolute",
-    top: 10,
-    left: 10,
+    position: 'absolute',
+    top: 20,
+    left: 5,
     zIndex: 10,
     padding: 10,
-  },
+},
   button: {
     width: "80%",
     height: 50,
-    backgroundColor: "#F2F2F2",
+    backgroundColor: "#DDDDDD",
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
@@ -126,8 +126,8 @@ const styles = StyleSheet.create({
   },
   byebutton: {
     width: "80%",
-    height: 50,
-    backgroundColor: "red",
+    height: 52,
+    backgroundColor: "#FF5154",
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
@@ -135,7 +135,11 @@ const styles = StyleSheet.create({
 
   },
   buttonText: {
-    color: "#000",
+    color: "#91969A",
     fontSize: 16,
   },
+  byebuttonText: {
+    color : "white",
+    fontSize: 16,
+  }
 });

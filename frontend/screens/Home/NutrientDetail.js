@@ -64,7 +64,7 @@ const NutrientDetail = ({ route }) => {
          }} 
          style={styles.backButton}
 >
-            <Feather name="chevron-left" size={28} color="#333" />
+            <Feather name="chevron-left" size={40} color="white" />
       </TouchableOpacity>
        
      {/* ✅ 영양소 상세 카드 */}
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   backButton: {
     position: 'absolute',
     top: 10,
-    left: 10,
+    left: 1,
     zIndex: 10,
     padding: 10,
 },

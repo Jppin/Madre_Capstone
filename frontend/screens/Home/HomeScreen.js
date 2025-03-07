@@ -91,7 +91,7 @@ const HomeScreen = () => {
     <>
       <View style={styles.headerContainer}>
         <Image
-          source={require('../../assets/icons/logo2.png')}
+          source={require('../../assets/icons/logo3.png')}
           style={styles.logoIcon}
         />
         <Text style={styles.logoText}>NutriBox</Text>
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     backgroundColor: "#FBAF8B",
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     height: 100,
@@ -207,15 +207,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoText: {
-    fontSize: 40, // 텍스트 크기
+    fontSize: 45, // 텍스트 크기
     fontWeight: 'bold', // 텍스트 굵기
     color: '#ffffff',
-    marginTop : 15
+    marginTop : 15,
+    
   },
   logoIcon : {
-    width: 85, // 로고의 너비
-    height: 75, // 로고의 높이
+    width: 90, // 로고의 너비
+    height: 90, // 로고의 높이
     marginRight: 10, // 로고와 텍스트 사이의 간격
+
   },
   carouselContainer: {
     alignItems: 'center',

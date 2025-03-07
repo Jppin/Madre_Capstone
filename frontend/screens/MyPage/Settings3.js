@@ -19,7 +19,7 @@ function Settings3() {
         onPress={() => navigation.goBack()}
         style={styles.backButton}
       >
-        <Feather name="chevron-left" size={28} color="#333" />
+        <Feather name="chevron-left" size={30} color="gray" />
       </TouchableOpacity>
 
       {/* 상단 제목 */}
@@ -63,12 +63,12 @@ const styles = StyleSheet.create({
     paddingTop: 10
   },
   backButton: {
-    position: "absolute",
-    top: 10,
-    left: 10,
+    position: 'absolute',
+    top: 20,
+    left: 5,
     zIndex: 10,
-    padding: 10
-  },
+    padding: 10,
+},
   title: {
     fontSize: 18,
     fontWeight: "600",
