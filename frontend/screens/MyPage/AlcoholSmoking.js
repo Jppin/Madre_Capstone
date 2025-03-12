@@ -152,7 +152,7 @@ const AlcoholSmoking = () => {
 
                 <Text style={styles.question}>현재 임신 중이신가요?</Text>
                 <View style={styles.gridContainer}>
-                    {['해당사항 없음', '6개월 내에 계획 있음', '수유 중', '임신 중', '폐경기'].map((option) => (
+                    {['해당사항 없음', '6개월 내에 계획 있음', '수유 중', '임신 중', '완경기'].map((option) => (
                         <TouchableOpacity
                             key={option}
                             style={[styles.optionBox, pregnancy === option && styles.selected]}
