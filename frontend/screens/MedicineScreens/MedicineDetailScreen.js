@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import Feather from "react-native-vector-icons/Feather";
 
 const MedicineDetailScreen = () => {
   const navigation = useNavigation();
@@ -167,8 +168,8 @@ const MedicineDetailScreen = () => {
       {/* 헤더 */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Image source={require("../../assets/icons/back.png")} style={styles.backIcon} />
-        </TouchableOpacity>
+             <Feather name="chevron-left" size={28} color="white" />
+                </TouchableOpacity>
         <Text style={styles.headerTitle}>약품 상세정보</Text>
         {editMode ? (
           <TouchableOpacity onPress={handleUpdate} style={styles.editButton}>
