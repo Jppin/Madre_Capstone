@@ -113,7 +113,7 @@ useEffect(() => {
           />
           <TouchableOpacity>
             <Image
-              source={require("../assets/icons/search1.png")}
+              source={require("../../assets/icons/search1.png")}
               style={styles.searchIcon}
             />
           </TouchableOpacity>
@@ -127,7 +127,7 @@ useEffect(() => {
         {/* NutriBox 추천 배너 */}
         <View style={styles.bannerContainer}>
           <Image
-            source={require("../assets/icons/nutribox.png")}
+            source={require("../../assets/icons/nutribox.png")}
             style={styles.bannerImage}
           />
           <Text style={styles.bannerText}>
@@ -208,12 +208,12 @@ useEffect(() => {
         {/* 내가 찜한 영양 성분 & 최근 확인한 영양 성분 */}
         <TouchableOpacity style={styles.listItem}>
           <Text style={styles.listItemText}>❤️ 내가 찜한 영양성분</Text>
-          <Image source={require("../assets/icons/rightarrow.png")} style={styles.arrowIcon} />
+          <Image source={require("../../assets/icons/rightarrow.png")} style={styles.arrowIcon} />
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.listItem, styles.listItemWithBorder]}>
-          <Text style={styles.listItemText}>⏳ 최근 확인한 영양성분</Text>
-          <Image source={require("../assets/icons/rightarrow.png")} style={styles.arrowIcon} />
+          <Text style={styles.listItemText}>⏳ 과거 영양성분 추천 기록</Text>
+          <Image source={require("../../assets/icons/rightarrow.png")} style={styles.arrowIcon} />
         </TouchableOpacity>
       </ScrollView>
     </View>

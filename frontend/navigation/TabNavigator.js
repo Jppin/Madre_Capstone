@@ -7,7 +7,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import HomeScreen from '../screens/Home/HomeScreen';
 import MedicineNavigator from "./MedicineNavigator";
-import NutritionScreen from '../screens/NutritionScreen';
+import NutritionScreen from '../screens/NutritionScreen/NutritionScreen';
 import YoutubeScreen from '../screens/Youtube/YoutubeScreen';
 import MyPageScreen from "../screens/MyPage/MyPageScreen";
 
@@ -78,6 +78,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
 
 const TabNavigator = () => {
   return (
+    <View style={styles.container}>
     <Tab.Navigator
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{ headerShown: false }}
@@ -89,11 +90,18 @@ const TabNavigator = () => {
       <Tab.Screen name="Youtube" component={YoutubeScreen} options={{ tabBarLabel: '건강 쇼츠' }} />
       <Tab.Screen name="MyPage" component={MyPageScreen} options={{ tabBarLabel: '마이페이지' }} />
     </Tab.Navigator>
+    </View>
   );
 };
 
 // **스타일 개선**
 const styles = StyleSheet.create({
+
+  container:{
+    flex:1,
+    backgroundColor:'white',
+  },
+
   tabBarContainer: {
     flexDirection: 'row',
     backgroundColor: '#F8F8F8', // 밝은 그레이톤
