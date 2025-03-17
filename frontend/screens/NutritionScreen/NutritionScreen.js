@@ -1,4 +1,4 @@
-// screens/NutritionScreen.js
+// screens/NutritionScreen/NutritionScreen.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/Ionicons";
+import { useNavigation } from "@react-navigation/native"; 
+
 
 
 
@@ -28,22 +30,51 @@ const NutrientRecommendationScreen = () => {
   const [recommendNutrients, setRecommendNutrients] = useState([]);
   const [warningNutrients, setWarningNutrients] = useState([]);
   const [loading, setLoading] = useState(false);
-  
+  const navigation = useNavigation(); 
 
 
 
   
-  const toggleLike = (nutrient) => {
-    setLikedNutrients((prev) => ({
-      ...prev,
-      [nutrient]: !prev[nutrient],
-    }));
+  const toggleLike = async (nutrient) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+  
+      if (likedNutrients[nutrient]) {
+        // ✅ 이미 찜한 상태라면 → 백엔드에서 삭제 요청
+        await fetch("http://10.0.2.2:5001/api/unlike-nutrient", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ nutrientName: nutrient }),
+        });
+  
+        setLikedNutrients((prev) => ({
+          ...prev,
+          [nutrient]: false,
+        }));
+      } else {
+        // ✅ 찜한 상태가 아니라면 → 백엔드에 저장 요청
+        await fetch("http://10.0.2.2:5001/api/like-nutrient", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ nutrientName: nutrient }),
+        });
+  
+        setLikedNutrients((prev) => ({
+          ...prev,
+          [nutrient]: true,
+        }));
+      }
+    } catch (error) {
+      console.error("찜한 영양 성분 업데이트 오류:", error);
+    }
   };
-
-
-  const handleButtonPress = (type) => {
-    setSelectedButton(type);
-  };
+  
 
 
 
@@ -178,7 +209,7 @@ useEffect(() => {
       {/* ✅ 새로고침 버튼 추가 */}
       <TouchableOpacity style={styles.refreshButton} onPress={fetchRecommendations}>
           <Text style={styles.refreshButtonText}>
-            🔄 추천 정보 다시 불러오기 {loading ? " (로딩 중...)" : ""}
+            추천 정보 다시 불러오기 {loading ? " (로딩 중...)" : ""}
           </Text>
         </TouchableOpacity>
       
@@ -255,7 +286,7 @@ useEffect(() => {
 
 
         {/* 내가 찜한 영양 성분 & 최근 확인한 영양 성분 */}
-        <TouchableOpacity style={styles.listItem}>
+        <TouchableOpacity style={styles.listItem} onPress={()=> navigation.navigate("jjim")}>
           <Text style={styles.listItemText}>❤️ 내가 찜한 영양성분</Text>
           <Image source={require("../../assets/icons/rightarrow.png")} style={styles.arrowIcon} />
         </TouchableOpacity>
