@@ -16,6 +16,7 @@ const HomeScreen = () => {
     require('../../assets/image2.jpg'),
     require('../../assets/image3.jpg')
   ];
+
   const [pageIndex, setPageIndex] = useState(0);
   const pagerRef = useRef(null);
   const navigation = useNavigation();
@@ -24,8 +25,9 @@ const HomeScreen = () => {
   const [userConcerns, setUserConcerns] = useState([]);
   const [selectedConcern, setSelectedConcern] = useState(null);
   const [likedNutrients, setLikedNutrients] = useState({});
-
-  const allNutrients = ['카테킨', '콜라겐', '아르기닌', '오메가3'];
+  const [nutrientList, setNutrientList] = useState([]);
+  const [selectedReason, setSelectedReason] = useState("추천 이유를 가져오는 중...");
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -36,10 +38,9 @@ const HomeScreen = () => {
     return () => clearInterval(interval);
   }, [pageIndex, images.length]);
 
-  const isFocused = useIsFocused();
+  
 
   useEffect(() => {
-    // 백엔드에서 사용자 정보를 불러오는 함수 (AsyncStorage의 토큰 사용)
     const fetchUserData = async () => {
       try {
         const token = await AsyncStorage.getItem("token");
@@ -60,6 +61,7 @@ const HomeScreen = () => {
         } else {
           console.error("사용자 데이터를 불러오는 중 오류:", json.message);
         }
+
         // 기존에 저장된 좋아요 정보는 AsyncStorage에서 불러옴
         const storedLikes = await AsyncStorage.getItem("liked_nutrients");
         setLikedNutrients(storedLikes ? JSON.parse(storedLikes) : {});
@@ -70,6 +72,66 @@ const HomeScreen = () => {
 
     fetchUserData();
   }, [isFocused]);
+
+  useEffect(() => {
+    const fetchNutrients = async () => {
+        try {
+            if (userConcerns.length === 0) return;
+
+            const response = await fetch(`http://10.0.2.2:5001/nutrients/recommendations?concerns=${JSON.stringify(userConcerns)}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+
+            const json = await response.json();
+            if (json.status === "ok") {
+                console.log("✅ 백엔드에서 받은 nutrientList:", json.data);
+                setNutrientList(json.data);
+            } else {
+                console.error("Failed to fetch nutrients:", json.message);
+            }
+        } catch (error) {
+            console.error("Error fetching nutrients:", error);
+        }
+    };
+
+    if (isFocused) {
+        fetchNutrients();
+    }
+  }, [userConcerns, isFocused]);
+
+  useEffect(() => {
+    if (!selectedConcern || nutrientList.length === 0) {
+      console.log("🚨 selectedConcern 없음 또는 nutrientList 비어 있음");
+      return;
+    }
+
+    console.log("🔍 현재 선택된 관심사:", selectedConcern);
+    console.log("📝 현재 nutrientList:", nutrientList);
+
+    const matchedNutrient = nutrientList.find(nutrient => 
+      nutrient.recommendations.some(rec => {
+          console.log(`📌 비교 중: rec.keyword = "${rec.keyword}", selectedConcern = "${selectedConcern}"`);
+          return rec.keyword.trim().toLowerCase() === selectedConcern.trim().toLowerCase();
+      })
+    );
+
+    if (!matchedNutrient) {
+        console.log("⚠️ 해당 관심사에 맞는 영양소 없음!");
+        setSelectedReason("추천 이유를 찾을 수 없습니다.");
+        return;
+    }
+
+    const matchedReason = matchedNutrient.recommendations.find(rec => rec.keyword === selectedConcern)?.reason;
+    
+    console.log("🧐 매칭된 영양소:", matchedNutrient.name);
+    console.log("🧐 매칭된 추천 이유:", matchedReason);
+
+    setSelectedReason(matchedReason || "추천 이유를 가져오는 중...");
+  }, [selectedConcern, nutrientList]);
+
 
   const toggleLike = async (nutrient) => {
     setLikedNutrients(prev => {
@@ -96,6 +158,7 @@ const HomeScreen = () => {
         />
         <Text style={styles.logoText}>NutriBox</Text>
       </View>
+
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.carouselContainer}>
           <PagerView
@@ -110,6 +173,7 @@ const HomeScreen = () => {
               </View>
             ))}
           </PagerView>
+
           <View style={styles.pagination}>
             {images.map((_, index) => (
               <View key={index} style={[styles.dot, pageIndex === index && styles.activeDot]} />
@@ -122,66 +186,82 @@ const HomeScreen = () => {
             {nickname}님의 건강고민 맞춤 영양성분 추천
           </Text>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagScroll}>
-            {userConcerns.length > 0 ? (
-              userConcerns.map((tag, index) => (
-                <TouchableOpacity key={index} style={[styles.tag, selectedConcern === tag && styles.selectedTag]} onPress={() => toggleConcern(tag)}>
-                  <Text style={[styles.tagText, selectedConcern === tag && styles.selectedTagText]}>{tag}</Text>
-                </TouchableOpacity>
-              ))
-            ) : (
-              <Text style={styles.noConcernsText}>마이페이지에서 건강고민 키워드를 추가해보세요!</Text>
-            )}
-          </ScrollView>
-
-          {selectedConcern && (
+          {selectedConcern && nutrientList.length > 0 && (
             <View>
-              <View style={styles.recommendationBox}>
-                <Text style={styles.recommendationTitle}>추천 이유</Text>
-                <Text style={styles.recommendationText}>이 영양성분은 건강 유지에 도움이 됩니다.</Text>
-              </View>
+                {/* 추천 이유 표시 */}
+                <View style={styles.recommendationBox}>
+                    <Text style={styles.recommendationTitle}>추천 이유</Text>
+                    <Text style={styles.recommendationText}>
+                        {selectedReason}
+                    </Text>
+                </View>
 
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: 'row' }} style={styles.nutrientsScroll}>
-                {allNutrients.map((nutrient, index) => (
-                  <TouchableOpacity key={index} style={styles.nutrientBox} onPress={() => navigateToDetail(nutrient)}>
-                    <Image source={require('../../assets/icons/nutrientEx1.png')} style={styles.nutrientIcon} />
-                    <Text style={styles.nutrientText} numberOfLines={1} ellipsizeMode="tail">{nutrient}</Text>
-                    {/* 하트 아이콘을 우측 상단에 고정 */}
-                    <TouchableOpacity onPress={() => toggleLike(nutrient)} style={styles.heartButton}>
-                      <Icon 
-                        name={likedNutrients[nutrient] ? 'heart' : 'heart-outline'}
-                        size={24} 
-                        color="red" 
-                      />
-                    </TouchableOpacity>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+                {/* 선택된 관심사에 맞는 영양소만 필터링해서 표시 */}
+                <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false} 
+                    contentContainerStyle={{ flexDirection: 'row' }} 
+                    style={styles.nutrientsScroll}
+                >
+                    {nutrientList
+                        .filter(nutrient => nutrient.recommendations.some(rec => rec.keyword === selectedConcern))
+                        .map((nutrient, index) => (
+                            <TouchableOpacity 
+                                key={index} 
+                                style={styles.nutrientBox} 
+                                onPress={() => navigateToDetail(nutrient.name)}
+                            >
+                                {/* 영양소 이미지 */}
+                                <Image source={require('../../assets/icons/nutrientEx1.png')} style={styles.nutrientIcon} />
+
+                                {/* 영양소 이름 */}
+                                <Text style={styles.nutrientText} numberOfLines={1} ellipsizeMode="tail">
+                                    {nutrient.name}
+                                </Text>
+
+                                {/* 하트 아이콘 (좋아요) */}
+                                <TouchableOpacity onPress={() => toggleLike(nutrient.name)} style={styles.heartButton}>
+                                    <Icon 
+                                        name={likedNutrients[nutrient.name] ? 'heart' : 'heart-outline'}
+                                        size={24} 
+                                        color="red" 
+                                    />
+                                </TouchableOpacity>
+                            </TouchableOpacity>
+                        ))
+                    }
+                </ScrollView>
             </View>
           )}
         </View>
 
         <View style={styles.buttonContainer}>
+
           <TouchableOpacity style={styles.squareButton}>
+
             <View style={styles.iconContainer}></View>
             <Text style={styles.buttonText}>
               영양성분{'\n'}최고조합 확인하기
             </Text>
+
             <Image
               source={require('../../assets/icons/likes.png')}
               style={styles.icon}
             />
+
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.squareButton}>
-            <View style={styles.iconContainer}></View>
+            
             <Text style={styles.buttonText}>
               맞춤 영양성분{'\n'}복용가이드{'\n'}바로가기
             </Text>
+
             <Image
               source={require('../../assets/icons/guide.png')}
               style={styles.icon}
             />
+
           </TouchableOpacity>
         </View>
       </ScrollView>
