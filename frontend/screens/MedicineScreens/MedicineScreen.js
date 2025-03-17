@@ -262,6 +262,8 @@ const deleteMedicine = async (id) => {
   return (
     <>
       {/* 헤더 */}
+      <View style={styles.headerBackground} />
+
       <View style={styles.headerContainer}>
         <Text style={styles.header}>내 약품 보관함</Text>
         <View style={styles.searchContainer}>
@@ -523,6 +525,18 @@ const MedicineCard = ({ medicine, toggleMedicine, deleteMedicine, navigation }) 
 
 /** 스타일 */
 const styles = StyleSheet.create({
+
+  headerBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 120, // 📌 헤더보다 약간 더 크게 설정
+    backgroundColor: 'white', // ✅ 헤더 뒤 배경 흰색으로 설정
+    zIndex: -1, // 📌 헤더 아래로 배치
+  },
+
+
   headerContainer: {
     backgroundColor: "#FBAF8B",
     paddingVertical: 10,
