@@ -35,6 +35,7 @@ mongoose
 
 require("./models/UserDetails");
 const User = mongoose.model("UserInfo");
+const Nutrition = require('./models/Nutrition');
 
 require("./fetchDrugs");
 
@@ -979,9 +980,36 @@ app.put("/medicines/:id", async (req, res) => {
 });
 
 
+app.get("/nutrients/recommendations", async (req, res) => {
+  try {
+      const { concerns } = req.query;
 
+      if (!concerns || concerns.length === 0) {
+          return res.status(400).json({ status: "error", message: "No concerns provided" });
+      }
 
+      // 관심사 배열을 JSON으로 변환
+      const concernArray = JSON.parse(concerns);
 
+      // Mongoose를 사용하여 관심사에 맞는 영양소 찾기
+      const nutrients = await Nutrition.find({
+          "recommendations.category": "건강관심사",
+          "recommendations.keyword": { $in: concernArray }
+      });
+
+      // recommendations 내부 값을 명확하게 출력
+      nutrients.forEach(nutrient => {
+        console.log(`🔎 ${nutrient.name}의 recommendations:`, JSON.stringify(nutrient.recommendations, null, 2));
+      });
+
+      console.log("🎯 필터링된 nutrients:", nutrients);
+      res.json({ status: "ok", data: nutrients });
+
+  } catch (error) {
+      console.error("Error fetching nutrient recommendations:", error);
+      res.status(500).json({ status: "error", message: "Internal server error" });
+  }
+});
 
 
 
