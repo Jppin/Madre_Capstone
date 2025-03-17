@@ -1,4 +1,4 @@
-// screens/NutritionScreen.js
+// screens/NutritionScreen/NutritionScreen.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/Ionicons";
+import { useNavigation } from "@react-navigation/native"; 
+
 
 
 
@@ -25,32 +27,86 @@ const NutrientRecommendationScreen = () => {
   const [selectedButton, setSelectedButton] = useState("recommend");
   const [nutrients, setNutrients] = useState([]);
   const [likedNutrients, setLikedNutrients] = useState({});
-  
-  
-  const recommendList = [
-    { name: "비타민 D", effect: "💪 뼈 건강 - 칼슘 흡수 촉진 및 골다공증 예방" },
-    { name: "오메가3", effect: "🧠 두뇌 건강 - 인지 기능 향상 및 기억력 보호" },
-    { name: "프로바이오틱스", effect: "🦠 장 건강 - 유익균 증식 및 소화 기능 개선" },
-  ];
-  
-  const warningList = [
-    { name: "고용량 철분", effect: "⚠️ 위장 장애 - 위 불편감 및 변비 유발 가능" },
-    { name: "카페인", effect: "⚠️ 수면 장애 - 과다 섭취 시 불면증 및 불안 유발" },
-    { name: "고용량 비타민 A", effect: "⚠️ 간 독성 - 장기간 섭취 시 간 손상 위험" },
-  ];
+  const [recommendNutrients, setRecommendNutrients] = useState([]);
+  const [warningNutrients, setWarningNutrients] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const navigation = useNavigation(); 
+
 
 
   
-  const toggleLike = (nutrient) => {
-    setLikedNutrients((prev) => ({
-      ...prev,
-      [nutrient]: !prev[nutrient],
-    }));
+  const toggleLike = async (nutrient) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+  
+      if (likedNutrients[nutrient]) {
+        // ✅ 이미 찜한 상태라면 → 백엔드에서 삭제 요청
+        await fetch("http://10.0.2.2:5001/api/unlike-nutrient", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ nutrientName: nutrient }),
+        });
+  
+        setLikedNutrients((prev) => ({
+          ...prev,
+          [nutrient]: false,
+        }));
+      } else {
+        // ✅ 찜한 상태가 아니라면 → 백엔드에 저장 요청
+        await fetch("http://10.0.2.2:5001/api/like-nutrient", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ nutrientName: nutrient }),
+        });
+  
+        setLikedNutrients((prev) => ({
+          ...prev,
+          [nutrient]: true,
+        }));
+      }
+    } catch (error) {
+      console.error("찜한 영양 성분 업데이트 오류:", error);
+    }
   };
+  
 
 
-  const handleButtonPress = (type) => {
-    setSelectedButton(type);
+
+
+
+
+
+
+  const fetchRecommendations = async () => {
+    try {
+      setLoading(true);  // 🔥 로딩 시작
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch("http://10.0.2.2:5001/nutrient-recommendations", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      const json = await response.json();
+      
+      if (json.recommendList && json.warningList) {
+        setRecommendNutrients(json.recommendList);
+        setWarningNutrients(json.warningList);
+      }
+    } catch (error) {
+      console.error("❌ 추천 영양성분 가져오기 오류:", error);
+    }
+    finally {
+      setLoading(false);  // 🔥 로딩 종료
+    }
   };
 
 
@@ -73,6 +129,9 @@ const NutrientRecommendationScreen = () => {
         const json = await response.json();
         if (json.status === "ok" && json.data.nickname) {
           setNickname(json.data.nickname);
+
+          // ✅ 사용자 정보 불러온 후 영양 성분 추천 API 호출
+        fetchRecommendations();
         }
       } catch (error) {
         console.error("사용자 데이터 불러오기 오류:", error);
@@ -83,16 +142,25 @@ const NutrientRecommendationScreen = () => {
   }, []);
 
 
+
+
+
+
+
+
+
+
+
   // ✅ selectedButton 변경될 때마다 즉시 업데이트
 useEffect(() => {
   if (selectedButton === "recommend") {
-    setNutrients(recommendList);
+    setNutrients(recommendNutrients);
   } else if (selectedButton === "warning") {
-    setNutrients(warningList);
+    setNutrients(warningNutrients);
   } else {
     setNutrients([]); // 버튼이 선택 해제되었을 경우 초기화
   }
-}, [selectedButton]);
+}, [selectedButton, recommendNutrients, warningNutrients]);
 
 
 
@@ -134,6 +202,18 @@ useEffect(() => {
             {nickname}님을 위한 맞춤형{"\n"}영양성분 추천 확인하세요!
           </Text>
         </View>
+
+
+
+      
+      {/* ✅ 새로고침 버튼 추가 */}
+      <TouchableOpacity style={styles.refreshButton} onPress={fetchRecommendations}>
+          <Text style={styles.refreshButtonText}>
+            추천 정보 다시 불러오기 {loading ? " (로딩 중...)" : ""}
+          </Text>
+        </TouchableOpacity>
+      
+    
 
         {/* 추천 및 주의사항 버튼 */}
         <View style={styles.recommendationContainer}>
@@ -206,7 +286,7 @@ useEffect(() => {
 
 
         {/* 내가 찜한 영양 성분 & 최근 확인한 영양 성분 */}
-        <TouchableOpacity style={styles.listItem}>
+        <TouchableOpacity style={styles.listItem} onPress={()=> navigation.navigate("jjim")}>
           <Text style={styles.listItemText}>❤️ 내가 찜한 영양성분</Text>
           <Image source={require("../../assets/icons/rightarrow.png")} style={styles.arrowIcon} />
         </TouchableOpacity>
@@ -229,7 +309,21 @@ const styles = StyleSheet.create({
     marginLeft: "auto", // 오른쪽 정렬 (필요 시)
     tintColor: "#333", // 아이콘 색상 변경 (필요 시)
   },
-  
+///////////////////////////////////////
+  refreshButton: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignSelf: "center",
+    marginVertical: 10,
+  },
+  refreshButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+////////////////////////////////////////////  
   headerContainer: {
     backgroundColor: "#FBAF8B",
     paddingTop: 20,
