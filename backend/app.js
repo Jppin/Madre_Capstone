@@ -63,6 +63,12 @@ const keywords = ["건강 팁", "영양제 추천", "운동 루틴", "약사", "
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY; // ✅ .env에서 YouTube API 키 가져오기
 //console.log("📢 현재 사용 중인 YOUTUBE_API_KEY:", YOUTUBE_API_KEY)
 
+const LikedNutrient = require("./models/LikedNutrient");
+
+
+
+
+
 // ✅ YouTube API 엔드포인트
 app.get("/youtube", async (req, res) => {
   try {
@@ -1059,6 +1065,82 @@ app.get("/nutrient-recommendations", async (req, res) => {
 });
 
 
+
+
+
+
+
+// ✅ 찜한 영양 성분 추가 API
+app.post("/api/like-nutrient", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "인증 토큰이 필요합니다." });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const { nutrientName } = req.body;
+
+    // ✅ 이미 찜한 영양 성분인지 확인
+    const exists = await LikedNutrient.findOne({ email: decoded.email, nutrientName });
+    if (exists) {
+      return res.status(400).json({ message: "이미 찜한 영양 성분입니다." });
+    }
+
+    // ✅ 새로운 찜한 영양 성분 저장
+    const likedNutrient = new LikedNutrient({ email: decoded.email, nutrientName });
+    await likedNutrient.save();
+
+    res.status(201).json({ message: "찜한 영양 성분 추가 완료" });
+  } catch (error) {
+    console.error("찜한 영양 성분 추가 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+});
+
+// ✅ 찜한 영양 성분 조회 API
+app.get("/api/liked-nutrients", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "인증 토큰이 필요합니다." });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    // ✅ 사용자별 찜한 영양 성분 리스트 가져오기
+    const likedNutrients = await LikedNutrient.find({ email: decoded.email }).select("nutrientName -_id");
+
+    res.status(200).json({ likedNutrients: likedNutrients.map(n => n.nutrientName) });
+  } catch (error) {
+    console.error("찜한 영양 성분 조회 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+});
+
+// ✅ 찜한 영양 성분 삭제 API
+app.post("/api/unlike-nutrient", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "인증 토큰이 필요합니다." });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const { nutrientName } = req.body;
+
+    // ✅ 찜한 영양 성분 삭제
+    await LikedNutrient.deleteOne({ email: decoded.email, nutrientName });
+
+    res.status(200).json({ message: "찜한 영양 성분 삭제 완료" });
+  } catch (error) {
+    console.error("찜한 영양 성분 삭제 오류:", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+});
 
 
 

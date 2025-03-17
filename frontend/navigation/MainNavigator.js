@@ -21,6 +21,9 @@ import ChangePassword from '../screens/MyPage/ChangePassword';
 import Settings2 from '../screens/MyPage/Settings2';
 import Settings3 from '../screens/MyPage/Settings3';
 import NutrientDetail from '../screens/Home/NutrientDetail';    
+import JjimScreen from '../screens/NutritionScreen/jjim.js';
+
+
 
 
 const Stack = createStackNavigator();
@@ -49,6 +52,8 @@ export default function MainNavigator() {
             <Stack.Screen name="YoutubeScreen" component={YoutubeScreen}/>
             <Stack.Screen name="PlayerScreen" component={PlayerScreen}/> 
             <Stack.Screen name="LikedVideoScreen" component={LikedvideoScreen}/>
+            <Stack.Screen name="jjim" component={JjimScreen}/>
+
 
         </Stack.Navigator>
     );
