@@ -24,9 +24,11 @@ const HomeScreen = () => {
   const [nickname, setNickname] = useState("");
   const [userConcerns, setUserConcerns] = useState([]);
   const [selectedConcern, setSelectedConcern] = useState(null);
+  const [selectedNutrient, setSelectedNutrient] = useState(null);
+  const [selectedReason, setSelectedReason] = useState({});
   const [likedNutrients, setLikedNutrients] = useState({});
   const [nutrientList, setNutrientList] = useState([]);
-  const [selectedReason, setSelectedReason] = useState("추천 이유를 가져오는 중...");
+
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -37,9 +39,7 @@ const HomeScreen = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, [pageIndex, images.length]);
-
   
-
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -61,78 +61,73 @@ const HomeScreen = () => {
         } else {
           console.error("사용자 데이터를 불러오는 중 오류:", json.message);
         }
-
-        // 기존에 저장된 좋아요 정보는 AsyncStorage에서 불러옴
+  
         const storedLikes = await AsyncStorage.getItem("liked_nutrients");
         setLikedNutrients(storedLikes ? JSON.parse(storedLikes) : {});
       } catch (error) {
         console.error("데이터 불러오기 오류:", error);
       }
     };
-
+  
     fetchUserData();
   }, [isFocused]);
-
+  
   useEffect(() => {
     const fetchNutrients = async () => {
-        try {
-            if (userConcerns.length === 0) return;
-
-            const response = await fetch(`http://10.0.2.2:5001/nutrients/recommendations?concerns=${JSON.stringify(userConcerns)}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
-
-            const json = await response.json();
-            if (json.status === "ok") {
-                console.log("✅ 백엔드에서 받은 nutrientList:", json.data);
-                setNutrientList(json.data);
-            } else {
-                console.error("Failed to fetch nutrients:", json.message);
-            }
-        } catch (error) {
-            console.error("Error fetching nutrients:", error);
+      try {
+        if (userConcerns.length === 0) return;
+  
+        const response = await fetch(`http://10.0.2.2:5001/nutrients/recommendations?concerns=${JSON.stringify(userConcerns)}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+  
+        const json = await response.json();
+        if (json.status === "ok") {
+          setNutrientList(json.data);
+        } else {
+          console.error("Failed to fetch nutrients:", json.message);
         }
+      } catch (error) {
+        console.error("Error fetching nutrients:", error);
+      }
     };
-
+  
     if (isFocused) {
-        fetchNutrients();
+      fetchNutrients();
     }
   }, [userConcerns, isFocused]);
-
+  
+  useEffect(() => {
+    if (userConcerns.length > 0) {
+      setSelectedConcern(userConcerns[0]);
+    }
+  }, [userConcerns]);
+  
   useEffect(() => {
     if (!selectedConcern || nutrientList.length === 0) {
-      console.log("🚨 selectedConcern 없음 또는 nutrientList 비어 있음");
+      setSelectedReason("추천 이유를 찾을 수 없습니다.");
+      setSelectedNutrient(null);
       return;
     }
-
-    console.log("🔍 현재 선택된 관심사:", selectedConcern);
-    console.log("📝 현재 nutrientList:", nutrientList);
-
+  
     const matchedNutrient = nutrientList.find(nutrient => 
-      nutrient.recommendations.some(rec => {
-          console.log(`📌 비교 중: rec.keyword = "${rec.keyword}", selectedConcern = "${selectedConcern}"`);
-          return rec.keyword.trim().toLowerCase() === selectedConcern.trim().toLowerCase();
-      })
+      nutrient.recommendations.some(rec => rec.keyword.trim().toLowerCase() === selectedConcern.trim().toLowerCase())
     );
-
+  
     if (!matchedNutrient) {
-        console.log("⚠️ 해당 관심사에 맞는 영양소 없음!");
-        setSelectedReason("추천 이유를 찾을 수 없습니다.");
-        return;
+      setSelectedReason("추천 이유를 찾을 수 없습니다.");
+      setSelectedNutrient(null);
+      return;
     }
-
+  
     const matchedReason = matchedNutrient.recommendations.find(rec => rec.keyword === selectedConcern)?.reason;
-    
-    console.log("🧐 매칭된 영양소:", matchedNutrient.name);
-    console.log("🧐 매칭된 추천 이유:", matchedReason);
-
     setSelectedReason(matchedReason || "추천 이유를 가져오는 중...");
+    setSelectedNutrient(matchedNutrient.name);
   }, [selectedConcern, nutrientList]);
-
-
+  
   const toggleLike = async (nutrient) => {
     setLikedNutrients(prev => {
       const updatedLikes = { ...prev, [nutrient]: !prev[nutrient] };
@@ -140,14 +135,28 @@ const HomeScreen = () => {
       return updatedLikes;
     });
   };
-
+  
   const toggleConcern = (concern) => {
-    setSelectedConcern(prev => (prev === concern ? null : concern));
+    setSelectedConcern(concern);
   };
-
+  
   const navigateToDetail = (nutrient) => {
     navigation.navigate('NutrientDetail', { nutrient });
   };
+  
+  const handleNutrientClick = (nutrient) => {
+    setSelectedNutrient((prev) => (prev === nutrient.name ? null : nutrient.name));
+    setSelectedReason(
+      nutrient.recommendations?.filter(rec => rec.category === "건강관심사" && userConcerns.includes(rec.keyword))
+        .map(rec => rec.reason)
+        .join("\n") || "추천 이유를 찾을 수 없습니다."
+    );
+  };
+  
+  const filteredNutrients = Array.isArray(nutrientList) ? nutrientList.filter(nutrient => 
+    !selectedConcern || nutrient.recommendations?.some(rec => rec.category === "건강관심사" && rec.keyword === selectedConcern)
+  ) : [];
+  
 
   return (
     <>
@@ -181,67 +190,86 @@ const HomeScreen = () => {
           </View>
         </View>
 
+        
         <View style={styles.recommendationSection}>
           <Text style={styles.sectionTitle} numberOfLines={2} adjustsFontSizeToFit>
             {nickname}님의 건강고민 맞춤 영양성분 추천
           </Text>
 
-          {selectedConcern && nutrientList.length > 0 && (
-            <View>
-                {/* 추천 이유 표시 */}
-                <View style={styles.recommendationBox}>
-                    <Text style={styles.recommendationTitle}>추천 이유</Text>
-                    <Text style={styles.recommendationText}>
-                        {selectedReason}
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={{ flexDirection: 'row' }} 
+            style={styles.tagScroll}
+            key={selectedConcern}
+          >
+            {userConcerns.map((concern, index) => (
+              <TouchableOpacity 
+                key={index} 
+                style={[styles.tag, selectedConcern === concern && styles.selectedTag]} 
+                onPress={() => toggleConcern(concern)}
+              >
+                <Text style={[styles.tagText, selectedConcern === concern && styles.selectedTagText]}>
+                  {concern}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {/* 영양성분 버튼 영역 */}
+          {filteredNutrients.length > 0 ? (
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false} 
+              contentContainerStyle={{ flexDirection: 'row' }} 
+              style={styles.nutrientsScroll}
+            >
+              {filteredNutrients.map((nutrient, index) => (
+                <View key={index} style={styles.nutrientWrapper}>
+                  <TouchableOpacity 
+                    style={[styles.nutrientBox, selectedNutrient === nutrient.name && styles.selectedNutrient]}
+                    onPress={() => handleNutrientClick(nutrient)}
+                  >
+                    <Image source={require('../../assets/icons/nutrientEx1.png')} style={styles.nutrientIcon} />
+                    <Text style={styles.nutrientText} numberOfLines={1} ellipsizeMode="tail">
+                      {nutrient.name}
                     </Text>
+                    <TouchableOpacity onPress={() => toggleLike(nutrient.name)} style={styles.heartButton}>
+                      <Icon 
+                        name={likedNutrients[nutrient.name] ? 'heart' : 'heart-outline'}
+                        size={24} 
+                        color="red" 
+                      />
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => navigateToDetail(nutrient.name)} style={styles.detailButton}>
+                    <Text style={styles.detailButtonText}>상세보기</Text>
+                  </TouchableOpacity>
                 </View>
-
-                {/* 선택된 관심사에 맞는 영양소만 필터링해서 표시 */}
-                <ScrollView 
-                    horizontal 
-                    showsHorizontalScrollIndicator={false} 
-                    contentContainerStyle={{ flexDirection: 'row' }} 
-                    style={styles.nutrientsScroll}
-                >
-                    {nutrientList
-                        .filter(nutrient => nutrient.recommendations.some(rec => rec.keyword === selectedConcern))
-                        .map((nutrient, index) => (
-                            <TouchableOpacity 
-                                key={index} 
-                                style={styles.nutrientBox} 
-                                onPress={() => navigateToDetail(nutrient.name)}
-                            >
-                                {/* 영양소 이미지 */}
-                                <Image source={require('../../assets/icons/nutrientEx1.png')} style={styles.nutrientIcon} />
-
-                                {/* 영양소 이름 */}
-                                <Text style={styles.nutrientText} numberOfLines={1} ellipsizeMode="tail">
-                                    {nutrient.name}
-                                </Text>
-
-                                {/* 하트 아이콘 (좋아요) */}
-                                <TouchableOpacity onPress={() => toggleLike(nutrient.name)} style={styles.heartButton}>
-                                    <Icon 
-                                        name={likedNutrients[nutrient.name] ? 'heart' : 'heart-outline'}
-                                        size={24} 
-                                        color="red" 
-                                    />
-                                </TouchableOpacity>
-                            </TouchableOpacity>
-                        ))
-                    }
-                </ScrollView>
+              ))}
+            </ScrollView>
+          ) : (
+            <View style={styles.noNutrientsBox}>
+              <Text style={styles.noNutrientsText}>해당하는 영양성분이 없습니다.</Text>
             </View>
           )}
+
+          {/* 추천 이유 창은 해당하는 영양성분이 있을 때만 표시 */}
+          {selectedNutrient && filteredNutrients.length > 0 && (
+            <View style={styles.recommendationBox}>
+              <Text style={styles.recommendationTitle}>추천 이유</Text>
+              <Text style={styles.recommendationText}>{selectedReason}</Text>
+            </View>
+          )}
+
         </View>
 
         <View style={styles.buttonContainer}>
 
           <TouchableOpacity style={styles.squareButton}>
 
-            <View style={styles.iconContainer}></View>
             <Text style={styles.buttonText}>
-              영양성분{'\n'}최고조합 확인하기
+              영양성분{'\n'}최고 조합{'\n'}확인하기
             </Text>
 
             <Image
@@ -275,6 +303,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: 20,
   },
+
+  // Header
   headerContainer: {
     backgroundColor: "#FBAF8B",
     paddingVertical: 10,
@@ -282,23 +312,32 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     height: 100,
-    justifyContent: 'flex-start',
-    flexDirection: 'row', // 아이콘과 텍스트를 수평으로 나열
-    alignItems: 'center',
+    justifyContent: 'center', // 가로 중앙 정렬
+    alignItems: 'flex-end', // 요소들을 아래쪽 정렬
+    position: 'relative', // 내부 요소의 절대 위치 설정 가능
   },
   logoText: {
-    fontSize: 45, // 텍스트 크기
-    fontWeight: 'bold', // 텍스트 굵기
+    fontSize: 32,
+    fontWeight: 'bold',
     color: '#ffffff',
-    marginTop : 15,
-    
+    position: 'absolute',
+    bottom: 10, // 부모 요소의 아래쪽에 고정
+    left: '50%', // 가로 중앙 정렬
+    transform: [{ translateX: -50 }], // 중앙 정렬 보정
+    textShadowColor: 'rgba(0, 0, 0, 0.5)', // 그림자 색상 (약간 어둡게)
+    textShadowOffset: { width: 1, height: 1 }, // 그림자 위치
+    textShadowRadius: 2, // 그림자 흐림 효과 (보더 느낌)
   },
-  logoIcon : {
-    width: 90, // 로고의 너비
-    height: 90, // 로고의 높이
-    marginRight: 10, // 로고와 텍스트 사이의 간격
+  logoIcon: {
+    width: 80,
+    height: 80,
+    position: 'absolute',
+    bottom: 10, // 텍스트와 같은 높이로 맞춤
+    left: '50%', // 텍스트 기준 중앙으로 이동
+    transform: [{ translateX: -130 }], // 텍스트 기준 왼쪽으로 90px 이동
+  },
 
-  },
+  // Carousel
   carouselContainer: {
     alignItems: 'center',
     marginVertical: 10,
@@ -327,6 +366,8 @@ const styles = StyleSheet.create({
   activeDot: {
     backgroundColor: '#FBAF8B',
   },
+
+  // Recommendations
   recommendationSection: {
     paddingHorizontal: 20,
     paddingVertical: 15,
@@ -335,6 +376,35 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginVertical: 10,
   },
+  recommendationBox: {
+    maxWidth: width * 0.8,
+    padding: 15,
+    backgroundColor: '#A4E0E580',
+    borderRadius: 10,
+    marginVertical: 10,
+  },
+  recommendationTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    color: "#117389",
+  },
+  recommendationText: {
+    fontSize: 12,
+    color: 'black',
+  },
+
+  detailButton: {
+    position: 'absolute',
+    bottom: 5,
+    right: 15,
+  },
+  detailButtonText: {
+    fontSize: 10,
+    color: 'gray',
+  },
+
+  // Tags
   tagScroll: {
     marginVertical: 10,
   },
@@ -344,21 +414,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 16,
     marginRight: 10,
-    borderWidth: 1, // ✅ 테두리 추가
-    borderColor: '#91969A', // ✅ 테두리 색상 적용
-  
+    borderWidth: 1,
+    borderColor: '#91969A',
   },
   tagText: {
     fontSize: 14,
-    color:'#s91969A',
+    color: '#91969A',
   },
   selectedTag: {
     backgroundColor: '#FBAF8B',
-    borderColor : "#FBAF8B"
+    borderColor: "#FBAF8B",
   },
   selectedTagText: {
     color: '#fff',
   },
+
+  // No Nutrients Message
+  noNutrientsBox: {
+    height: 120,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 5,
+    marginVertical: 10,
+  },
+  noNutrientsText: {
+    fontSize: 14,
+    color: '#777',
+    textAlign: 'center',
+  },
+
+  // Buttons
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -366,45 +453,35 @@ const styles = StyleSheet.create({
   },
   squareButton: {
     backgroundColor: '#FFF5EE',
-    alignItems: 'left',
-    justifyContent: 'center',
+    alignItems: 'flex-start', // 왼쪽 정렬 (alignItems: 'left' → 'flex-start' 수정)
+    justifyContent: 'flex-start', // 위쪽 정렬
     paddingVertical: 20,
     paddingHorizontal: 20,
+    marginVertical: 20,
     borderRadius: 10,
-    elevation: 3,
-    shadowOffset: { width: 1, height: 1 },
-    shadowColor: '#333',
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
-    width: 165, // 버튼의 너비
+    width: 165,
   },
   buttonText: {
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: 'left', // 왼쪽 정렬 유지
     color: '#333',
-    textAlign : 'left'
+    alignSelf: 'flex-start', // 세로 정렬을 위쪽으로 설정
+    marginTop: 0, // 위쪽 여백 제거
   },
-  icon : {
-    width: 40, // 아이콘 크기 조정
-    height: 40,
-    position: 'absolute', // 절대 위치 설정
-    right: 10, // 오른쪽에서 10px 떨어진 곳
-    bottom: 10, // 아래에서 10px 떨어진 곳
+  icon: {
+    width: 34,
+    height: 34,
+    position: 'absolute',
+    right: 10,
+    bottom: 10,
   },
-  iconContainer : {
-    marginBottom: 20, // 아이콘과 텍스트 사이의 간격
+  iconContainer: {
+    marginBottom: 20,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'left',
-  },
-  noConcernsText: {
-    fontSize: 14,
-    color: '#888',
-    textAlign: 'center',
-    marginVertical: 10,
+
+  // Nutrients
+  nutrientWrapper: {
+    alignItems: 'center',
   },
   nutrientsContainer: {
     flexDirection: 'row',
@@ -428,12 +505,12 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   nutrientIcon: {
-    width: 48,
-    height: 48,
-    marginBottom: 5,
+    width: 40,
+    height: 40,
+    marginBottom: 7,
   },
   nutrientText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 'bold',
     color: '#777',
     textAlign: 'center',
@@ -444,21 +521,10 @@ const styles = StyleSheet.create({
     right: 8,
     zIndex: 10,
   },
-  recommendationBox: {
-    backgroundColor: '#A4E0E580',
-    padding: 15,
+  selectedNutrient: {
+    borderWidth: 2,
+    borderColor: '#ccc',
     borderRadius: 10,
-    marginVertical: 10, 
-  },
-  recommendationTitle: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color : "#117389"
-  },
-  recommendationText: {
-    fontSize: 12,
-    color: 'black',
   },
 });
 
