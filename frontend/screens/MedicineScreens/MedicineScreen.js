@@ -390,22 +390,28 @@ const deleteMedicine = async (id) => {
         
         {/* 약품 리스트 */}
         {loadingMedicines ? (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <ActivityIndicator size="large" color="#FBAF8B" />
-  </View>
-  ) : (
-        <FlatList
-          data={filteredMedicines}
-          keyExtractor={(item) => String(item._id)}
-          renderItem={({ item }) => (
-            <MedicineCard 
-            medicine={item} 
-            toggleMedicine={toggleMedicine} 
-            navigation={navigation}
-            deleteMedicine={deleteMedicine} />
-          )}
-          showsVerticalScrollIndicator={false}// ✅ 스크롤바 숨기기
-        />
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#FBAF8B" />
+          </View>
+        ) : filteredMedicines.length === 0 ? (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Text style={{ fontSize: 16, color: "#666", textAlign: "center" }}>
+              아직 등록한 의약품이 없습니다. {"\n"} + 버튼을 눌러 추가해보세요!
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredMedicines}
+            keyExtractor={(item) => String(item._id)}
+            renderItem={({ item }) => (
+              <MedicineCard 
+              medicine={item} 
+              toggleMedicine={toggleMedicine} 
+              navigation={navigation}
+              deleteMedicine={deleteMedicine} />
+            )}
+            showsVerticalScrollIndicator={false}// ✅ 스크롤바 숨기기
+          />
       )}
       </View>
 

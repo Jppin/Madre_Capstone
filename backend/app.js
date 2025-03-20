@@ -315,6 +315,7 @@ app.get("/user-full-data", async (req, res) => {
     res.status(200).json({ 
       status: "ok", 
       data: {
+        _id: user._id,
         email: user.email,
         nickname: user.nickname,
         birthYear: user.birthYear,
