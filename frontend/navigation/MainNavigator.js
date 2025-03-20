@@ -22,8 +22,7 @@ import Settings2 from '../screens/MyPage/Settings2';
 import Settings3 from '../screens/MyPage/Settings3';
 import NutrientDetail from '../screens/Home/NutrientDetail';    
 import JjimScreen from '../screens/NutritionScreen/jjim.js';
-
-
+import LikedNutrientsScreen from '../screens/Home/LikedNutrientsScreen.js';
 
 
 const Stack = createStackNavigator();
@@ -53,7 +52,7 @@ export default function MainNavigator() {
             <Stack.Screen name="PlayerScreen" component={PlayerScreen}/> 
             <Stack.Screen name="LikedVideoScreen" component={LikedvideoScreen}/>
             <Stack.Screen name="jjim" component={JjimScreen}/>
-
+            <Stack.Screen name="LikedNutrientsScreen" component={LikedNutrientsScreen} options={{ headerShown: false }}/>
 
         </Stack.Navigator>
     );
