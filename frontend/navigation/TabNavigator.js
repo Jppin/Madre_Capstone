@@ -5,7 +5,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import HomeScreen from '../screens/Home/HomeScreen';
+import NewHomeScreen from '../screens/Home/NewHomeScreen';
 import MedicineNavigator from "./MedicineNavigator";
 import NutritionScreen from '../screens/NutritionScreen/NutritionScreen';
 import YoutubeScreen from '../screens/Youtube/YoutubeScreen';
@@ -86,7 +86,7 @@ const TabNavigator = () => {
     >
       <Tab.Screen name="Medicine" component={MedicineNavigator} options={{ tabBarLabel: "약품 보관함" }} />
       <Tab.Screen name="Nutrition" component={NutritionScreen} options={{ tabBarLabel: '성분 추천 내역' }} />
-      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: '케어 센터' }} />
+      <Tab.Screen name="Home" component={NewHomeScreen} options={{ tabBarLabel: '케어 센터' }} />
       <Tab.Screen name="Youtube" component={YoutubeScreen} options={{ tabBarLabel: '건강 쇼츠' }} />
       <Tab.Screen name="MyPage" component={MyPageScreen} options={{ tabBarLabel: '마이페이지' }} />
     </Tab.Navigator>
