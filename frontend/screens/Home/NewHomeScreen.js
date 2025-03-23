@@ -207,6 +207,22 @@ const CombinedScreen = () => {
   }, [userData]);
   
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#fff' }}>
 
@@ -226,22 +242,16 @@ const CombinedScreen = () => {
         >
           <Icon name="heart" size={28} color="#fff" />
         </TouchableOpacity>
+        
 
-        {/* 홈 화면 영양성분 검색창 */}
-        <View style={nutritionStyles.searchContainer}>
 
-          <TextInput
-            style={nutritionStyles.searchBar}
-            placeholder="더 궁금한 영양성분을 검색하세요"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          <TouchableOpacity>
-            <Image source={require("../../assets/icons/search1.png")} style={nutritionStyles.searchIcon} />
-          </TouchableOpacity>
 
-        </View>
       </View>
+
+
+
+
+
 
       {/* 홈 배너 */}
       <View style={homeStyles.carouselContainer}>
@@ -403,6 +413,14 @@ const CombinedScreen = () => {
   );
 };
 
+
+
+
+
+
+
+
+
 // 스타일 분리: nutritionStyles와 homeStyles로 관리
 const homeStyles = StyleSheet.create({
     scrollContainer: {
@@ -419,7 +437,7 @@ const homeStyles = StyleSheet.create({
         paddingHorizontal: 10,
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
-        height: 120,
+        height: 80,
         justifyContent: 'center', // 가로 중앙 정렬
         alignItems: 'flex-end', // 요소들을 아래쪽 정렬
         position: 'relative', // 내부 요소의 절대 위치 설정 가능
@@ -429,14 +447,14 @@ const homeStyles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#ffffff',
         position: 'absolute',
-        bottom: 54,
+        bottom: 10,
         left: 35,
       },
       logoIcon: {
         width: 60,
         height: 60,
         position: 'absolute',
-        bottom: 54, // 텍스트와 같은 높이로 맞춤
+        bottom: 10, // 텍스트와 같은 높이로 맞춤
         left: '80%', // 텍스트 기준 중앙으로 이동
         transform: [{ translateX: -130 }], // 텍스트 기준 왼쪽으로 90px 이동
       },
