@@ -28,8 +28,19 @@ const HomeScreen = () => {
   const [selectedReason, setSelectedReason] = useState({});
   const [likedNutrients, setLikedNutrients] = useState({});
   const [nutrientList, setNutrientList] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [recommendNutrients, setRecommendNutrients] = useState([]);
+  const [warningNutrients, setWarningNutrients] = useState([]);
 
   const isFocused = useIsFocused();
+
+
+
+
+  
+
+
+
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -40,6 +51,43 @@ const HomeScreen = () => {
     return () => clearInterval(interval);
   }, [pageIndex, images.length]);
   
+
+
+
+
+
+  const fetchRecommendations = async (tokenFromParam) => {
+    try {
+      setLoading(true);  // 🔥 로딩 시작
+      const token = tokenFromParam || await AsyncStorage.getItem("token");
+      const response = await fetch("http://10.0.2.2:5001/nutrient-recommendations", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      const json = await response.json();
+      
+      if (json.recommendList && json.warningList) {
+        setRecommendNutrients(json.recommendList);
+        setWarningNutrients(json.warningList);
+      }
+    } catch (error) {
+      console.error("❌ 추천 영양성분 가져오기 오류:", error);
+    }
+    finally {
+      setLoading(false);  // 🔥 로딩 종료
+    }
+  };
+
+
+
+
+
+
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -47,31 +95,43 @@ const HomeScreen = () => {
         const response = await fetch("http://10.0.2.2:5001/user-full-data", {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         });
         const json = await response.json();
         if (json.status === "ok") {
           setNickname(json.data.nickname || "사용자");
           setUserConcerns(json.data.concerns || []);
-          if (json.data.concerns && json.data.concerns.length > 0) {
+          if (json.data.concerns.length > 0) {
             setSelectedConcern(json.data.concerns[0]);
           }
-        } else {
-          console.error("사용자 데이터를 불러오는 중 오류:", json.message);
+
         }
   
         const storedLikes = await AsyncStorage.getItem("liked_nutrients");
         setLikedNutrients(storedLikes ? JSON.parse(storedLikes) : {});
       } catch (error) {
-        console.error("데이터 불러오기 오류:", error);
+        console.error("❌ 사용자 데이터 불러오기 오류:", error);
       }
     };
   
     fetchUserData();
   }, [isFocused]);
   
+
+
+  
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchRecommendations(); // 홈화면 올 때마다 호출되도록
+    }
+  }, [isFocused]);
+
+
+
+
   useEffect(() => {
     const fetchNutrients = async () => {
       try {
@@ -100,12 +160,19 @@ const HomeScreen = () => {
     }
   }, [userConcerns, isFocused]);
   
+
+
+
   useEffect(() => {
     if (userConcerns.length > 0) {
       setSelectedConcern(userConcerns[0]);
     }
   }, [userConcerns]);
   
+
+
+
+
   useEffect(() => {
     if (!selectedConcern || nutrientList.length === 0) {
       setSelectedReason("추천 이유를 찾을 수 없습니다.");
@@ -157,6 +224,20 @@ const HomeScreen = () => {
     !selectedConcern || nutrient.recommendations?.some(rec => rec.category === "건강관심사" && rec.keyword === selectedConcern)
   ) : [];
   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   return (
     <>
