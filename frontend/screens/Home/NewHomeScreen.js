@@ -366,10 +366,13 @@ const CombinedScreen = () => {
 
         </View>
 
-      {/* 추천 정보 다시 불러오기 */}
+      {/* 추천 정보 다시 불러오기 버튼
       <TouchableOpacity style={nutritionStyles.refreshButton} onPress={fetchRecommendations}>
         <Text style={nutritionStyles.refreshButtonText}>추천 정보 다시 불러오기 {loading ? '(로딩 중...)' : ''}</Text>
       </TouchableOpacity>
+      */}
+
+
 
       {/* 추천/비추천 버튼 */}
       <View style={nutritionStyles.recommendationContainer}>
@@ -471,7 +474,7 @@ const homeStyles = StyleSheet.create({
         left: '37%', // 텍스트 기준 중앙으로 이동
         transform: [{ translateX: -130 }], // 텍스트 기준 왼쪽으로 90px 이동
       },
-      
+
       favoriteButton: {
         position: 'absolute',
         top: 40,
