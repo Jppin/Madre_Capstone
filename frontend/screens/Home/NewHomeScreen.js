@@ -82,6 +82,12 @@ const CombinedScreen = () => {
     }
   };  
   
+
+
+
+
+
+
   const fetchRecommendations = async () => {
     try {
       if (!userData?._id) return; // ✅ 사용자 정보 없으면 실행 안 함!
@@ -108,6 +114,11 @@ const CombinedScreen = () => {
     }
   };
   
+
+
+
+
+
   /** 추천/주의 버튼에 따른 데이터 갱신 */
   useEffect(() => {
     if (selectedButton === "recommend") {
@@ -207,7 +218,12 @@ const CombinedScreen = () => {
   }, [userData]);
   
 
-
+  useEffect(() => {
+    if (isFocused) {
+      fetchRecommendations();
+    }
+  }, [isFocused]);
+  
 
 
 
@@ -230,22 +246,26 @@ const CombinedScreen = () => {
       <View style={homeStyles.headerContainer}>
         
         {/* 앱 로고 이미지 */}
-        <Image source={require('../../assets/icons/logo3.png')} style={homeStyles.logoIcon} />
-        
-        {/* 앱 타이틀 */}
-        <Text style={homeStyles.logoText}>NutriBox</Text>
+        <Image source={require('../../assets/icons/logotext.png')} style={homeStyles.logoIcon} />
 
-        {/* 헤더 오른쪽 하트 버튼 */}
+        
+        {/* 헤더 오른쪽 버튼 영역 */}
         <TouchableOpacity
-          style={homeStyles.favoriteButton}
+          style={homeStyles.heartButton}
           onPress={() => navigation.navigate("LikedNutrientsScreen")}
         >
           <Icon name="heart" size={28} color="#fff" />
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={homeStyles.profileButton}
+          onPress={() => navigation.navigate("MyPageScreen")}
+        >
+          <Icon name="person-circle" size={28} color="#fff" />
+        </TouchableOpacity>
+
         
-
-
-
+        
       </View>
 
 
@@ -442,22 +462,16 @@ const homeStyles = StyleSheet.create({
         alignItems: 'flex-end', // 요소들을 아래쪽 정렬
         position: 'relative', // 내부 요소의 절대 위치 설정 가능
       },
-      logoText: {
-        fontSize: 36,
-        fontWeight: 'bold',
-        color: '#ffffff',
-        position: 'absolute',
-        bottom: 10,
-        left: 35,
-      },
+      
       logoIcon: {
-        width: 60,
-        height: 60,
+        width: 190,
+        height: 40,
         position: 'absolute',
         bottom: 10, // 텍스트와 같은 높이로 맞춤
-        left: '80%', // 텍스트 기준 중앙으로 이동
+        left: '37%', // 텍스트 기준 중앙으로 이동
         transform: [{ translateX: -130 }], // 텍스트 기준 왼쪽으로 90px 이동
       },
+      
       favoriteButton: {
         position: 'absolute',
         top: 40,
@@ -613,8 +627,8 @@ const homeStyles = StyleSheet.create({
       },
       heartButton: {
         position: 'absolute',
-        top: 8,
-        right: 8,
+        top: 40,
+        right: 60, // 하트보다 왼쪽 (하트는 right: 20)
         zIndex: 10,
       },
       selectedNutrient: {
@@ -622,7 +636,22 @@ const homeStyles = StyleSheet.create({
         borderColor: '#ccc',
         borderRadius: 10,
       },
+
+      profileButton: {
+        position: 'absolute',
+        top: 40,
+        right: 20,
+        zIndex: 10,
+      },
+    
 });
+
+
+
+
+
+
+
 
 const nutritionStyles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
@@ -799,6 +828,8 @@ const nutritionStyles = StyleSheet.create({
     marginTop:10,
     marginBottom: 15,
   },
+
+  
 });
 
 export default CombinedScreen;
