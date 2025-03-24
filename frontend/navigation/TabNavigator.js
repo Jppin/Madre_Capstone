@@ -17,55 +17,71 @@ const Tab = createBottomTabNavigator();
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   return (
     <View style={styles.tabBarContainer}>
-      {state.routes.map((route, index) => {
-        const { options } = descriptors[route.key];
-        const label =
-          options.tabBarLabel !== undefined
-            ? options.tabBarLabel
-            : options.title !== undefined
-            ? options.title
-            : route.name;
-
-        const isFocused = state.index === index;
-
-        // 아이콘 설정
-        let iconSource;
-        switch (route.name) {
-          case 'Home':
-            iconSource = require('../assets/icons/home.png');
-            break;
-          case 'Medicine':
-            iconSource = require('../assets/icons/medicine.png');
-            break;
-          case 'Youtube':
-            iconSource = require('../assets/icons/youtube.png');
-            break;
-          default:
-            break;
+    {state.routes.map((route, index) => {
+      const isFocused = state.index === index;
+  
+      let iconSource;
+      switch (route.name) {
+        case 'Home':
+          iconSource = require('../assets/icons/logo2.png');
+          break;
+        case 'Medicine':
+          iconSource = require('../assets/icons/medicine.png');
+          break;
+        case 'Youtube':
+          iconSource = require('../assets/icons/youtube.png');
+          break;
+        default:
+          break;
+      }
+  
+      const onPress = () => {
+        const event = navigation.emit({
+          type: 'tabPress',
+          target: route.key,
+        });
+        if (!isFocused && !event.defaultPrevented) {
+          navigation.navigate(route.name);
         }
+      };
+  
+      const isHome = route.name === 'Home';
+  
+      return (
+        <TouchableOpacity
+  key={route.key}
+  onPress={onPress}
+  style={[
+    isHome ? styles.homeTabItem : styles.tabItem,
+    !isHome && isFocused && styles.activeTab, // ✅ 여기서 다시 적용!
+  ]}
+>
+  {/* ✅ 활성화된 홈 탭이면 배경 박스를 따로 렌더링 */}
+  {isFocused && isHome && (
+    <View style={styles.homeActiveBackground} />
+  )}
 
-        const onPress = () => {
-          const event = navigation.emit({
-            type: 'tabPress',
-            target: route.key,
-          });
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name);
-          }
-        };
+  <View style={isHome ? styles.homeIconWrapper : null}>
+    <Image
+      source={iconSource}
+      style={[styles.iconStyle, isHome && styles.homeIcon]}
+    />
+  </View>
+  <Text
+    style={[
+      styles.tabLabel,
+      isFocused && styles.activeLabel,
+      isHome && styles.homeLabel,
+    ]}
+  >
+    {route.name === 'Home' ? '홈' : route.name === 'Medicine' ? '약품 보관함' : '건강 쇼츠'}
+  </Text>
+</TouchableOpacity>
 
-        return (
-          <TouchableOpacity
-            key={route.key}
-            style={[styles.tabItem, isFocused && styles.activeTab]}
-            onPress={onPress}
-          >
-            <Image source={iconSource} style={[styles.iconStyle, isFocused && styles.activeIcon]} />
-            <Text style={[styles.tabLabel, isFocused && styles.activeLabel]}>{label}</Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
+      );
+    })}
+  </View>
+  
   );
 };
 
@@ -90,20 +106,61 @@ const styles = StyleSheet.create({
 
   container:{
     flex:1,
-    backgroundColor:'white',
+    backgroundColor:'transparent',
   },
 
   tabBarContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#F8F8F8', // 밝은 그레이톤
-    height: 70, // 높이 조정
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: -3 },
-    elevation: 5, // 안드로이드 그림자
+    position: 'absolute',
+  bottom: 0,
+  alignSelf: 'center',
+  flexDirection: 'row',
+  justifyContent: 'space-around',
+  backgroundColor: '#fff',
+  height: 70,
+  width: 270,
+  borderTopLeftRadius: 30,
+  borderTopRightRadius: 30,
+  shadowColor: '#000',
+  shadowOpacity: 0.1,
+  shadowOffset: { width: 0, height: -3 },
+  elevation: 5,
+  zIndex: 999, // 배경 위에 띄우기
   },
+
+  homeTabItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    top: -20, // 위로 살짝 올라오게
+    zIndex: 10,
+    width: 80,
+  },
+
+  homeIconWrapper: {
+    backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 999,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 3 },
+  },
+
+  homeIcon: {
+    width: 50,
+    height: 50,
+  },
+
+  homeLabel: {
+    marginTop: 6,
+    fontWeight: 'bold',
+  },
+  
+  activeLabel: {
+    color: '#111',
+    fontWeight: 'bold',
+  },
+
   tabItem: {
     flex: 1,
     alignItems: 'center',
@@ -112,7 +169,8 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     backgroundColor: '#E0E0E0', // 활성 탭 배경색
-    borderRadius: 10,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
   },
   tabLabel: {
     fontSize: 12,
@@ -133,6 +191,19 @@ const styles = StyleSheet.create({
   activeIcon: {
     opacity: 1, // 활성화 시 선명하게
   },
+
+  homeActiveBackground: {
+    position: 'absolute',
+    top: 12,
+    width: 80,
+    height: 100,
+    backgroundColor: '#E0E0E0',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    zIndex: -1,
+  },
+  
+
 });
 
 export default TabNavigator;
