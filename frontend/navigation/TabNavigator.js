@@ -7,9 +7,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import NewHomeScreen from '../screens/Home/NewHomeScreen';
 import MedicineNavigator from "./MedicineNavigator";
-import NutritionScreen from '../screens/NutritionScreen/NutritionScreen';
 import YoutubeScreen from '../screens/Youtube/YoutubeScreen';
-import MyPageScreen from "../screens/MyPage/MyPageScreen";
+
 
 
 const Tab = createBottomTabNavigator();
@@ -38,14 +37,8 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
           case 'Medicine':
             iconSource = require('../assets/icons/medicine.png');
             break;
-          case 'Nutrition':
-            iconSource = require('../assets/icons/nutrition.png');
-            break;
           case 'Youtube':
             iconSource = require('../assets/icons/youtube.png');
-            break;
-          case 'MyPage':
-            iconSource = require('../assets/icons/mypage.png');
             break;
           default:
             break;
@@ -85,10 +78,8 @@ const TabNavigator = () => {
       initialRouteName="Home"
     >
       <Tab.Screen name="Medicine" component={MedicineNavigator} options={{ tabBarLabel: "약품 보관함" }} />
-      <Tab.Screen name="Nutrition" component={NutritionScreen} options={{ tabBarLabel: '성분 추천 내역' }} />
       <Tab.Screen name="Home" component={NewHomeScreen} options={{ tabBarLabel: '케어 센터' }} />
       <Tab.Screen name="Youtube" component={YoutubeScreen} options={{ tabBarLabel: '건강 쇼츠' }} />
-      <Tab.Screen name="MyPage" component={MyPageScreen} options={{ tabBarLabel: '마이페이지' }} />
     </Tab.Navigator>
     </View>
   );
