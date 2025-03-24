@@ -121,7 +121,7 @@ const LoginScreen = () => {
                     </TouchableOpacity>
                 </View>
 
-                {/* ✅ SNS 로그인 버튼 */}
+                {/* ✅ SNS 로그인 버튼 
                 <View style={styles.snsContainer}>
                     <TouchableOpacity style={styles.snsButton}>
                         <Image source={require('../assets/icons/google.png')} style={styles.snsIcon} />
@@ -131,7 +131,7 @@ const LoginScreen = () => {
                         <Image source={require('../assets/icons/naver.png')} style={styles.snsIcon} />
                         <Text style={styles.snsText}>네이버로 로그인</Text>
                     </TouchableOpacity>
-                </View>
+                </View>*/}
             </View>
         </ScrollView>
     );
