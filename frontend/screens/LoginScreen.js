@@ -75,8 +75,13 @@ const LoginScreen = () => {
             <View style={styles.container}>
                 {/* ✅ 로고 */}
                 <Image 
-                    source={require('../assets/icons/logo4.png')} 
+                    source={require('../assets/icons/logo3.png')} 
                     style={styles.logo} 
+                    resizeMode="contain" 
+                />
+                 <Image 
+                    source={require('../assets/icons/logotext.png')} 
+                    style={styles.logoText} 
                     resizeMode="contain" 
                 />
 
@@ -147,9 +152,16 @@ const styles = StyleSheet.create({
     },
 
     logo: { 
-        width: 200,
-        height: 200,
-        marginBottom: 40,
+        width: 300,
+        height: 240,
+        marginBottom : -80
+        
+    },
+    logoText : { 
+        width: 210,
+        height: 160,
+        marginBottom: -30,
+
     },
 
     inputContainer: {
