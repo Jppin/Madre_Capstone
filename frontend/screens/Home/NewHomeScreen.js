@@ -82,6 +82,12 @@ const CombinedScreen = () => {
     }
   };  
   
+
+
+
+
+
+
   const fetchRecommendations = async () => {
     try {
       if (!userData?._id) return; // ✅ 사용자 정보 없으면 실행 안 함!
@@ -108,6 +114,11 @@ const CombinedScreen = () => {
     }
   };
   
+
+
+
+
+
   /** 추천/주의 버튼에 따른 데이터 갱신 */
   useEffect(() => {
     if (selectedButton === "recommend") {
@@ -207,7 +218,12 @@ const CombinedScreen = () => {
   }, [userData]);
   
 
-
+  useEffect(() => {
+    if (isFocused) {
+      fetchRecommendations();
+    }
+  }, [isFocused]);
+  
 
 
 
