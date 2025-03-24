@@ -84,7 +84,7 @@ const ConcernsEdit = () => {
                 // ✅ 업데이트 성공 시 AsyncStorage에도 반영
                 await AsyncStorage.setItem("user_concerns", JSON.stringify(selectedConcerns));
 
-                Alert.alert("완료", "정보가 수정되었습니다.", [
+                Alert.alert("완료", "정보가 수정되었습니다. 수정된 정보를 기반으로 케어센터가 갱신됩니다.", [
                     { 
                       text: "확인", 
                       onPress: () => {
