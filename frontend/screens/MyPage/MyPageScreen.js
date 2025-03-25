@@ -4,6 +4,9 @@ import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
 import { StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomSpinner from "../../components/CustomSpinner";
+import Feather from "react-native-vector-icons/Feather";
+
+
 
 const MyPageScreen = () => {
   const navigation = useNavigation();
@@ -111,9 +114,30 @@ const MyPageScreen = () => {
   }
 
   return (
+    
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      
+      
+      
+      
       {/* 페이지 제목 배경 */}
+      
       <View style={styles.pageHeader}>
+
+        {/* 상단 뒤로 가기 버튼 */}
+      <TouchableOpacity 
+                    onPress={() => {
+                        if (navigation.canGoBack()) {
+                             navigation.goBack();  // ✅ 이전 화면이 있으면 뒤로 가기
+                        } else {
+                            navigation.navigate("Login");  // ✅ 이전 화면이 없으면 Login 화면으로 이동
+                        }
+                    }} 
+                    style={styles.backButton}
+                >
+                <Feather name="chevron-left" size={40} color="white" />
+            </TouchableOpacity>
+
         <Text style={styles.pageTitle}>마이페이지</Text>
       </View>
 
@@ -233,6 +257,7 @@ const MyPageScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   pageHeader: {
+    flexDirection : 'row',
     backgroundColor: "#FBAF8B",
     paddingVertical: 20,
     borderBottomLeftRadius: 15,
@@ -242,8 +267,8 @@ const styles = StyleSheet.create({
     fontSize: 27,
     fontWeight: "bold",
     textAlign: "left",
-    marginInlineStart: 35,
-    marginTop: 7,
+    
+    marginTop: 4,
     color: "#fff",
   },
   separator: { height: 1, backgroundColor: "#ddd", marginVertical: 10 },
