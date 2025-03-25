@@ -14,7 +14,7 @@ import YoutubeScreen from '../screens/Youtube/YoutubeScreen';
 const Tab = createBottomTabNavigator();
 
 // **커스텀 하단 탭 바**
-const CustomTabBar = ({ state, descriptors, navigation }) => {
+const CustomTabBar = ({ state, navigation }) => {
   return (
     <View style={styles.tabBarContainer}>
     {state.routes.map((route, index) => {
@@ -111,21 +111,26 @@ const styles = StyleSheet.create({
 
   tabBarContainer: {
     position: 'absolute',
-  bottom: 0,
-  alignSelf: 'center',
-  flexDirection: 'row',
-  justifyContent: 'space-around',
-  backgroundColor: '#fff',
-  height: 70,
-  width: 270,
-  borderTopLeftRadius: 30,
-  borderTopRightRadius: 30,
-  shadowColor: '#000',
-  shadowOpacity: 0.1,
-  shadowOffset: { width: 0, height: -3 },
-  elevation: 5,
-  zIndex: 999, // 배경 위에 띄우기
+    bottom: 0,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#fff',
+    height: 70,
+    width: 270,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    opacity: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10, // ⭐ 중요!
+    elevation: 6,
+    zIndex: 999,
+    
   },
+  
+  
 
   homeTabItem: {
     alignItems: 'center',
@@ -134,6 +139,7 @@ const styles = StyleSheet.create({
     top: -20, // 위로 살짝 올라오게
     zIndex: 10,
     width: 80,
+    
   },
 
   homeIconWrapper: {

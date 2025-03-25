@@ -251,20 +251,21 @@ const CombinedScreen = () => {
         
         {/* 헤더 오른쪽 버튼 영역 */}
         <TouchableOpacity
-          style={homeStyles.heartButton}
+          style={homeStyles.heartButton1}
           onPress={() => navigation.navigate("LikedNutrientsScreen")}
         >
           <Icon name="heart" size={28} color="#fff" />
+          <Text style={homeStyles.headerIconLabel}>찜</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={homeStyles.profileButton}
+          style={[homeStyles.profileButton, homeStyles.headerButtonWrapper]}
           onPress={() => navigation.navigate("MyPageScreen")}
         >
           <Icon name="person-circle" size={28} color="#fff" />
+          <Text style={homeStyles.headerIconLabel}>MyPage</Text>
         </TouchableOpacity>
 
-        
         
       </View>
 
@@ -314,6 +315,11 @@ const CombinedScreen = () => {
               </TouchableOpacity>
             ))}
           </ScrollView>
+
+
+
+
+
 
           {/* 영양성분 버튼 영역 */}
           {filteredNutrients.length > 0 ? (
@@ -470,7 +476,7 @@ const homeStyles = StyleSheet.create({
         width: 190,
         height: 40,
         position: 'absolute',
-        bottom: 10, // 텍스트와 같은 높이로 맞춤
+        bottom: 20, // 텍스트와 같은 높이로 맞춤
         left: '37%', // 텍스트 기준 중앙으로 이동
         transform: [{ translateX: -130 }], // 텍스트 기준 왼쪽으로 90px 이동
       },
@@ -628,10 +634,16 @@ const homeStyles = StyleSheet.create({
         color: '#777',
         textAlign: 'center',
       },
+      heartButton1: {
+        position: 'absolute',
+        top: 30,
+        right: 70, // 하트보다 왼쪽 (하트는 right: 20)
+        zIndex: 10,
+      },
       heartButton: {
         position: 'absolute',
-        top: 40,
-        right: 60, // 하트보다 왼쪽 (하트는 right: 20)
+        top: 10,
+        right: 10, 
         zIndex: 10,
       },
       selectedNutrient: {
@@ -642,11 +654,21 @@ const homeStyles = StyleSheet.create({
 
       profileButton: {
         position: 'absolute',
-        top: 40,
-        right: 20,
+        top: 30,
+        right: 15,
         zIndex: 10,
       },
-    
+
+      headerIconLabel: {
+        color: '#fff',
+        fontSize: 10,
+        marginTop: 2,
+        textAlign: 'center',
+      },
+      
+      headerButtonWrapper: {
+        alignItems: 'center', // 아이콘 + 텍스트 수직 정렬 중앙
+      },
 });
 
 
