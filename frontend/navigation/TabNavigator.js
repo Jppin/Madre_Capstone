@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    elevation: 20, // Android 전용 그림자
+    elevation: 30, // Android 전용 그림자
     shadowColor: '#000', // iOS도 같이 켜둠
     zIndex: 999,
     
