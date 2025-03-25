@@ -88,6 +88,34 @@ const CombinedScreen = () => {
 
 
 
+
+
+
+  // 📍 추천리스트 가공 함수
+  const mergeRecommendationsByName = (list) => {
+    const merged = {};
+  
+    list.forEach((item) => {
+      const name = item.name;
+      if (!merged[name]) {
+        merged[name] = {
+          name,
+          reasons: [item.effect], // 초기 이유
+        };
+      } else {
+        merged[name].reasons.push(item.effect); // 추가 이유
+      }
+    });
+  
+    return Object.values(merged); // 객체 -> 배열로 변환
+  };
+  
+  
+
+
+
+
+
   const fetchRecommendations = async () => {
     try {
       if (!userData?._id) return; // ✅ 사용자 정보 없으면 실행 안 함!
@@ -104,8 +132,12 @@ const CombinedScreen = () => {
       const json = await response.json();
   
       if (json.recommendList && json.warningList) {
-        setRecommendNutrients(json.recommendList);
-        setWarningNutrients(json.warningList);
+
+      const mergedRecommend = mergeRecommendationsByName(json.recommendList);
+      const mergedWarning = mergeRecommendationsByName(json.warningList);
+
+        setRecommendNutrients(mergedRecommend);
+        setWarningNutrients(mergedWarning);
       }
     } catch (error) {
       console.error('추천 영양성분 가져오기 오류:', error);
@@ -114,6 +146,13 @@ const CombinedScreen = () => {
     }
   };
   
+
+
+
+
+
+
+
 
 
 
@@ -301,7 +340,7 @@ const CombinedScreen = () => {
             showsHorizontalScrollIndicator={false} 
             contentContainerStyle={{ flexDirection: 'row' }} 
             style={homeStyles.tagScroll}
-            key={selectedConcern}
+            //key={selectedConcern}
           >
             {userConcerns.map((concern, index) => (
               <TouchableOpacity 
@@ -427,7 +466,8 @@ const CombinedScreen = () => {
         {nutrients.map((item, idx) => (
           <View key={idx} style={nutritionStyles.nutrientCard}>
             <Text style={nutritionStyles.nutrientTitle}>{item.name}</Text>
-            <Text style={nutritionStyles.nutrientInfo}>{item.effect}</Text>
+            <Text style={nutritionStyles.nutrientInfo}>{(item.reasons || []).join('\n\n')}</Text> 
+            {/* 두번이상 호출된거 한칸띄고 설명넣음ㅁ */}
             <TouchableOpacity
               onPress={() => toggleLike(item.name)}
               style={nutritionStyles.heartButton}
