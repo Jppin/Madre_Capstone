@@ -14,8 +14,9 @@ import YoutubeScreen from '../screens/Youtube/YoutubeScreen';
 const Tab = createBottomTabNavigator();
 
 // **커스텀 하단 탭 바**
-const CustomTabBar = ({ state, descriptors, navigation }) => {
+const CustomTabBar = ({ state, navigation }) => {
   return (
+    <View style={styles.shadowWrapper}>
     <View style={styles.tabBarContainer}>
     {state.routes.map((route, index) => {
       const isFocused = state.index === index;
@@ -49,39 +50,39 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
   
       return (
         <TouchableOpacity
-  key={route.key}
-  onPress={onPress}
-  style={[
-    isHome ? styles.homeTabItem : styles.tabItem,
-    !isHome && isFocused && styles.activeTab, // ✅ 여기서 다시 적용!
-  ]}
->
-  {/* ✅ 활성화된 홈 탭이면 배경 박스를 따로 렌더링 */}
-  {isFocused && isHome && (
-    <View style={styles.homeActiveBackground} />
-  )}
+          key={route.key}
+          onPress={onPress}
+          style={[
+            isHome ? styles.homeTabItem : styles.tabItem,
+            !isHome && isFocused && styles.activeTab, // ✅ 여기서 다시 적용!
+          ]}
+        >
+          {/* ✅ 활성화된 홈 탭이면 배경 박스를 따로 렌더링 */}
+          {isFocused && isHome && (
+            <View style={styles.homeActiveBackground} />
+          )}
 
-  <View style={isHome ? styles.homeIconWrapper : null}>
-    <Image
-      source={iconSource}
-      style={[styles.iconStyle, isHome && styles.homeIcon]}
-    />
-  </View>
-  <Text
-    style={[
-      styles.tabLabel,
-      isFocused && styles.activeLabel,
-      isHome && styles.homeLabel,
-    ]}
-  >
-    {route.name === 'Home' ? '홈' : route.name === 'Medicine' ? '약품 보관함' : '건강 쇼츠'}
-  </Text>
-</TouchableOpacity>
+          <View style={isHome ? styles.homeIconWrapper : null}>
+            <Image
+              source={iconSource}
+              style={[styles.iconStyle, isHome && styles.homeIcon]}
+            />
+          </View>
+          <Text
+            style={[
+              styles.tabLabel,
+              isFocused && styles.activeLabel,
+              isHome && styles.homeLabel,
+            ]}
+          >
+            {route.name === 'Home' ? '홈' : route.name === 'Medicine' ? '약품 보관함' : '건강 쇼츠'}
+          </Text>
+        </TouchableOpacity>
 
       );
     })}
   </View>
-  
+  </View>
   );
 };
 
@@ -111,21 +112,41 @@ const styles = StyleSheet.create({
 
   tabBarContainer: {
     position: 'absolute',
-  bottom: 0,
-  alignSelf: 'center',
-  flexDirection: 'row',
-  justifyContent: 'space-around',
-  backgroundColor: '#fff',
-  height: 70,
-  width: 270,
-  borderTopLeftRadius: 30,
-  borderTopRightRadius: 30,
-  shadowColor: '#000',
-  shadowOpacity: 0.1,
-  shadowOffset: { width: 0, height: -3 },
-  elevation: 5,
-  zIndex: 999, // 배경 위에 띄우기
+    bottom: 0,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#ffffff',
+    height: 70,
+    width: 270,
+    
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    elevation: 30, // Android 전용 그림자
+    shadowColor: '#000', // iOS도 같이 켜둠
+    zIndex: 999,
+    
   },
+  
+  shadowWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    alignSelf: 'center',
+    borderRadius: 30,
+    backgroundColor: 'transparent', // ✅ 투명해야 바탕 그대로
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 20,
+      },
+    }),
+  },
+  
 
   homeTabItem: {
     alignItems: 'center',
@@ -134,6 +155,7 @@ const styles = StyleSheet.create({
     top: -20, // 위로 살짝 올라오게
     zIndex: 10,
     width: 80,
+    
   },
 
   homeIconWrapper: {
