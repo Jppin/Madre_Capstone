@@ -1020,6 +1020,8 @@ app.get("/nutrients/recommendations", async (req, res) => {
 
 
 const db = mongoose.connection;  // ✅ DB 직접 접근 가능하도록 추가
+// ✅ 키워드 → 사람 읽는 라벨 매핑
+
 
 app.get("/nutrient-recommendations", async (req, res) => {
   try {
@@ -1069,14 +1071,37 @@ app.get("/nutrient-recommendations", async (req, res) => {
     // ✅ 추천/주의 성분 분류
     const recommendList = [];
     const warningList = [];
+    const labelMap = {
+      "0": "비음주",
+      "1": "음주",
+      "2": "음주",
+      "3": "음주",
+      "4": "음주",
+      "5": "음주",
+      "6": "음주",
+      "7": "음주",
+      "no": "비흡연",
+      "yes": "흡연",
+      "해당사항 없음": "비임신",  // 선택사항
+    };
 
     results.forEach((item) => {
       item.recommendations.forEach((rec) => {
         if (keywords.some(k => k.category === rec.category && k.keyword === rec.keyword)) {
+          const readableLabel = labelMap[rec.keyword] || rec.keyword; // 🔥 여기!
+    
           if (rec.type === "추천") {
-            recommendList.push({ name: item.name, effect: rec.reason });
+            recommendList.push({
+              name: item.name,
+              effect: rec.reason,
+              concern: readableLabel  // 🔥 사람이 읽기 쉬운 값으로!
+            });
           } else if (rec.type === "주의") {
-            warningList.push({ name: item.name, effect: rec.reason });
+            warningList.push({
+              name: item.name,
+              effect: rec.reason,
+              concern: readableLabel
+            });
           }
         }
       });
