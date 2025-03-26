@@ -49,36 +49,38 @@ const CombinedScreen = () => {
 
   const toggleLike = async (nutrientName) => {
     try {
-      const userId = userData?._id;
-      if (!userId) {
-        console.warn("userId가 없습니다. 로그인 확인 필요");
-        return;
+      const token = await AsyncStorage.getItem("token");
+      const isLiked = likedNutrients[nutrientName];
+  
+      if (isLiked) {
+        // 삭제 요청
+        await fetch("http://10.0.2.2:5001/api/unlike-nutrient", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ nutrientName }),
+        });
+      } else {
+        // 저장 요청
+        await fetch("http://10.0.2.2:5001/api/like-nutrient", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ nutrientName }),
+        });
       }
-  
-      const storageKey = `liked_nutrients_${userId}`;
-  
-      // 기존 데이터 가져오기
-      const storedData = await AsyncStorage.getItem(storageKey);
-      const parsedData = storedData ? JSON.parse(storedData) : {};
-  
-      // 데이터 토글
-      const updatedData = {
-        ...parsedData,
-        [nutrientName]: !parsedData[nutrientName],
-      };
-  
-      // 저장
-      await AsyncStorage.setItem(storageKey, JSON.stringify(updatedData));
   
       // 상태 업데이트
       setLikedNutrients((prev) => ({
         ...prev,
         [nutrientName]: !prev[nutrientName],
       }));
-  
-      console.log("토글 성공:", nutrientName, updatedData);
     } catch (error) {
-      console.error("하트 토글 오류:", error);
+      console.error("찜 토글 오류:", error);
     }
   };  
   
@@ -224,28 +226,41 @@ const CombinedScreen = () => {
       : true
   );
 
+
+
+
   useEffect(() => {
-    const fetchLikedNutrients = async () => {
-      try {
-        const userId = userData?._id; // ✅ 여기가 중요!
-        if (!userId) {
-          console.warn("userId가 없습니다!");
-          return;
-        }
-  
-        const storageKey = `liked_nutrients_${userId}`;
-        const storedData = await AsyncStorage.getItem(storageKey);
-        const parsedData = storedData ? JSON.parse(storedData) : {};
-  
-        setLikedNutrients(parsedData);
-      } catch (error) {
-        console.error("하트 불러오기 오류:", error);
-      }
-    };
-  
+  const fetchLikedNutrients = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch("http://10.0.2.2:5001/api/liked-nutrients", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const json = await response.json();
+
+      const parsed = {};
+      json.likedNutrients.forEach((name) => {
+        parsed[name] = true;
+      });
+
+      setLikedNutrients(parsed);
+    } catch (error) {
+      console.error("찜 목록 불러오기 오류:", error);
+    }
+  };
+
+  if (userData && isFocused) {
     fetchLikedNutrients();
-  }, [userData, isFocused]); // ✅ userData가 바뀔 때마다 실행!
+  }
+}, [userData, isFocused]); 
   
+
+
+
   useEffect(() => {
     if (userData) {
       setNickname(userData.nickname || "사용자");
@@ -256,6 +271,8 @@ const CombinedScreen = () => {
     }
   }, [userData]);
   
+
+
 
   useEffect(() => {
     if (isFocused) {
