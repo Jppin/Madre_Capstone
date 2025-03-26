@@ -128,14 +128,14 @@ const MyPageScreen = () => {
       <TouchableOpacity 
                     onPress={() => {
                         if (navigation.canGoBack()) {
-                             navigation.goBack();  // ✅ 이전 화면이 있으면 뒤로 가기
+                            navigation.navigate("MainTabs", { screen: "Home" });   // ✅ 이전 화면이 있으면 뒤로 가기
                         } else {
                             navigation.navigate("Login");  // ✅ 이전 화면이 없으면 Login 화면으로 이동
                         }
                     }} 
                     style={styles.backButton}
                 >
-                <Feather name="chevron-left" size={40} color="white" />
+                <Feather name="chevron-left" size={30} color="white" />
             </TouchableOpacity>
 
         <Text style={styles.pageTitle}>마이페이지</Text>
@@ -257,18 +257,19 @@ const MyPageScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   pageHeader: {
-    flexDirection : 'row',
-    backgroundColor: "#FBAF8B",
-    paddingVertical: 20,
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 15,
+    backgroundColor: '#FBAF8B',
+    paddingTop: 10,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   pageTitle: {
-    fontSize: 27,
+    fontSize: 21,
     fontWeight: "bold",
     textAlign: "left",
-    
-    marginTop: 4,
     color: "#fff",
   },
   separator: { height: 1, backgroundColor: "#ddd", marginVertical: 10 },
@@ -326,6 +327,10 @@ const styles = StyleSheet.create({
   menuIcon: { width: 24, height: 24, marginRight: 20, marginLeft: 10 },
   menuText: { fontSize: 16, flex: 1 },
   arrowIcon: { width: 20, height: 20 },
+  backButton: {
+    marginRight: 10,
+    
+  },
 });
 
 export default MyPageScreen;
