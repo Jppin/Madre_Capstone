@@ -138,7 +138,7 @@ allRecommendations.forEach(({ name, effect, type, concern }) => {
         </Text>
         {item.reasons.map((reason, i) => (
           <Text key={i} style={styles.reasonText}>
-            • {reason}
+            • {reason} 
           </Text>
         ))}
       </View>

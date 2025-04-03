@@ -18,7 +18,7 @@ const InfoComplete = () => {
                 const storedNickname = await AsyncStorage.getItem("user_nickname");
                 const birthYear = await AsyncStorage.getItem("user_birthYear");
                 const gender = await AsyncStorage.getItem("user_gender");
-                const alcohol = await AsyncStorage.getItem("user_alcohol") || "0";
+                const exercise = await AsyncStorage.getItem("user_exercise") || "0";
                 const smoking = await AsyncStorage.getItem("user_smoking") || "no";
                 const pregnancy = await AsyncStorage.getItem("user_pregnancy") || "해당 없음";
                 const conditions = JSON.parse(await AsyncStorage.getItem("user_conditions") || "[]");
@@ -31,7 +31,7 @@ const InfoComplete = () => {
                     nickname: storedNickname,
                     birthYear: parseInt(birthYear),
                     gender,
-                    alcohol: parseInt(alcohol),
+                    exercise: parseInt(exercise),
                     smoking,
                     pregnancy,
                     conditions,

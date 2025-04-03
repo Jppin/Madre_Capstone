@@ -7,7 +7,7 @@ const UserDetailSchema = new mongoose.Schema(
     nickname: { type: String, default: "사용자" },  // ✅ 기본값 추가
     birthYear: { type: Number, default: null },  // ✅ 기본값 추가 (없으면 null)
     gender: { type: String, default: "미입력" },
-    alcohol: { type: Number, default: 0 }, // ✅ 음주 횟수
+    exercise: { type: Number, default: 0 }, // ✅ 운동동 횟수
     smoking: { type: String, enum: ["yes", "no"], default: "no" }, // ✅ 흡연 여부
     pregnancy: { type: String, default: "해당 없음" }, // ✅ 임신 상태 (기본값)
     conditions: { type: [String], default: [] }, // ✅ 사용자가 선택한 질환 목록

@@ -13,7 +13,7 @@ const AlcoholSmoking = () => {
     
 
     // ✅ 상태 관리 (사용자 입력)
-    const [alcohol, setAlcohol] = useState(0); // 음주 횟수
+    const [exercise, setExercise] = useState(0); // 운동 횟수
     const [smoking, setSmoking] = useState(null); // 흡연 여부
     const [pregnancy, setPregnancy] = useState(null); // 임신 상태
     const [errorMessage, setErrorMessage] = useState(''); // 에러 메시지
@@ -42,7 +42,7 @@ const AlcoholSmoking = () => {
 
 
             const updateData = {
-                alcohol,
+                exercise,
                 smoking,
                 pregnancy
             };
@@ -78,7 +78,7 @@ const AlcoholSmoking = () => {
             console.log("✅ 사용자 정보 업데이트 성공!");
 
             // ✅ 업데이트 성공 시 AsyncStorage에도 반영
-            await AsyncStorage.setItem("user_alcohol", String(alcohol));
+            await AsyncStorage.setItem("user_alcohol", String(exercise));
             await AsyncStorage.setItem("user_smoking", smoking);
             await AsyncStorage.setItem("user_pregnancy", pregnancy);
 
@@ -121,18 +121,18 @@ const AlcoholSmoking = () => {
 
             {/* 질문 및 입력 UI */}
             <View style={styles.content}>
-                <Text style={styles.question}>일주일에 평균 술을 몇 회 드시나요?</Text>
+                <Text style={styles.question}>일주일에 평균 운동을 몇 회 하하시나요?</Text>
                 <Slider
                     style={styles.slider}
                     minimumValue={0}
                     maximumValue={7}
                     step={1}
                     value={alcohol}
-                    onSlidingComplete={(value) => setAlcohol(value)}
+                    onSlidingComplete={(value) => setExercise(value)}
                     minimumTrackTintColor="#FBAF8B"
                     thumbTintColor="#FBAF8B"
                 />
-                <Text style={styles.sliderValue}>{alcohol}회</Text>
+                <Text style={styles.sliderValue}>{exercise}회</Text>
 
                 <Text style={styles.question}>흡연자이신가요?</Text>
                 <View style={styles.buttonGroup}>

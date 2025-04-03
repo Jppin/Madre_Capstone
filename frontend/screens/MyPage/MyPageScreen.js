@@ -172,7 +172,7 @@ const MyPageScreen = () => {
         </View>
         <View style={styles.infoDetailRow}>
           <Text style={styles.infoDetail}>
-            음주 : 주 {userInfo?.alcohol}회, 흡연 여부 : {userInfo?.smoking}, 임신 관련 : {userInfo?.pregnancy}
+            운동 : 주 {userInfo?.exercise}회, 흡연 여부 : {userInfo?.smoking}, 임신 관련 : {userInfo?.pregnancy}
           </Text>
           <TouchableOpacity onPress={() => navigation.navigate("AlcoholSmoking")}>
             <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon2} />
