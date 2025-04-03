@@ -18,7 +18,6 @@ const UserInfoScreen = () => {
     const navigation = useNavigation();
     const [nickname, setNickname] = useState('');
     const [birthYear, setBirthYear] = useState(null);
-    const [selectedGender, setSelectedGender] = useState(null);
     const [errors, setErrors] = useState({});
     const [modalVisible, setModalVisible] = useState(false);
 
@@ -26,7 +25,7 @@ const UserInfoScreen = () => {
         let newErrors = {};
         if (!nickname.trim()) newErrors.nickname = '닉네임을 입력해주세요.';
         if (!birthYear) newErrors.birthYear = '태어난 연도를 선택해주세요.';
-        if (!selectedGender) newErrors.selectedGender = '성별을 선택해주세요.';
+        
         
         setErrors(newErrors);
         
@@ -34,7 +33,6 @@ const UserInfoScreen = () => {
             try {
                 await AsyncStorage.setItem("user_nickname", nickname);
                 await AsyncStorage.setItem("user_birthYear", JSON.stringify(birthYear));
-                await AsyncStorage.setItem("user_gender", selectedGender);
 
                 setModalVisible(true);
             } catch (error) {
@@ -100,31 +98,7 @@ const UserInfoScreen = () => {
                     {errors.birthYear && <Text style={styles.errorText}>{errors.birthYear}</Text>}
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.label}>성별을 선택해주세요.</Text>
-                    <View style={styles.genderContainer}>
-                        <TouchableOpacity 
-                            style={[styles.genderButton, selectedGender === '남성' && styles.selectedGender]}
-                            onPress={() => {
-                                setSelectedGender('남성');
-                                setErrors((prev) => ({ ...prev, selectedGender: '' }));
-                            }}
-                        >
-                            <Text style={[styles.genderText, selectedGender === '남성' && styles.selectedGenderText]}>남성</Text>
-                        </TouchableOpacity>
-                        
-                        <TouchableOpacity 
-                            style={[styles.genderButton, selectedGender === '여성' && styles.selectedGender]}
-                            onPress={() => {
-                                setSelectedGender('여성');
-                                setErrors((prev) => ({ ...prev, selectedGender: '' }));
-                            }}
-                        >
-                            <Text style={[styles.genderText, selectedGender === '여성' && styles.selectedGenderText]}>여성</Text>
-                        </TouchableOpacity>
-                    </View>
-                    {errors.selectedGender && <Text style={styles.errorText}>{errors.selectedGender}</Text>}
-                </View>
+                
             </ScrollView>
 
             <TouchableOpacity style={styles.nextButton} onPress={validateAndProceed}>
@@ -137,7 +111,6 @@ const UserInfoScreen = () => {
                         <Text style={styles.modalTitle}>입력하신 정보를 확인해주세요!</Text>
                         <Text style={styles.modalText}>닉네임: {nickname}</Text>
                         <Text style={styles.modalText}>태어난 연도: {birthYear}년</Text>
-                        <Text style={styles.modalText}>성별: {selectedGender}</Text>
                         <View style={styles.modalButtonContainer}>
                             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalButton}>
                                 <Text style={styles.modalButtonText}>수정하기</Text>
@@ -157,7 +130,7 @@ const UserInfoScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',
+        backgroundColor: '#F9F7F4',
         paddingHorizontal: 20,
     },
     scrollContainer: {
@@ -176,10 +149,11 @@ const styles = StyleSheet.create({
         color: '#333',
     },
     headerText: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#FBAF8B',
         marginBottom: 40,
+        marginTop : 20,
     },
     section: {
         marginBottom: 40,
@@ -203,12 +177,12 @@ const styles = StyleSheet.create({
         height: 50,
         justifyContent: 'center',
         paddingHorizontal: 10,
-        backgroundColor: "#fff",
+        backgroundColor: "#F9F7F4",
         borderWidth: 1,
         borderRadius: 5,
         borderColor: '#ccc',
     },
-    genderContainer: {
+    /*genderContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
     },
@@ -234,13 +208,14 @@ const styles = StyleSheet.create({
     selectedGenderText: {
         color: 'white',
     },
+    */
     nextButton: {
         backgroundColor: '#FBAF8B',
         padding: 15,
         borderRadius: 5,
         alignItems: 'center',
         position: 'absolute', // ✅ 하단 고정
-        bottom: 20, // ✅ 화면 하단 배치
+        bottom: 50, // ✅ 화면 하단 배치
         alignSelf: 'center',
         width: '90%',
     },

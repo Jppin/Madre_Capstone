@@ -56,7 +56,7 @@ const SignupScreen = () => {
     
             console.log("서버 응답:", res.data);
             if (res.data.status === "ok" && res.data.token) {
-                Alert.alert("회원가입 성공", "가입이 완료되었습니다!");
+                //Alert.alert("회원가입 성공", "회원가입이 완료되었습니다!\n이어서 사용자 정보를 입력해주세요.");
     
                 await AsyncStorage.setItem("token", res.data.token);
                 await AsyncStorage.setItem("isNewUser", "true");
@@ -140,7 +140,7 @@ const SignupScreen = () => {
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: "white",
+        backgroundColor: '#F9F7F4',
     },
 
     backButton: {

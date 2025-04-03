@@ -7,19 +7,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const HealthSurvey = () => {
     const navigation = useNavigation();
 
-    // ✅ 진행 바 애니메이션 값 (초기값: 0 → 목표값: 33, useRef 사용으로 고정)
+    // ✅ 진행 바 애니메이션 값 (초기값: 0 → 목표값: 20, useRef 사용으로 고정)
     const progress = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         Animated.timing(progress, {
-            toValue: 33, // 목표값 (33%)
+            toValue: 20, // 목표값 (20%)
             duration: 500, // 애니메이션 지속 시간 (0.5초)
             useNativeDriver: false, // width 속성에는 useNativeDriver 사용 불가
         }).start();
     }, []); // ✅ 한 번만 실행됨
 
     // ✅ 상태 관리 (사용자 입력)
-    const [alcohol, setAlcohol] = useState(0); // 음주 횟수
+    const [exercise, setExercise] = useState(0); // 운동 횟수
     const [smoking, setSmoking] = useState(null); // 흡연 여부
     const [pregnancy, setPregnancy] = useState(null); // 임신 상태
     const [errorMessage, setErrorMessage] = useState(''); // 에러 메시지
@@ -32,7 +32,7 @@ const HealthSurvey = () => {
         }
     
         try {
-            await AsyncStorage.setItem("user_alcohol", String(alcohol));
+            await AsyncStorage.setItem("user_exercise", String(exercise));
             await AsyncStorage.setItem("user_smoking", smoking);
             await AsyncStorage.setItem("user_pregnancy", pregnancy);
             console.log("✅ HealthSurvey 데이터 저장 완료!");
@@ -49,8 +49,8 @@ const HealthSurvey = () => {
             {/* 상단 진행 바 */}
             <View style={styles.progressBarContainer}>
                 <Animated.View style={[styles.progressBar, { width: progress.interpolate({
-                    inputRange: [0, 33],
-                    outputRange: ['0%', '33%'],
+                    inputRange: [0, 20],
+                    outputRange: ['0%', '20%'],
                 }) }]} />
             </View>
 
@@ -61,18 +61,20 @@ const HealthSurvey = () => {
 
             {/* 질문 및 입력 UI */}
             <View style={styles.content}>
-                <Text style={styles.question}>일주일에 평균 술을 몇 회 드시나요?</Text>
+            <Text style={styles.question}>일주일에 평균 운동을 몇 회 하시나요?</Text>
                 <Slider
                     style={styles.slider}
                     minimumValue={0}
                     maximumValue={7}
                     step={1}
-                    value={alcohol}
-                    onSlidingComplete={(value) => setAlcohol(value)}
+                    value={exercise}
+                    onSlidingComplete={(value) => setExercise(value)}
                     minimumTrackTintColor="#FBAF8B"
                     thumbTintColor="#FBAF8B"
                 />
-                <Text style={styles.sliderValue}>{alcohol}회</Text>
+                <Text style={styles.sliderValue}>{exercise}회</Text>
+
+
 
                 <Text style={styles.question}>흡연자이신가요?</Text>
                 <View style={styles.buttonGroup}>
@@ -89,6 +91,8 @@ const HealthSurvey = () => {
                         <Text style={[styles.optionText, smoking === 'no' && styles.selectedText]}>아니요</Text>
                     </TouchableOpacity>
                 </View>
+
+
 
                 <Text style={styles.question}>현재 임신 중이신가요?</Text>
                 <View style={styles.gridContainer}>
@@ -119,7 +123,7 @@ const HealthSurvey = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',
+        backgroundColor: '#F9F7F4',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingBottom: 30,
