@@ -8,11 +8,11 @@ const HealthSurvey3 = () => {
     const navigation = useNavigation();
 
     // ✅ 진행 바 애니메이션 (초기값 66 → 목표값 100)
-    const progress = useRef(new Animated.Value(66)).current;
+    const progress = useRef(new Animated.Value(40)).current;
 
     useEffect(() => {
         Animated.timing(progress, {
-            toValue: 100, // 목표값 (100%)
+            toValue: 60, // 목표값 (100%)
             duration: 500, // 애니메이션 지속 시간 (0.5초)
             useNativeDriver: false,
         }).start();
@@ -86,7 +86,8 @@ const HealthSurvey3 = () => {
             </TouchableOpacity>
 
             {/* 질문 텍스트 */}
-            <Text style={styles.title}>{"고민되시거나 개선하고 싶으신\n건강 고민이 있으신가요?"}</Text>
+            <Text style={styles.title}>{"주요 건강 고민이 무엇인가요?"}</Text>
+            <Text style={styles.sulmeyong}>{"(중복 선택 가능)"}</Text>
 
             <ScrollView contentContainerStyle={styles.concernContainer}>
                 {healthConcerns.map((concern, index) => (
@@ -158,6 +159,13 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         marginTop: 50,
+        marginBottom: 5,
+    },
+    sulmeyong: {
+        fontSize: 13,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        color : 'grey',
         marginBottom: 20,
     },
     concernContainer: {
