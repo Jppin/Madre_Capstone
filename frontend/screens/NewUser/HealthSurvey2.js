@@ -7,11 +7,11 @@ const HealthSurvey2 = () => {
     const navigation = useNavigation();
 
     // ✅ 진행 바 애니메이션 값 (초기값: 33 → 목표값: 66, useRef 사용)
-    const progress = useRef(new Animated.Value(33)).current;
+    const progress = useRef(new Animated.Value(20)).current;
 
     useEffect(() => {
         Animated.timing(progress, {
-            toValue: 66, // 목표값 (66%)
+            toValue: 40, // 목표값 (40%)
             duration: 500, // 애니메이션 지속 시간 (0.5초)
             useNativeDriver: false,
         }).start();
