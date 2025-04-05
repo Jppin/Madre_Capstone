@@ -25,7 +25,7 @@ const LoginScreen = () => {
         const userData = { email, password };
     
         try {
-            const res = await axios.post("http://10.0.2.2:5001/login-user", userData);
+            const res = await api.post("/login-user", userData);
     
             if (res.data.status === "ok" && res.data.token) {
                 await AsyncStorage.setItem("token", res.data.token);
