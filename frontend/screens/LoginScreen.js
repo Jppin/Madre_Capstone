@@ -75,8 +75,13 @@ const LoginScreen = () => {
             <View style={styles.container}>
                 {/* ✅ 로고 */}
                 <Image 
-                    source={require('../assets/icons/logo4.png')} 
+                    source={require('../assets/icons/logo3.png')} 
                     style={styles.logo} 
+                    resizeMode="contain" 
+                />
+                 <Image 
+                    source={require('../assets/icons/logotext.png')} 
+                    style={styles.logoText} 
                     resizeMode="contain" 
                 />
 
@@ -116,7 +121,7 @@ const LoginScreen = () => {
                     </TouchableOpacity>
                 </View>
 
-                {/* ✅ SNS 로그인 버튼 */}
+                {/* ✅ SNS 로그인 버튼 
                 <View style={styles.snsContainer}>
                     <TouchableOpacity style={styles.snsButton}>
                         <Image source={require('../assets/icons/google.png')} style={styles.snsIcon} />
@@ -126,7 +131,7 @@ const LoginScreen = () => {
                         <Image source={require('../assets/icons/naver.png')} style={styles.snsIcon} />
                         <Text style={styles.snsText}>네이버로 로그인</Text>
                     </TouchableOpacity>
-                </View>
+                </View>*/}
             </View>
         </ScrollView>
     );
@@ -137,7 +142,7 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'white',
+        backgroundColor: '#F9F7F4',
     },
 
     container: { 
@@ -147,9 +152,16 @@ const styles = StyleSheet.create({
     },
 
     logo: { 
-        width: 200,
-        height: 200,
-        marginBottom: 40,
+        width: 300,
+        height: 240,
+        marginBottom : -80
+        
+    },
+    logoText : { 
+        width: 210,
+        height: 160,
+        marginBottom: -30,
+
     },
 
     inputContainer: {
@@ -208,6 +220,7 @@ const styles = StyleSheet.create({
     linkContainer: {
         flexDirection: 'row',
         marginTop: 15,
+        marginBottom : 25,
     },
 
     linkText: {
@@ -220,12 +233,12 @@ const styles = StyleSheet.create({
         color: '#999',
         marginHorizontal: 5,
     },
-
+    /*
     snsContainer: {
         flexDirection: 'row',
         marginTop: 15,
     },
-
+    
     snsButton: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -248,7 +261,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#333',
     },
-
+    */
 });
 
 export default LoginScreen;

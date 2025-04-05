@@ -1,5 +1,7 @@
+//InfoComplete.js
+
 import React, { useEffect, useContext, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -17,12 +19,14 @@ const InfoComplete = () => {
                 const email = await AsyncStorage.getItem("user_email");
                 const storedNickname = await AsyncStorage.getItem("user_nickname");
                 const birthYear = await AsyncStorage.getItem("user_birthYear");
-                const gender = await AsyncStorage.getItem("user_gender");
-                const alcohol = await AsyncStorage.getItem("user_alcohol") || "0";
-                const smoking = await AsyncStorage.getItem("user_smoking") || "no";
+                const exercise = await AsyncStorage.getItem("user_exercise") || "0";
                 const pregnancy = await AsyncStorage.getItem("user_pregnancy") || "해당 없음";
                 const conditions = JSON.parse(await AsyncStorage.getItem("user_conditions") || "[]");
                 const concerns = JSON.parse(await AsyncStorage.getItem("user_concerns") || "[]");
+                const subPregnancy = await AsyncStorage.getItem("user_subPregnancy");
+                const pregnancyWeek = await AsyncStorage.getItem("user_pregnancyWeek");
+                const nausea = await AsyncStorage.getItem("user_nausea") || "0";
+
 
                 setNickname(storedNickname || "사용자님");
 
@@ -30,10 +34,11 @@ const InfoComplete = () => {
                     email,
                     nickname: storedNickname,
                     birthYear: parseInt(birthYear),
-                    gender,
-                    alcohol: parseInt(alcohol),
-                    smoking,
+                    exercise: parseInt(exercise),
                     pregnancy,
+                    subPregnancy,
+                    pregnancyWeek: parseInt(pregnancyWeek), // 숫자로
+                    nausea: parseInt(nausea),
                     conditions,
                     concerns,
                 };
@@ -47,23 +52,26 @@ const InfoComplete = () => {
                     console.log("✅ 사용자 데이터 저장 완료:", response.data);
                     
                     // ✅ AsyncStorage & AuthContext 동기화
-                    await AsyncStorage.setItem("isNewUser", "false");
-                    setIsNewUser(false);
                     
                     setUserData(userData); // 앱 전역 상태 업데이트
                 } else {
                     throw new Error(response.data.message || "데이터 저장 실패");
                 }
+            
             } catch (error) {
                 console.error("❌ 사용자 데이터 저장 오류:", error);
                 Alert.alert("오류", "회원 정보 저장 중 문제가 발생했습니다.");
             } finally {
-                setLoading(false);
+                setLoading(false); // ⬅️ 여기서만 로딩 false로 변경
             }
         };
 
         saveUserDataToBackend();
     }, []);
+
+
+
+
 
     const updateIsNewUserInDB = async (email) => {
         try {
@@ -83,6 +91,9 @@ const InfoComplete = () => {
             console.error("❌ DB 업데이트 오류:", error);
         }
     };
+
+
+
 
     const handleStart = async () => {
         try {
@@ -110,16 +121,24 @@ const InfoComplete = () => {
         }
     };
 
+
+
+
+
+
     return (
         <View style={styles.container}>
             {loading ? (
                 <ActivityIndicator size="large" color="#FBAF8B" />
             ) : (
                 <>
+                
+                <Image source={require('../../assets/icons/complete.png')} style={styles.image} />
                     <View style={styles.line} />
+                    
                     <Text style={styles.title}>모든 정보 입력이 완료되었어요! 🎉</Text>
                     <Text style={styles.subtitle}>
-                        이제 <Text style={styles.bold}>{nickname}</Text>의 첫 번째 맞춤형{"\n"}
+                        이제 <Text style={styles.bold}>{nickname}</Text>님의 첫 번째 맞춤형{"\n"}
                         영양성분을 만나보세요!
                     </Text>
                     <View style={styles.line} />
@@ -168,13 +187,19 @@ const styles = StyleSheet.create({
         paddingHorizontal: 60,
         borderRadius: 8,
         position: 'absolute',
-        bottom: 40,
+        bottom: 90,
     },
     startText: {
         color: 'white',
         fontSize: 18,
         fontWeight: 'bold',
     },
+    image: {
+        width: 210,
+        height: 210,
+        resizeMode: 'contain',
+        marginBottom: 8,
+      },
 });
 
 export default InfoComplete;

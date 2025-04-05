@@ -1,3 +1,5 @@
+//HealthSurvey3.js
+
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -8,11 +10,11 @@ const HealthSurvey3 = () => {
     const navigation = useNavigation();
 
     // ✅ 진행 바 애니메이션 (초기값 66 → 목표값 100)
-    const progress = useRef(new Animated.Value(66)).current;
+    const progress = useRef(new Animated.Value(40)).current;
 
     useEffect(() => {
         Animated.timing(progress, {
-            toValue: 100, // 목표값 (100%)
+            toValue: 70, // 목표값 (100%)
             duration: 500, // 애니메이션 지속 시간 (0.5초)
             useNativeDriver: false,
         }).start();
@@ -25,11 +27,14 @@ const HealthSurvey3 = () => {
 
     // ✅ 건강 고민 목록
     const healthConcerns = [
-        "눈 건강", "체지방 개선", "피부 건강", "모발 & 손톱 건강", "피로감", "스트레스/수면", "소화 & 장 건강",
-        "면역 기능", "운동능력/근육량", "여성건강", "갱년기 여성건강", "비뇨기 건강", "전립선 건강",
-        "노화/항산화", "치아/잇몸 건강", "심혈관 건강", "기억력 개선", 
-        "뼈 건강", "관절 건강", "간 건강", "갑상선 건강", "혈중 중성지방"
+        "임신성 당뇨", "임신성 고혈압", "임신 중독증", "피로감/에너지 부족", "변비/소화불량", "임신성 빈혈", "체중 증가 관리",
+        "요통/골반통", "스트레스/정서 안정", "산후 우울증", "수면장애/불면증", "면역력 강화", "갑상선 기능 저하",
+        "부종/혈액순환 장애"
     ];
+
+    const fetalConcerns = [
+        "태아 두뇌 발달 지원", "태아 뼈 형성 지원", "조산 예방/자궁 건강", "태아 성장 지연 예방"
+      ];
 
     // ✅ 선택 토글 함수
     const toggleConcern = (concern) => {
@@ -53,16 +58,11 @@ const HealthSurvey3 = () => {
             await AsyncStorage.setItem("user_concerns", JSON.stringify(selectedConcerns));
             console.log("✅ HealthSurvey3 데이터 저장 완료!");
     
-            navigation.navigate('InfoComplete');
+            navigation.navigate('HealthSurvey4');
         } catch (error) {
             console.error("❌ HealthSurvey3 데이터 저장 실패:", error);
         }    
-
-        // ✅ 2초 후에 로딩 스크린에서 InfoComplete로 이동
-        setTimeout(() => {
-            setIsLoading(false);
-            navigation.navigate('InfoComplete', { selectedConcerns });
-        }, 2000);
+        
     };
 
     // ✅ 로딩 중이면 로딩 화면 표시
@@ -75,8 +75,8 @@ const HealthSurvey3 = () => {
             {/* 상단 진행 바 */}
             <View style={styles.progressBarContainer}>
                 <Animated.View style={[styles.progressBar, { width: progress.interpolate({
-                    inputRange: [66, 100],
-                    outputRange: ['66%', '100%'],
+                    inputRange: [40, 70],
+                    outputRange: ['40%', '70%'],
                 }) }]} />
             </View>
 
@@ -86,9 +86,19 @@ const HealthSurvey3 = () => {
             </TouchableOpacity>
 
             {/* 질문 텍스트 */}
-            <Text style={styles.title}>{"고민되시거나 개선하고 싶으신\n건강 고민이 있으신가요?"}</Text>
-
-            <ScrollView contentContainerStyle={styles.concernContainer}>
+            <Text style={styles.title}>{"주요 건강 고민이 무엇인가요?"}</Text>
+            <Text style={styles.sulmeyong}>{"(중복 선택 가능, 최소 1개 이상 선택해주세요.)"}</Text>
+            <View style={styles.subtitleWrapper}>
+            <View style={styles.dot} />
+            <Text style={styles.subtitle}>산모 건강 위험 관리</Text>
+            <View style={styles.dot} />
+            </View>
+            
+            
+            <ScrollView contentContainerStyle={styles.concernContainer}
+            showsVerticalScrollIndicator={false}>
+                
+                
                 {healthConcerns.map((concern, index) => (
                     <TouchableOpacity
                         key={index}
@@ -108,14 +118,49 @@ const HealthSurvey3 = () => {
                         </Text>
                     </TouchableOpacity>
                 ))}
+
+
+
+
+
+
+
+
+            <View style={styles.subtitleWrapper}>
+            <View style={styles.dot} />
+            <Text style={styles.subtitle}>태아 건강 지원</Text>
+            <View style={styles.dot} />
+            </View>
+
+            <View style={styles.concernContainer2}>
+            {fetalConcerns.map((concern, index) => (
+            <TouchableOpacity
+                key={`fetal-${index}`}
+                style={[
+                styles.concernButton,
+                selectedConcerns.includes(concern) && styles.selectedButton
+                ]}
+                onPress={() => toggleConcern(concern)}
+            >
+                <Text
+                style={[
+                    styles.concernText,
+                    selectedConcerns.includes(concern) && styles.selectedText
+                ]}
+                >
+                {concern}
+                </Text>
+            </TouchableOpacity>
+            ))}
+            </View>
             </ScrollView>
 
             {/* 에러 메시지 */}
             {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 
-            {/* 확인 버튼 */}
+            {/* 다음 버튼 */}
             <TouchableOpacity style={styles.confirmButton} onPress={handleNext}>
-                <Text style={styles.confirmText}>확인</Text>
+                <Text style={styles.confirmText}>다음</Text>
             </TouchableOpacity>
         </View>
     );
@@ -158,7 +203,21 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         marginTop: 50,
-        marginBottom: 20,
+        marginBottom: 5,
+    },
+    sulmeyong: {
+        fontSize: 13,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        color : 'grey',
+        marginBottom: 10,
+    },
+    subtitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginTop: 25,
+        marginBottom: 15,
     },
     concernContainer: {
         flexDirection: 'row',
@@ -166,13 +225,19 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingBottom: 30,
     },
+    concernContainer2: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        
+    },
     concernButton: {
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 20,
         paddingVertical: 10,
         paddingHorizontal: 15,
-        margin: 2,
+        margin: 3,
     },
     concernText: {
         fontSize: 14,
@@ -204,6 +269,19 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
     },
+    subtitleWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      dot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: '#FBAF8B',
+        marginHorizontal: 8,
+      },
+      
 });
 
 export default HealthSurvey3;

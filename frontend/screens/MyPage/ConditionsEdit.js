@@ -77,14 +77,14 @@ const ConditionsEdit = () => {
                 await AsyncStorage.setItem("user_conditions", JSON.stringify(selectedConditions));
     
                 // ✅ 성공 메시지 표시 후 MyPage로 이동
-                Alert.alert("완료", "정보가 수정되었습니다.", [
-                                    { 
-                                      text: "확인", 
-                                      onPress: () => {
-                                        navigation.navigate("MainTabs", { screen: "MyPage" }); // ✅ 정확한 경로로 이동
-                                      }
-                                    }
-                                  ]);
+                Alert.alert("완료", "정보가 수정되었습니다.\n수정된 정보로 홈 정보가 갱신됩니다.", [
+                    { 
+                      text: "확인", 
+                      onPress: () => {
+                        navigation.navigate("MyPageScreen");
+                      }
+                    }
+                  ]);
             } else {
                 console.error("❌ 만성질환 정보 업데이트 실패:", result.message);
                 Alert.alert("오류", "정보 수정에 실패했습니다.");
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         textAlign: 'center',
-        marginTop: 110,
+        marginTop: 100,
         marginBottom: 10,
     },
     subtitle: {

@@ -4,6 +4,9 @@ import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
 import { StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomSpinner from "../../components/CustomSpinner";
+import Feather from "react-native-vector-icons/Feather";
+
+
 
 const MyPageScreen = () => {
   const navigation = useNavigation();
@@ -111,9 +114,30 @@ const MyPageScreen = () => {
   }
 
   return (
+    
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      
+      
+      
+      
       {/* 페이지 제목 배경 */}
+      
       <View style={styles.pageHeader}>
+
+        {/* 상단 뒤로 가기 버튼 */}
+      <TouchableOpacity 
+                    onPress={() => {
+                        if (navigation.canGoBack()) {
+                            navigation.navigate("MainTabs", { screen: "Home" });   // ✅ 이전 화면이 있으면 뒤로 가기
+                        } else {
+                            navigation.navigate("Login");  // ✅ 이전 화면이 없으면 Login 화면으로 이동
+                        }
+                    }} 
+                    style={styles.backButton}
+                >
+                <Feather name="chevron-left" size={30} color="white" />
+            </TouchableOpacity>
+
         <Text style={styles.pageTitle}>마이페이지</Text>
       </View>
 
@@ -135,7 +159,7 @@ const MyPageScreen = () => {
               <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.userInfo}>태어난 연도 : {userInfo?.birthYear || "모름"} / 성별 : {userInfo?.gender || "모름"}</Text>
+          <Text style={styles.userInfo}>태어난 연도 : {userInfo?.birthYear || "모름"}</Text>
         </View>
       </View>
 
@@ -143,12 +167,12 @@ const MyPageScreen = () => {
       <View style={styles.infoContainer}>
         <View style={styles.infoRow}>
           <View style={styles.infoTextWrapper}>
-            <Text style={styles.infoLabel}>현재 건강 습관</Text>
+            <Text style={styles.infoLabel}>현재 건강 상태</Text>
           </View>
         </View>
         <View style={styles.infoDetailRow}>
           <Text style={styles.infoDetail}>
-            음주 : 주 {userInfo?.alcohol}회, 흡연 여부 : {userInfo?.smoking}, 임신 관련 : {userInfo?.pregnancy}
+            운동 : 주 {userInfo?.exercise}회 / 임신 관련 : {userInfo?.pregnancy}
           </Text>
           <TouchableOpacity onPress={() => navigation.navigate("AlcoholSmoking")}>
             <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon2} />
@@ -233,17 +257,19 @@ const MyPageScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   pageHeader: {
-    backgroundColor: "#FBAF8B",
-    paddingVertical: 20,
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 15,
+    backgroundColor: '#FBAF8B',
+    paddingTop: 10,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   pageTitle: {
-    fontSize: 27,
+    fontSize: 21,
     fontWeight: "bold",
     textAlign: "left",
-    marginInlineStart: 35,
-    marginTop: 7,
     color: "#fff",
   },
   separator: { height: 1, backgroundColor: "#ddd", marginVertical: 10 },
@@ -301,6 +327,10 @@ const styles = StyleSheet.create({
   menuIcon: { width: 24, height: 24, marginRight: 20, marginLeft: 10 },
   menuText: { fontSize: 16, flex: 1 },
   arrowIcon: { width: 20, height: 20 },
+  backButton: {
+    marginRight: 10,
+    
+  },
 });
 
 export default MyPageScreen;
