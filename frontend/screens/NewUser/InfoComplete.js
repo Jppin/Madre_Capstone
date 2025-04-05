@@ -23,6 +23,10 @@ const InfoComplete = () => {
                 const pregnancy = await AsyncStorage.getItem("user_pregnancy") || "해당 없음";
                 const conditions = JSON.parse(await AsyncStorage.getItem("user_conditions") || "[]");
                 const concerns = JSON.parse(await AsyncStorage.getItem("user_concerns") || "[]");
+                const subPregnancy = await AsyncStorage.getItem("user_subPregnancy");
+                const pregnancyWeek = await AsyncStorage.getItem("user_pregnancyWeek");
+                const nausea = await AsyncStorage.getItem("user_nausea") || "0";
+
 
                 setNickname(storedNickname || "사용자님");
 
@@ -32,6 +36,9 @@ const InfoComplete = () => {
                     birthYear: parseInt(birthYear),
                     exercise: parseInt(exercise),
                     pregnancy,
+                    subPregnancy,
+                    pregnancyWeek: parseInt(pregnancyWeek), // 숫자로
+                    nausea: parseInt(nausea),
                     conditions,
                     concerns,
                 };

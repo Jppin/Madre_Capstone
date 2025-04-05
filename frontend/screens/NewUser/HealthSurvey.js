@@ -7,12 +7,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const HealthSurvey = () => {
     const navigation = useNavigation();
 
-    // ✅ 진행 바 애니메이션 값 (초기값: 0 → 목표값: 20, useRef 사용으로 고정)
+    // ✅ 진행 바 애니메이션 값 (초기값: 0 → 목표값: 25, useRef 사용으로 고정)
     const progress = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         Animated.timing(progress, {
-            toValue: 25, // 목표값 (20%)
+            toValue: 25, // 목표값 (25%)
             duration: 500, // 애니메이션 지속 시간 (0.5초)
             useNativeDriver: false, // width 속성에는 useNativeDriver 사용 불가
         }).start();
@@ -51,6 +51,13 @@ const HealthSurvey = () => {
         try {
             await AsyncStorage.setItem("user_exercise", String(exercise));
             await AsyncStorage.setItem("user_pregnancy", pregnancy);
+            
+            if (pregnancy === "임신 중") {
+                await AsyncStorage.setItem("user_subPregnancy", subPregnancy);
+                await AsyncStorage.setItem("user_pregnancyWeek", pregnancyWeek);
+                await AsyncStorage.setItem("user_nausea", String(nausea));
+              }
+            
             console.log("✅ HealthSurvey 데이터 저장 완료!");
     
             navigation.navigate('HealthSurvey2');
