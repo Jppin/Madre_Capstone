@@ -84,11 +84,11 @@ const ConcernsEdit = () => {
                 // ✅ 업데이트 성공 시 AsyncStorage에도 반영
                 await AsyncStorage.setItem("user_concerns", JSON.stringify(selectedConcerns));
 
-                Alert.alert("완료", "정보가 수정되었습니다.", [
+                Alert.alert("완료", "정보가 수정되었습니다.\n수정된 정보로 홈 정보가 갱신됩니다.", [
                     { 
                       text: "확인", 
                       onPress: () => {
-                        navigation.navigate("MainTabs", { screen: "MyPage" }); // ✅ 정확한 경로로 이동
+                        navigation.navigate("MyPageScreen");
                       }
                     }
                   ]);

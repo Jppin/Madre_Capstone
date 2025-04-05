@@ -49,39 +49,75 @@ const CombinedScreen = () => {
 
   const toggleLike = async (nutrientName) => {
     try {
-      const userId = userData?._id;
-      if (!userId) {
-        console.warn("userId가 없습니다. 로그인 확인 필요");
-        return;
+      const token = await AsyncStorage.getItem("token");
+      const isLiked = likedNutrients[nutrientName];
+  
+      if (isLiked) {
+        // 삭제 요청
+        await fetch("http://10.0.2.2:5001/api/unlike-nutrient", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ nutrientName }),
+        });
+      } else {
+        // 저장 요청
+        await fetch("http://10.0.2.2:5001/api/like-nutrient", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ nutrientName }),
+        });
       }
-  
-      const storageKey = `liked_nutrients_${userId}`;
-  
-      // 기존 데이터 가져오기
-      const storedData = await AsyncStorage.getItem(storageKey);
-      const parsedData = storedData ? JSON.parse(storedData) : {};
-  
-      // 데이터 토글
-      const updatedData = {
-        ...parsedData,
-        [nutrientName]: !parsedData[nutrientName],
-      };
-  
-      // 저장
-      await AsyncStorage.setItem(storageKey, JSON.stringify(updatedData));
   
       // 상태 업데이트
       setLikedNutrients((prev) => ({
         ...prev,
         [nutrientName]: !prev[nutrientName],
       }));
-  
-      console.log("토글 성공:", nutrientName, updatedData);
     } catch (error) {
-      console.error("하트 토글 오류:", error);
+      console.error("찜 토글 오류:", error);
     }
   };  
   
+
+
+
+
+
+
+
+
+
+  // 📍 추천리스트 가공 함수
+  const mergeRecommendationsByName = (list) => {
+    const merged = {};
+  
+    list.forEach((item) => {
+      const name = item.name;
+      if (!merged[name]) {
+        merged[name] = {
+          name,
+          reasons: [item.effect], // 초기 이유
+        };
+      } else {
+        merged[name].reasons.push(item.effect); // 추가 이유
+      }
+    });
+  
+    return Object.values(merged); // 객체 -> 배열로 변환
+  };
+  
+  
+
+
+
+
+
   const fetchRecommendations = async () => {
     try {
       if (!userData?._id) return; // ✅ 사용자 정보 없으면 실행 안 함!
@@ -98,8 +134,12 @@ const CombinedScreen = () => {
       const json = await response.json();
   
       if (json.recommendList && json.warningList) {
-        setRecommendNutrients(json.recommendList);
-        setWarningNutrients(json.warningList);
+
+      const mergedRecommend = mergeRecommendationsByName(json.recommendList);
+      const mergedWarning = mergeRecommendationsByName(json.warningList);
+
+        setRecommendNutrients(mergedRecommend);
+        setWarningNutrients(mergedWarning);
       }
     } catch (error) {
       console.error('추천 영양성분 가져오기 오류:', error);
@@ -108,6 +148,18 @@ const CombinedScreen = () => {
     }
   };
   
+
+
+
+
+
+
+
+
+
+
+
+
   /** 추천/주의 버튼에 따른 데이터 갱신 */
   useEffect(() => {
     if (selectedButton === "recommend") {
@@ -174,28 +226,41 @@ const CombinedScreen = () => {
       : true
   );
 
+
+
+
   useEffect(() => {
-    const fetchLikedNutrients = async () => {
-      try {
-        const userId = userData?._id; // ✅ 여기가 중요!
-        if (!userId) {
-          console.warn("userId가 없습니다!");
-          return;
-        }
-  
-        const storageKey = `liked_nutrients_${userId}`;
-        const storedData = await AsyncStorage.getItem(storageKey);
-        const parsedData = storedData ? JSON.parse(storedData) : {};
-  
-        setLikedNutrients(parsedData);
-      } catch (error) {
-        console.error("하트 불러오기 오류:", error);
-      }
-    };
-  
+  const fetchLikedNutrients = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch("http://10.0.2.2:5001/api/liked-nutrients", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const json = await response.json();
+
+      const parsed = {};
+      json.likedNutrients.forEach((name) => {
+        parsed[name] = true;
+      });
+
+      setLikedNutrients(parsed);
+    } catch (error) {
+      console.error("찜 목록 불러오기 오류:", error);
+    }
+  };
+
+  if (userData && isFocused) {
     fetchLikedNutrients();
-  }, [userData, isFocused]); // ✅ userData가 바뀔 때마다 실행!
+  }
+}, [userData, isFocused]); 
   
+
+
+
   useEffect(() => {
     if (userData) {
       setNickname(userData.nickname || "사용자");
@@ -208,6 +273,13 @@ const CombinedScreen = () => {
   
 
 
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchRecommendations();
+    }
+  }, [isFocused]);
+  
 
 
 
@@ -230,22 +302,27 @@ const CombinedScreen = () => {
       <View style={homeStyles.headerContainer}>
         
         {/* 앱 로고 이미지 */}
-        <Image source={require('../../assets/icons/logo3.png')} style={homeStyles.logoIcon} />
-        
-        {/* 앱 타이틀 */}
-        <Text style={homeStyles.logoText}>NutriBox</Text>
+        <Image source={require('../../assets/icons/logotext.png')} style={homeStyles.logoIcon} />
 
-        {/* 헤더 오른쪽 하트 버튼 */}
+        
+        {/* 헤더 오른쪽 버튼 영역 */}
         <TouchableOpacity
-          style={homeStyles.favoriteButton}
+          style={homeStyles.heartButton1}
           onPress={() => navigation.navigate("LikedNutrientsScreen")}
         >
           <Icon name="heart" size={28} color="#fff" />
+          <Text style={homeStyles.headerIconLabel}>찜</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[homeStyles.profileButton, homeStyles.headerButtonWrapper]}
+          onPress={() => navigation.navigate("MyPageScreen")}
+        >
+          <Icon name="person-circle" size={28} color="#fff" />
+          <Text style={homeStyles.headerIconLabel}>MyPage</Text>
+        </TouchableOpacity>
+
         
-
-
-
       </View>
 
 
@@ -280,7 +357,7 @@ const CombinedScreen = () => {
             showsHorizontalScrollIndicator={false} 
             contentContainerStyle={{ flexDirection: 'row' }} 
             style={homeStyles.tagScroll}
-            key={selectedConcern}
+            //key={selectedConcern}
           >
             {userConcerns.map((concern, index) => (
               <TouchableOpacity 
@@ -294,6 +371,11 @@ const CombinedScreen = () => {
               </TouchableOpacity>
             ))}
           </ScrollView>
+
+
+
+
+
 
           {/* 영양성분 버튼 영역 */}
           {filteredNutrients.length > 0 ? (
@@ -346,10 +428,13 @@ const CombinedScreen = () => {
 
         </View>
 
-      {/* 추천 정보 다시 불러오기 */}
+      {/* 추천 정보 다시 불러오기 버튼
       <TouchableOpacity style={nutritionStyles.refreshButton} onPress={fetchRecommendations}>
         <Text style={nutritionStyles.refreshButtonText}>추천 정보 다시 불러오기 {loading ? '(로딩 중...)' : ''}</Text>
       </TouchableOpacity>
+      */}
+
+
 
       {/* 추천/비추천 버튼 */}
       <View style={nutritionStyles.recommendationContainer}>
@@ -398,7 +483,8 @@ const CombinedScreen = () => {
         {nutrients.map((item, idx) => (
           <View key={idx} style={nutritionStyles.nutrientCard}>
             <Text style={nutritionStyles.nutrientTitle}>{item.name}</Text>
-            <Text style={nutritionStyles.nutrientInfo}>{item.effect}</Text>
+            <Text style={nutritionStyles.nutrientInfo}>{(item.reasons || []).join('\n\n')}</Text> 
+            {/* 두번이상 호출된거 한칸띄고 설명넣음ㅁ */}
             <TouchableOpacity
               onPress={() => toggleLike(item.name)}
               style={nutritionStyles.heartButton}
@@ -442,22 +528,16 @@ const homeStyles = StyleSheet.create({
         alignItems: 'flex-end', // 요소들을 아래쪽 정렬
         position: 'relative', // 내부 요소의 절대 위치 설정 가능
       },
-      logoText: {
-        fontSize: 36,
-        fontWeight: 'bold',
-        color: '#ffffff',
-        position: 'absolute',
-        bottom: 10,
-        left: 35,
-      },
+      
       logoIcon: {
-        width: 60,
-        height: 60,
+        width: 190,
+        height: 40,
         position: 'absolute',
-        bottom: 10, // 텍스트와 같은 높이로 맞춤
-        left: '80%', // 텍스트 기준 중앙으로 이동
+        bottom: 20, // 텍스트와 같은 높이로 맞춤
+        left: '37%', // 텍스트 기준 중앙으로 이동
         transform: [{ translateX: -130 }], // 텍스트 기준 왼쪽으로 90px 이동
       },
+
       favoriteButton: {
         position: 'absolute',
         top: 40,
@@ -611,10 +691,16 @@ const homeStyles = StyleSheet.create({
         color: '#777',
         textAlign: 'center',
       },
+      heartButton1: {
+        position: 'absolute',
+        top: 30,
+        right: 70, // 하트보다 왼쪽 (하트는 right: 20)
+        zIndex: 10,
+      },
       heartButton: {
         position: 'absolute',
-        top: 8,
-        right: 8,
+        top: 10,
+        right: 10, 
         zIndex: 10,
       },
       selectedNutrient: {
@@ -622,7 +708,32 @@ const homeStyles = StyleSheet.create({
         borderColor: '#ccc',
         borderRadius: 10,
       },
+
+      profileButton: {
+        position: 'absolute',
+        top: 30,
+        right: 15,
+        zIndex: 10,
+      },
+
+      headerIconLabel: {
+        color: '#fff',
+        fontSize: 10,
+        marginTop: 2,
+        textAlign: 'center',
+      },
+      
+      headerButtonWrapper: {
+        alignItems: 'center', // 아이콘 + 텍스트 수직 정렬 중앙
+      },
 });
+
+
+
+
+
+
+
 
 const nutritionStyles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
@@ -799,6 +910,8 @@ const nutritionStyles = StyleSheet.create({
     marginTop:10,
     marginBottom: 15,
   },
+
+  
 });
 
 export default CombinedScreen;

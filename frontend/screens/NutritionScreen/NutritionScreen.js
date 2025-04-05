@@ -194,10 +194,7 @@ useEffect(() => {
       <ScrollView>
         {/* NutriBox 추천 배너 */}
         <View style={styles.bannerContainer}>
-          <Image
-            source={require("../../assets/icons/nutribox.png")}
-            style={styles.bannerImage}
-          />
+          
           <Text style={styles.bannerText}>
             {nickname}님을 위한 맞춤형{"\n"}영양성분 추천 확인하세요!
           </Text>

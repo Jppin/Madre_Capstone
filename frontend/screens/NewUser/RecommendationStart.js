@@ -9,7 +9,7 @@ const RecommendationStart = () => {
         <View style={styles.container}>
             <Image source={require('../../assets/icons/logo.png')} style={styles.image} />
             <View style={styles.separator} />
-            <Text style={styles.title}>당신에게 꼭 맞는 영양성분을{'\n'}추천해드릴게요.</Text>
+            <Text style={styles.title}>임산부에게 꼭 맞는 {'\n'}영양성분과 가이드를 추천해드릴게요.</Text>
             <Text style={styles.subtitle}>
                 몇 가지 건강 정보를 입력하면{'\n'}더 정확한 추천을 받을 수 있어요.
             </Text>
@@ -29,8 +29,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
     },
     image: {
-        width: 150,
-        height: 230,
+        width: 200,
+        height: 220,
     },
     title: {
         fontSize: 20,

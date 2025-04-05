@@ -8,6 +8,7 @@ import LoginScreen from '../screens/LoginScreen';
 import HealthSurvey from '../screens/NewUser/HealthSurvey';
 import HealthSurvey2 from '../screens/NewUser/HealthSurvey2';
 import HealthSurvey3 from '../screens/NewUser/HealthSurvey3';
+import HealthSurvey4 from '../screens/NewUser/HealthSurvey4';
 import InfoComplete from '../screens/NewUser/InfoComplete';
 import RecommendationStart from '../screens/NewUser/RecommendationStart';
 import SignupComplete from '../screens/NewUser/SignupComplete';
@@ -31,6 +32,7 @@ export default function AuthNavigator() {
             <Stack.Screen name="HealthSurvey" component={HealthSurvey} />
             <Stack.Screen name="HealthSurvey2" component={HealthSurvey2} />
             <Stack.Screen name="HealthSurvey3" component={HealthSurvey3} />
+            <Stack.Screen name="HealthSurvey4" component={HealthSurvey4}/>
             <Stack.Screen name="InfoComplete" component={InfoComplete} />
         </Stack.Navigator>
     );
