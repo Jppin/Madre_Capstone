@@ -6,12 +6,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const HealthSurvey2 = () => {
     const navigation = useNavigation();
 
-    // ✅ 진행 바 애니메이션 값 (초기값: 33 → 목표값: 66, useRef 사용)
-    const progress = useRef(new Animated.Value(20)).current;
+    // ✅ 진행 바 애니메이션 값
+    const progress = useRef(new Animated.Value(25)).current;
 
     useEffect(() => {
         Animated.timing(progress, {
-            toValue: 40, // 목표값 (40%)
+            toValue: 50, // 목표값 (40%)
             duration: 500, // 애니메이션 지속 시간 (0.5초)
             useNativeDriver: false,
         }).start();
@@ -72,8 +72,8 @@ const HealthSurvey2 = () => {
             {/* 상단 진행 바 */}
             <View style={styles.progressBarContainer}>
                 <Animated.View style={[styles.progressBar, { width: progress.interpolate({
-                    inputRange: [33, 66],
-                    outputRange: ['33%', '66%'],
+                    inputRange: [25, 50],
+                    outputRange: ['25%', '50%'],
                 }) }]} />
             </View>
 
@@ -85,7 +85,7 @@ const HealthSurvey2 = () => {
             <Text style={styles.title}>갖고 있는 질환이 있으신가요?</Text>
             <Text style={styles.subtitle}>피해야 하는 영양성분을 분석해드릴게요</Text>
 
-            <ScrollView contentContainerStyle={styles.conditionContainer}>
+            <ScrollView contentContainerStyle={styles.conditionContainer}showsVerticalScrollIndicator={false}>
                 {conditions.map((condition, index) => (
                     <TouchableOpacity
                         key={index}
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         textAlign: 'center',
-        marginTop: 30,
+        marginTop: 55,
         marginBottom: 10,
     },
     subtitle: {

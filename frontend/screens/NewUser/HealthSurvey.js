@@ -12,7 +12,7 @@ const HealthSurvey = () => {
 
     useEffect(() => {
         Animated.timing(progress, {
-            toValue: 20, // 목표값 (20%)
+            toValue: 25, // 목표값 (20%)
             duration: 500, // 애니메이션 지속 시간 (0.5초)
             useNativeDriver: false, // width 속성에는 useNativeDriver 사용 불가
         }).start();
@@ -65,8 +65,8 @@ const HealthSurvey = () => {
             {/* 상단 진행 바 */}
             <View style={styles.progressBarContainer}>
                 <Animated.View style={[styles.progressBar, { width: progress.interpolate({
-                    inputRange: [0, 20],
-                    outputRange: ['0%', '20%'],
+                    inputRange: [0, 25],
+                    outputRange: ['0%', '25%'],
                 }) }]} />
             </View>
 
@@ -197,7 +197,7 @@ const HealthSurvey = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F9F7F4',
+        backgroundColor: '#FFFFFF',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingBottom: 30,
