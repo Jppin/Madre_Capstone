@@ -43,7 +43,6 @@ const AlcoholSmoking = () => {
 
             const updateData = {
                 exercise,
-                smoking,
                 pregnancy
             };
         
@@ -127,7 +126,7 @@ const AlcoholSmoking = () => {
                     minimumValue={0}
                     maximumValue={7}
                     step={1}
-                    value={alcohol}
+                    value={exercise}
                     onSlidingComplete={(value) => setExercise(value)}
                     minimumTrackTintColor="#FBAF8B"
                     thumbTintColor="#FBAF8B"
