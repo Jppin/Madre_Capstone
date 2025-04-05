@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'white',
+        backgroundColor: '#F9F7F4',
     },
 
     container: { 
@@ -220,6 +220,7 @@ const styles = StyleSheet.create({
     linkContainer: {
         flexDirection: 'row',
         marginTop: 15,
+        marginBottom : 25,
     },
 
     linkText: {
@@ -232,12 +233,12 @@ const styles = StyleSheet.create({
         color: '#999',
         marginHorizontal: 5,
     },
-
+    /*
     snsContainer: {
         flexDirection: 'row',
         marginTop: 15,
     },
-
+    
     snsButton: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -260,7 +261,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#333',
     },
-
+    */
 });
 
 export default LoginScreen;

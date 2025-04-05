@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'white',
+        backgroundColor: '#F9F7F4',
     },
     welcomeText: {
         fontSize: 20,
