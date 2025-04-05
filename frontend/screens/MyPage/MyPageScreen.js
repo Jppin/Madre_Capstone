@@ -159,7 +159,7 @@ const MyPageScreen = () => {
               <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.userInfo}>태어난 연도 : {userInfo?.birthYear || "모름"} / 성별 : {userInfo?.gender || "모름"}</Text>
+          <Text style={styles.userInfo}>태어난 연도 : {userInfo?.birthYear || "모름"}</Text>
         </View>
       </View>
 
@@ -167,12 +167,12 @@ const MyPageScreen = () => {
       <View style={styles.infoContainer}>
         <View style={styles.infoRow}>
           <View style={styles.infoTextWrapper}>
-            <Text style={styles.infoLabel}>현재 건강 습관</Text>
+            <Text style={styles.infoLabel}>현재 건강 상태</Text>
           </View>
         </View>
         <View style={styles.infoDetailRow}>
           <Text style={styles.infoDetail}>
-            운동 : 주 {userInfo?.exercise}회, 흡연 여부 : {userInfo?.smoking}, 임신 관련 : {userInfo?.pregnancy}
+            운동 : 주 {userInfo?.exercise}회 / 임신 관련 : {userInfo?.pregnancy}
           </Text>
           <TouchableOpacity onPress={() => navigation.navigate("AlcoholSmoking")}>
             <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon2} />
