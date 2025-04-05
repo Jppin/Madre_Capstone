@@ -256,7 +256,7 @@ app.get("/userdata", async (req, res) => {
 
 // ✅ 사용자 정보 저장 엔드포인트 (온보딩 완료 시 호출)
 app.post("/save-user-info", async (req, res) => {
-  const { email, nickname, birthYear, gender, alcohol, smoking, pregnancy, conditions, concerns } = req.body;
+  const { email, nickname, birthYear, exercise, pregnancy, subPregnancy, pregnancyWeek, nausea, conditions, concerns } = req.body;
 
   try {
       // ✅ 이메일로 기존 사용자 찾기
@@ -269,12 +269,13 @@ app.post("/save-user-info", async (req, res) => {
       // ✅ 사용자 데이터 업데이트
       user.nickname = nickname;
       user.birthYear = birthYear;
-      user.gender = gender;
-      user.alcohol = alcohol;
-      user.smoking = smoking;
+      user.exercise = exercise;
       user.pregnancy = pregnancy;
       user.conditions = conditions;
       user.concerns = concerns;
+      user.subPregnancy = subPregnancy;
+      user.pregnancyWeek = pregnancyWeek;
+      user.nausea = nausea;
 
       await user.save(); // ✅ 데이터 저장
 
@@ -319,10 +320,11 @@ app.get("/user-full-data", async (req, res) => {
         email: user.email,
         nickname: user.nickname,
         birthYear: user.birthYear,
-        gender: user.gender,
-        alcohol: user.alcohol,
-        smoking: user.smoking,
+        exercise: user.exercise,
         pregnancy: user.pregnancy,
+        subPregnancy : user.subPregnancy,
+        pregnancyWeek: user.pregnancyWeek,
+        nausea: user.nausea,
         conditions: user.conditions,
         concerns: user.concerns,
         profileImage: user.profileImage 
@@ -339,7 +341,7 @@ app.get("/user-full-data", async (req, res) => {
 
 
 
-//마이페이지 이름성별나이&건강습관 업뎃
+//마이페이지 이름나이&건강습관 업뎃
 app.post("/update-user-info", async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -350,16 +352,17 @@ app.post("/update-user-info", async (req, res) => {
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    const { nickname, birthYear, gender, alcohol, smoking, pregnancy } = req.body;
+    const { nickname, birthYear, exercise, pregnancy, subPregnancy, pregnancyWeek, nausea } = req.body;
 
     // ✅ 업데이트할 필드만 선택적으로 저장 (값이 undefined인 경우 업데이트하지 않음)
     const updateFields = {};
     if (nickname !== undefined) updateFields.nickname = nickname;
     if (birthYear !== undefined) updateFields.birthYear = birthYear;
-    if (gender !== undefined) updateFields.gender = gender;
-    if (alcohol !== undefined) updateFields.alcohol = alcohol;
-    if (smoking !== undefined) updateFields.smoking = smoking;
+    if (exercise !== undefined) updateFields.exercise = exercise;
     if (pregnancy !== undefined) updateFields.pregnancy = pregnancy;
+    if (subPregnancy !== undefined) updateFields.subPregnancy = subPregnancy;
+    if (pregnancyWeek !== undefined) updateFields.pregnancyWeek = pregnancyWeek;
+    if (nausea !== undefined) updateFields.nausea = nausea;
 
 
     const user = await User.findOneAndUpdate(
@@ -896,6 +899,7 @@ app.delete("/withdraw", async (req, res) => {
 
     // 선택사항: 해당 사용자의 약품 데이터 삭제 (Medicine 컬렉션)
     await Medicine.deleteMany({ user_id: user._id });
+    await LikedNutrient.deleteMany({ email: decoded.email });
 
     res.status(200).json({ message: "회원 탈퇴가 완료되었습니다." });
   } catch (error) {
@@ -1045,8 +1049,7 @@ app.get("/nutrient-recommendations", async (req, res) => {
 
     // ✅ 사용자 정보 기반 필터링 키워드 생성
     const keywords = [
-      { category: "음주", keyword: String(user.alcohol) },
-      { category: "흡연", keyword: user.smoking },
+      { category: "운동", keyword: String(user.exercise) },
       { category: "임신", keyword: user.pregnancy },
       ...user.conditions.map((condition) => ({ category: "건강문제", keyword: condition })),
       ...user.concerns.map((concern) => ({ category: "건강관심사", keyword: concern })),
@@ -1072,18 +1075,15 @@ app.get("/nutrient-recommendations", async (req, res) => {
     const recommendList = [];
     const warningList = [];
     const labelMap = {
-      "0": "비음주",
-      "1": "음주",
-      "2": "음주",
-      "3": "음주",
-      "4": "음주",
-      "5": "음주",
-      "6": "음주",
-      "7": "음주",
-      "no": "비흡연",
-      "yes": "흡연",
-      "해당사항 없음": "비임신",  // 선택사항
-    };
+      "0": "운동 없음",
+  "1": "주 1회 운동",
+  "2": "주 2회 운동",
+  "3": "주 3회 운동",
+  "4": "주 4회 운동",
+  "5": "주 5회 운동",
+  "6": "주 6회 운동",
+  "7": "주 7회 운동",
+}
 
     results.forEach((item) => {
       item.recommendations.forEach((rec) => {
