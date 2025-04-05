@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/usr/src/app
+    working_dir: /usr/src/app
+    command: npx nodemon app.js
+    depends_on:
+      - redis
+      - rag-python
+    environment:
+      - NODE_ENV=development
+      - REDIS_HOST=redis
+      - RAG_API_URL=http://rag-python:5000
+    
+    env_file:
+      - ./backend/.env
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  rag-python:
+    build: ./rag-python
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./rag-python:/usr/src/app
+    working_dir: /usr/src/app
+    command: uvicorn main:app --host 0.0.0.0 --port 5000

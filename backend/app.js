@@ -1172,16 +1172,40 @@ app.post("/api/unlike-nutrient", async (req, res) => {
 });
 
 
+app.post('/api/recommend/rag', async (req, res) => {
+  try {
+    const requestData = req.body;
+
+    const ragApiUrl = 'http://localhost:5000';
+    
+    // Python 서버 호출
+    const response = await axios.post(`${ragApiUrl}/rag/recommend`, requestData);
+
+    // 결과 로그로 출력
+    console.log('✅ RAG 추천 결과:', JSON.stringify(response.data, null, 2));
+
+    // 프론트에는 간단한 응답만 보냄
+    res.status(200).json({
+      status: 'success',
+      message: '추천 결과가 서버 로그에 출력되었습니다.'
+    });
+
+  } catch (error) {
+    console.error('❌ 추천 오류:', error.message);
+
+    res.status(500).json({
+      status: 'error',
+      message: '추천 기능 처리 중 오류 발생. 자세한 내용은 서버 로그 확인'
+    });
+  }
+});
 
 
 
 
+require('dotenv').config();
 
-
-
-const PORT = process.env.PORT || 5001;
-
-// ✅ 서버 시작
-app.listen(PORT, "0.0.0.0",() => {
-  console.log("Node.js server started on port 5001.");
-}) ;
+const port = process.env.PORT || 5001;
+app.listen(port, '0.0.0.0', () => {
+  console.log(`서버 실행 중: ${port}번 포트`);
+});
