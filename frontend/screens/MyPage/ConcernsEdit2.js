@@ -129,7 +129,7 @@ const ConcernsEdit2 = () => {
             </TouchableOpacity>
 
 
-            <View style={{ height: 60 }} />
+            <View style={{ height: 40 }} />
 
 
             <View contentContainerStyle={styles.concernContainer} showsVerticalScrollIndicator={false}>
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     },
     backButton: {
         position: 'absolute',
-        top: 50,
+        top: 16,
         left: 10,
         zIndex: 10,
         padding: 10,

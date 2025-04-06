@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
     },
     backButton: {
         position: 'absolute',
-        top: 50,
+        top: 16,
         left: 10,
         zIndex: 10,
         padding: 10,
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         textAlign: 'center',
-        marginTop: 50,
+        marginTop: 16,
         marginBottom: 5,
     },
     sulmeyong: {

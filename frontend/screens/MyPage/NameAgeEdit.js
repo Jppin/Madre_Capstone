@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
-import { useNavigation, CommonActions } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNPickerSelect from 'react-native-picker-select';
 import Feather from "react-native-vector-icons/Feather";
@@ -43,8 +43,7 @@ const NameAgeEdit = () => {
                 },
                 body: JSON.stringify({
                     nickname,
-                    birthYear,
-                    gender: selectedGender
+                    birthYear
                 }),
             });
     
