@@ -21,7 +21,6 @@ const NameAgeEdit = () => {
     const navigation = useNavigation();
     const [nickname, setNickname] = useState('');
     const [birthYear, setBirthYear] = useState(null);
-    const [selectedGender, setSelectedGender] = useState(null);
     const [errors, setErrors] = useState({});
 
 
