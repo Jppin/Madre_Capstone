@@ -77,7 +77,7 @@ const ConditionsEdit = () => {
                 await AsyncStorage.setItem("user_conditions", JSON.stringify(selectedConditions));
     
                 // ✅ 성공 메시지 표시 후 MyPage로 이동
-                Alert.alert("완료", "정보가 수정되었습니다.\n수정된 정보로 홈 정보가 갱신됩니다.", [
+                Alert.alert("완료", "정보가 수정되었습니다.\n수정된 정보를 기반으로 홈이 갱신됩니다.", [
                     { 
                       text: "확인", 
                       onPress: () => {
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         textAlign: 'center',
-        marginTop: 100,
+        marginTop: 80,
         marginBottom: 10,
     },
     subtitle: {

@@ -71,7 +71,7 @@ function Settings1() {
       {/* 뒤로가기 혹은 특정 탭으로 이동 */}
       <TouchableOpacity
         onPress={() => {
-          navigation.navigate("MainTabs", { screen: "MyPage" });
+          navigation.navigate("MyPageScreen");
         }}
         style={styles.backButton}
       >

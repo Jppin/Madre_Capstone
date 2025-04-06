@@ -1,3 +1,5 @@
+//HealthSurvey.js
+
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Animated, ScrollView } from 'react-native';
 import Slider from '@react-native-community/slider';
@@ -67,6 +69,10 @@ const HealthSurvey = () => {
     };
     
 
+
+
+
+    
     return (
         <View style={styles.container}>
             {/* 상단 진행 바 */}

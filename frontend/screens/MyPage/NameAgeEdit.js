@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
-import { useNavigation, CommonActions } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNPickerSelect from 'react-native-picker-select';
 import Feather from "react-native-vector-icons/Feather";
@@ -21,7 +21,6 @@ const NameAgeEdit = () => {
     const navigation = useNavigation();
     const [nickname, setNickname] = useState('');
     const [birthYear, setBirthYear] = useState(null);
-    const [selectedGender, setSelectedGender] = useState(null);
     const [errors, setErrors] = useState({});
 
 
@@ -44,8 +43,7 @@ const NameAgeEdit = () => {
                 },
                 body: JSON.stringify({
                     nickname,
-                    birthYear,
-                    gender: selectedGender
+                    birthYear
                 }),
             });
     
@@ -57,14 +55,13 @@ const NameAgeEdit = () => {
                 // ✅ MongoDB 업데이트 성공하면 AsyncStorage에도 반영
                 await AsyncStorage.setItem("user_nickname", nickname);
                 await AsyncStorage.setItem("user_birthYear", JSON.stringify(birthYear));
-                await AsyncStorage.setItem("user_gender", selectedGender);
     
                 // ✅ 모달 제거하고 Alert로 메시지 띄운 후 MyPage로 이동
                 Alert.alert("완료", "정보가 수정되었습니다.", [
                     { 
                       text: "확인", 
                       onPress: () => {
-                        navigation.navigate("MainTabs", { screen: "MyPage" }); // ✅ 정확한 경로로 이동
+                        navigation.navigate("MyPageScreen"); // ✅ 정확한 경로로 이동
                       }
                     }
                   ]);
@@ -87,7 +84,7 @@ const NameAgeEdit = () => {
         let newErrors = {};
         if (!nickname.trim()) newErrors.nickname = '닉네임을 입력해주세요.';
         if (!birthYear) newErrors.birthYear = '태어난 연도를 선택해주세요.';
-        if (!selectedGender) newErrors.selectedGender = '성별을 선택해주세요.';
+        
         
         setErrors(newErrors);
         
@@ -151,40 +148,11 @@ const NameAgeEdit = () => {
                     </View>
                     {errors.birthYear && <Text style={styles.errorText}>{errors.birthYear}</Text>}
                 </View>
-
-                <View style={styles.section}>
-                    <Text style={styles.label}>성별을 선택해주세요.</Text>
-                    <View style={styles.genderContainer}>
-                        <TouchableOpacity 
-                            style={[styles.genderButton, selectedGender === '남성' && styles.selectedGender]}
-                            onPress={() => {
-                                setSelectedGender('남성');
-                                setErrors((prev) => ({ ...prev, selectedGender: '' }));
-                            }}
-                        >
-                            <Text style={[styles.genderText, selectedGender === '남성' && styles.selectedGenderText]}>남성</Text>
-                        </TouchableOpacity>
-                        
-                        <TouchableOpacity 
-                            style={[styles.genderButton, selectedGender === '여성' && styles.selectedGender]}
-                            onPress={() => {
-                                setSelectedGender('여성');
-                                setErrors((prev) => ({ ...prev, selectedGender: '' }));
-                            }}
-                        >
-                            <Text style={[styles.genderText, selectedGender === '여성' && styles.selectedGenderText]}>여성</Text>
-                        </TouchableOpacity>
-                    </View>
-                    {errors.selectedGender && <Text style={styles.errorText}>{errors.selectedGender}</Text>}
-                </View>
             </ScrollView>
 
             <TouchableOpacity style={styles.nextButton} onPress={validateAndProceed}>
                 <Text style={styles.nextText}>정보 수정 완료하기</Text>
             </TouchableOpacity>
-
-        
-
 
         </View>
     );
