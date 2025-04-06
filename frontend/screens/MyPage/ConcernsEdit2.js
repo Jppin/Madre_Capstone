@@ -1,4 +1,4 @@
-//ConcernsEdit.js
+//ConcernsEdit2.js
 
 
 import React, { useState } from 'react';
@@ -14,7 +14,7 @@ import CustomSpinner from '../../components/CustomSpinner';
 
 
 
-const ConcernsEdit = () => {
+const ConcernsEdit2 = () => {
     const navigation = useNavigation();
 
     // ✅ 상태 관리
@@ -25,14 +25,17 @@ const ConcernsEdit = () => {
 
 
     // ✅ 건강 고민 목록
-    const healthConcerns = [
-        "임신성 당뇨", "임신성 고혈압", "임신 중독증", "피로감/에너지 부족", "변비/소화불량",
-        "임신성 빈혈", "체중 증가 관리", "요통/골반통", "스트레스/정서 안정", "산후 우울증",
-        "수면장애/불면증", "면역력 강화", "갑상선 기능 저하", "부종/혈액순환 장애"
-      ];
-      const fetalConcerns = [
-        "태아 두뇌 발달 지원", "태아 뼈 형성 지원", "조산 예방/자궁 건강", "태아 성장 지연 예방"
-      ];
+    const skinConcerns = [
+        "기미/잡티/색소침착", "피부 트러블/여드름", "탈모/모발 건강", "손톱 강화"
+    ];
+
+    const lifestyleConcerns = [
+        "눈 건강", "운동능력/근육량", "간 건강", "혈당 관리", "치아/잇몸", "노화/향산화", "기억력/인지력", "뼈 건강", "관절 건강"
+    ];
+
+    const otherConcerns = [
+        "수유 준비", "수분 보충/탈수 예방", "출산 후 회복(산후 관리 준비)"
+    ];
 
     // ✅ 선택 토글 함수
     const toggleConcern = (concern) => {
@@ -53,31 +56,6 @@ const ConcernsEdit = () => {
       }
 
 
-
-
-      // ⬇️ 다음 버튼 로직
-    const handleNext = async () => {
-        if (selectedConcerns.length === 0) {
-        setErrorMessage('고민되는 건강 항목을 선택해주세요.');
-        return;
-        }
-  
-        try {
-        await AsyncStorage.setItem("user_concerns", JSON.stringify(selectedConcerns));
-        console.log("✅ ConcernsEdit 저장 완료!");
-        navigation.navigate('ConcernsEdit2');
-        } catch (error) {
-        console.error("❌ ConcernsEdit 저장 실패:", error);
-        Alert.alert("오류", "저장에 실패했습니다.");
-        }
-    };
-
-
-
-
-
-
-{/** 
     // ✅ MongoDB 업데이트 함수
     const updateUserInfo = async () => {
         if (selectedConcerns.length === 0) {
@@ -89,10 +67,8 @@ const ConcernsEdit = () => {
 
         try {
             const token = await AsyncStorage.getItem("token");
-            if (!token) {
-                Alert.alert("오류", "로그인이 필요합니다.");
-                return;
-            }
+            const prevConcerns = JSON.parse(await AsyncStorage.getItem("user_concerns")) || [];
+            const mergedConcerns = Array.from(new Set([...prevConcerns, ...selectedConcerns]));
 
             const response = await fetch("http://10.0.2.2:5001/update-user-concerns", {
                 method: "POST",
@@ -100,7 +76,7 @@ const ConcernsEdit = () => {
                     "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ concerns: selectedConcerns }),
+                body: JSON.stringify({ concerns: mergedConcerns }),
             });
 
             const result = await response.json();
@@ -109,9 +85,9 @@ const ConcernsEdit = () => {
             if (result.status === "ok") {
                 console.log("✅ 건강 고민 업데이트 성공!");
                 // ✅ 업데이트 성공 시 AsyncStorage에도 반영
-                await AsyncStorage.setItem("user_concerns", JSON.stringify(selectedConcerns));
+                await AsyncStorage.setItem("user_concerns", JSON.stringify(mergedConcerns));
 
-                Alert.alert("완료", "정보가 수정되었습니다.\n수정된 정보로 홈 정보가 갱신됩니다.", [
+                Alert.alert("완료", "정보가 수정되었습니다.\n수정된 정보를 기반으로 홈이 갱신됩니다.", [
                     { 
                       text: "확인", 
                       onPress: () => {
@@ -131,7 +107,7 @@ const ConcernsEdit = () => {
             setLoading(false);
         }
     };
-*/}
+
 
 
 
@@ -152,93 +128,79 @@ const ConcernsEdit = () => {
                 <Feather name="chevron-left" size={40} color="gray" />
             </TouchableOpacity>
 
-            <View style={{ height: 60 }} /> 
+
+            <View style={{ height: 60 }} />
 
 
-
-            {/* 질문 텍스트 */}
-                        <Text style={styles.title}>{"주요 건강 고민이 무엇인가요?"}</Text>
-                        <Text style={styles.sulmeyong}>{"(중복 선택 가능, 최소 1개 이상 선택해주세요.)"}</Text>
-                        <View style={styles.subtitleWrapper}>
-                        <View style={styles.dot} />
-                        <Text style={styles.subtitle}>산모 건강 위험 관리</Text>
-                        <View style={styles.dot} />
+            <View contentContainerStyle={styles.concernContainer} showsVerticalScrollIndicator={false}>
+                        
+                            {/* 피부/외형 변화 */}
+                            <View style={styles.subtitleWrapper}>
+                                <View style={styles.dot} />
+                                <Text style={styles.subtitle}>피부/외형 변화</Text>
+                                <View style={styles.dot} />
+                            </View>
+                            <View style={styles.concernRow}>
+                                {skinConcerns.map((concern, index) => (
+                                    <TouchableOpacity
+                                        key={`skin-${index}`}
+                                        style={[styles.concernButton, selectedConcerns.includes(concern) && styles.selectedButton]}
+                                        onPress={() => toggleConcern(concern)}
+                                    >
+                                        <Text style={[styles.concernText, selectedConcerns.includes(concern) && styles.selectedText]}>
+                                            {concern}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+            
+                            {/* 생활습관 & 웰빙 */}
+                            <View style={styles.subtitleWrapper}>
+                                <View style={styles.dot} />
+                                <Text style={styles.subtitle}>생활습관 & 웰빙</Text>
+                                <View style={styles.dot} />
+                            </View>
+                            <View style={styles.concernRow}>
+                                {lifestyleConcerns.map((concern, index) => (
+                                    <TouchableOpacity
+                                        key={`life-${index}`}
+                                        style={[styles.concernButton, selectedConcerns.includes(concern) && styles.selectedButton]}
+                                        onPress={() => toggleConcern(concern)}
+                                    >
+                                        <Text style={[styles.concernText, selectedConcerns.includes(concern) && styles.selectedText]}>
+                                            {concern}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+            
+                            {/* 기타 고민 */}
+                            <View style={styles.subtitleWrapper}>
+                                <View style={styles.dot} />
+                                <Text style={styles.subtitle}>기타 고민</Text>
+                                <View style={styles.dot} />
+                            </View>
+                            <View style={styles.concernRow}>
+                                {otherConcerns.map((concern, index) => (
+                                    <TouchableOpacity
+                                        key={`other-${index}`}
+                                        style={[styles.concernButton, selectedConcerns.includes(concern) && styles.selectedButton]}
+                                        onPress={() => toggleConcern(concern)}
+                                    >
+                                        <Text style={[styles.concernText, selectedConcerns.includes(concern) && styles.selectedText]}>
+                                            {concern}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
                         </View>
-
-
-
-
-
-
-            <ScrollView contentContainerStyle={styles.concernContainer}
-            showsVerticalScrollIndicator={false}>
-                
-                
-                {healthConcerns.map((concern, index) => (
-                    <TouchableOpacity
-                        key={index}
-                        style={[
-                            styles.concernButton,
-                            selectedConcerns.includes(concern) && styles.selectedButton
-                        ]}
-                        onPress={() => toggleConcern(concern)}
-                    >
-                        <Text
-                            style={[
-                                styles.concernText,
-                                selectedConcerns.includes(concern) && styles.selectedText
-                            ]}
-                        >
-                            {concern}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-
-
-
-
-
-
-
-
-            <View style={styles.subtitleWrapper}>
-            <View style={styles.dot} />
-            <Text style={styles.subtitle}>태아 건강 지원</Text>
-            <View style={styles.dot} />
-            </View>
-
-            <View style={styles.concernContainer2}>
-            {fetalConcerns.map((concern, index) => (
-            <TouchableOpacity
-                key={`fetal-${index}`}
-                style={[
-                styles.concernButton,
-                selectedConcerns.includes(concern) && styles.selectedButton
-                ]}
-                onPress={() => toggleConcern(concern)}
-            >
-                <Text
-                style={[
-                    styles.concernText,
-                    selectedConcerns.includes(concern) && styles.selectedText
-                ]}
-                >
-                {concern}
-                </Text>
-            </TouchableOpacity>
-            ))}
-            </View>
-            </ScrollView>
-
-
-
 
             {/* 에러 메시지 */}
             {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 
             {/* 확인 버튼 */}
-            <TouchableOpacity style={styles.confirmButton} onPress={handleNext}>
-                <Text style={styles.confirmText}>다음</Text>
+            <TouchableOpacity style={styles.confirmButton} onPress={updateUserInfo}>
+                <Text style={styles.confirmText}>정보 수정 완료하기</Text>
             </TouchableOpacity>
         </View>
     );
@@ -288,14 +250,14 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         color : 'grey',
-        marginBottom: 10,
+        marginBottom: 20,
     },
     subtitle: {
         fontSize: 16,
         fontWeight: 'bold',
         textAlign: 'center',
-        marginTop: 25,
-        marginBottom: 15,
+        marginTop: 20,
+        marginBottom: 20,
     },
     concernContainer: {
         flexDirection: 'row',
@@ -308,6 +270,12 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'center',
         
+    },
+    concernRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        marginBottom: 20,
     },
     concernButton: {
         borderWidth: 1,
@@ -351,6 +319,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
+        
       },
       dot: {
         width: 6,
@@ -361,4 +330,4 @@ const styles = StyleSheet.create({
       },
 });
 
-export default ConcernsEdit;
+export default ConcernsEdit2;
