@@ -15,6 +15,7 @@ import NameAgeEdit from '../screens/MyPage/NameAgeEdit';
 import AlcoholSmoking from "../screens/MyPage/AlcoholSmoking";
 import ConditionsEdit from '../screens/MyPage/ConditionsEdit';
 import ConcernsEdit from '../screens/MyPage/ConcernsEdit';
+import ConcernsEdit2 from '../screens/MyPage/ConcernsEdit2.js';
 import ProfilepicEdit from '../screens/MyPage/ProfilepicEdit'
 import Settings1 from '../screens/MyPage/Settings1';
 import ChangePassword from '../screens/MyPage/ChangePassword';
@@ -43,6 +44,7 @@ export default function MainNavigator() {
             <Stack.Screen name="AlcoholSmoking" component={AlcoholSmoking} />
             <Stack.Screen name="ConditionsEdit" component={ConditionsEdit} />
             <Stack.Screen name="ConcernsEdit" component={ConcernsEdit}/>
+            <Stack.Screen name="ConcernsEdit2" component={ConcernsEdit2}/>
             <Stack.Screen name="ProfilepicEdit" component={ProfilepicEdit}/>
             <Stack.Screen name="Settings1" component={Settings1}/>
             <Stack.Screen name="ChangePassword" component={ChangePassword} />
