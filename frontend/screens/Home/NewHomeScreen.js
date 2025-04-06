@@ -296,7 +296,7 @@ const CombinedScreen = () => {
 
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#fff' }}>
+    <ScrollView style={{ flex: 1, backgroundColor: '#fff' }}showsVerticalScrollIndicator={false}>
 
       {/* Home 헤더 */}
       <View style={homeStyles.headerContainer}>
