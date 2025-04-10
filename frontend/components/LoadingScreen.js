@@ -32,8 +32,8 @@ const styles = StyleSheet.create({
         width: "100%",
     },
     image: {
-        width: 120, // ✅ 이미지 크기 조정
-        height: 160,
+        width: 210, // ✅ 이미지 크기 조정
+        height: 210,
         marginBottom: 20,
     },
     box: {

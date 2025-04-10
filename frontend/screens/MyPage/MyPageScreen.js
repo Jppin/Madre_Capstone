@@ -161,7 +161,7 @@ const MyPageScreen = () => {
           </View>
           <Text style={styles.userInfo}>태어난 연도 : {userInfo?.birthYear || "모름"}</Text>
           <Text style={styles.userInfo}>키 : {userInfo?.height || "모름"}cm</Text>
-          <Text style={styles.userInfo}>몸무게 : {userInfo?.weight || "모름"}</Text>
+          <Text style={styles.userInfo}>몸무게 : {userInfo?.weight || "모름"}kg</Text>
         </View>
       </View>
 
