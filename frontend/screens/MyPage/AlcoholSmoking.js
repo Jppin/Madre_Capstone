@@ -19,6 +19,7 @@ const AlcoholSmoking = () => {
     const [subPregnancy, setSubPregnancy] = useState(null);
     const [pregnancyWeek, setPregnancyWeek] = useState('');
     const [nausea, setNausea] = useState(0);
+    const [weightBefore, setWeightBefore] = useState('');
 
     
 
@@ -36,7 +37,7 @@ const AlcoholSmoking = () => {
         // 만약 '임신 중'이면 추가 체크
         if (pregnancy === '임신 중') {
             if (subPregnancy === null || pregnancyWeek.trim() === '') {
-                setErrorMessage('임신 단계와 주차를 모두 입력해주세요.');
+                setErrorMessage('임신 단계, 주차, 임신 전 몸무게를 모두 입력해주세요.');
                 return;
             }
         }
@@ -60,6 +61,7 @@ const AlcoholSmoking = () => {
                 updateData.subPregnancy = subPregnancy;
                 updateData.pregnancyWeek = parseInt(pregnancyWeek);
                 updateData.nausea = nausea;
+                updateData.weightBefore = weightBefore;
             }
             console.log("🔵 업데이트 요청 데이터:", updateData); // ✅ 전송 데이터 확인
 
@@ -98,6 +100,8 @@ const AlcoholSmoking = () => {
                 await AsyncStorage.setItem("user_subPregnancy", subPregnancy);
                 await AsyncStorage.setItem("user_pregnancyWeek", pregnancyWeek);
                 await AsyncStorage.setItem("user_nausea", String(nausea));
+                await AsyncStorage.setItem("user_weightBefore", weightBefore);
+
             }
             // ✅ 성공 메시지 표시 후 MyPage로 이동
             Alert.alert("완료", "정보가 수정되었습니다.\n수정된 정보를 기반으로 홈이 갱신됩니다.", [
@@ -216,6 +220,14 @@ const AlcoholSmoking = () => {
     </View>
 </View>
 
+<Text style={styles.subQuestion}>임신 전 몸무게를 입력해주세요 (kg)</Text>
+<TextInput
+  style={[styles.weekInput, { alignSelf: 'center', marginBottom: 10, borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10 }]}
+  placeholder="예: 53"
+  keyboardType="numeric"
+  value={weightBefore}
+  onChangeText={setWeightBefore}
+/>
 
 
         {/* 입덧 질문 */}

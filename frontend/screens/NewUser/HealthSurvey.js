@@ -26,6 +26,7 @@ const HealthSurvey = () => {
     const [subPregnancy, setSubPregnancy] = useState(null); // 임신 단계
     const [nausea, setNausea] = useState(0); // 입덧 정도
     const [pregnancyWeek, setPregnancyWeek] = useState(''); // 임신 주차 입력 값
+    const [weightBefore, setWeightBefore] = useState('');
 
     const [errorMessage, setErrorMessage] = useState(''); // 에러 메시지
 
@@ -43,8 +44,8 @@ const HealthSurvey = () => {
     
         // 만약 '임신 중'이면 추가 체크
         if (pregnancy === '임신 중') {
-            if (subPregnancy === null || pregnancyWeek.trim() === '') {
-                setErrorMessage('임신 단계와 주차를 모두 입력해주세요.');
+            if (subPregnancy === null || pregnancyWeek.trim() === ''|| weightBefore.trim() === '') {
+                setErrorMessage('임신 단계, 주차, 임신 전 몸무게를 모두 입력해주세요.');
                 return;
             }
         }
@@ -58,7 +59,8 @@ const HealthSurvey = () => {
                 await AsyncStorage.setItem("user_subPregnancy", subPregnancy);
                 await AsyncStorage.setItem("user_pregnancyWeek", pregnancyWeek);
                 await AsyncStorage.setItem("user_nausea", String(nausea));
-              }
+                await AsyncStorage.setItem("user_weightBefore", weightBefore);
+            }
             
             console.log("✅ HealthSurvey 데이터 저장 완료!");
     
@@ -166,6 +168,15 @@ const HealthSurvey = () => {
         <Text style={styles.weekBoxText}>주차</Text>
     </View>
 </View>
+
+<Text style={styles.subQuestion}>임신 전 몸무게를 입력해주세요 (kg)</Text>
+<TextInput
+  style={[styles.weekInput, { alignSelf: 'center', marginBottom: 10, borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10 }]}
+  placeholder="예: 53"
+  keyboardType="numeric"
+  value={weightBefore}
+  onChangeText={setWeightBefore}
+/>
 
 
 
