@@ -160,6 +160,8 @@ const MyPageScreen = () => {
             </TouchableOpacity>
           </View>
           <Text style={styles.userInfo}>태어난 연도 : {userInfo?.birthYear || "모름"}</Text>
+          <Text style={styles.userInfo}>키 : {userInfo?.height || "모름"}cm</Text>
+          <Text style={styles.userInfo}>몸무게 : {userInfo?.weight || "모름"}</Text>
         </View>
       </View>
 
@@ -172,7 +174,17 @@ const MyPageScreen = () => {
         </View>
         <View style={styles.infoDetailRow}>
           <Text style={styles.infoDetail}>
-            운동 : 주 {userInfo?.exercise}회 / 임신 관련 : {userInfo?.pregnancy}
+          운동 : 주 {userInfo?.exercise}회 / 임신 관련 : {userInfo?.pregnancy}
+      {userInfo?.pregnancy === "임신 중" && (
+        <>
+          {"\n"}- 임신 단계 : {userInfo?.subPregnancy}
+          {"\n"}- 임신 주차 : {userInfo?.pregnancyWeek}주차
+          {"\n"}- 입덧 정도 : {(() => {
+            const levels = ["없음", "조금 있음", "보통", "심함", "매우심함"];
+            return levels[userInfo?.nausea] ?? "정보 없음";
+          })()}
+        </>
+      )}
           </Text>
           <TouchableOpacity onPress={() => navigation.navigate("AlcoholSmoking")}>
             <Image source={require("../../assets/icons/pencil.png")} style={styles.editIcon2} />
