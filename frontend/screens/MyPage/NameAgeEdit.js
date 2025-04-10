@@ -22,6 +22,9 @@ const NameAgeEdit = () => {
     const [nickname, setNickname] = useState('');
     const [birthYear, setBirthYear] = useState(null);
     const [errors, setErrors] = useState({});
+    const [height, setHeight] = useState('');
+    const [weight, setWeight] = useState('');
+
 
 
 
@@ -43,7 +46,9 @@ const NameAgeEdit = () => {
                 },
                 body: JSON.stringify({
                     nickname,
-                    birthYear
+                    birthYear,
+                    height,
+                    weight
                 }),
             });
     
@@ -55,7 +60,9 @@ const NameAgeEdit = () => {
                 // ✅ MongoDB 업데이트 성공하면 AsyncStorage에도 반영
                 await AsyncStorage.setItem("user_nickname", nickname);
                 await AsyncStorage.setItem("user_birthYear", JSON.stringify(birthYear));
-    
+                await AsyncStorage.setItem("user_height", height);
+                await AsyncStorage.setItem("user_weight", weight);
+
                 // ✅ 모달 제거하고 Alert로 메시지 띄운 후 MyPage로 이동
                 Alert.alert("완료", "정보가 수정되었습니다.", [
                     { 
@@ -84,7 +91,9 @@ const NameAgeEdit = () => {
         let newErrors = {};
         if (!nickname.trim()) newErrors.nickname = '닉네임을 입력해주세요.';
         if (!birthYear) newErrors.birthYear = '태어난 연도를 선택해주세요.';
-        
+        if (!height.trim()) newErrors.height = '키를 입력해주세요.';
+        if (!weight.trim()) newErrors.weight = '몸무게를 입력해주세요.';
+
         
         setErrors(newErrors);
         
@@ -148,6 +157,43 @@ const NameAgeEdit = () => {
                     </View>
                     {errors.birthYear && <Text style={styles.errorText}>{errors.birthYear}</Text>}
                 </View>
+
+                <View style={styles.section}>
+  <Text style={styles.label}>키를 입력해주세요 (cm)</Text>
+  <TextInput
+    style={[styles.input, errors.height && styles.errorInput]}
+    placeholder="예: 165"
+    keyboardType="numeric"
+    value={height}
+    onChangeText={(text) => {
+      setHeight(text);
+      setErrors((prev) => ({ ...prev, height: '' }));
+    }}
+  />
+  {errors.height && <Text style={styles.errorText}>{errors.height}</Text>}
+</View>
+
+<View style={styles.section}>
+  <Text style={styles.label}>몸무게를 입력해주세요 (kg)</Text>
+  <TextInput
+    style={[styles.input, errors.weight && styles.errorInput]}
+    placeholder="예: 55"
+    keyboardType="numeric"
+    value={weight}
+    onChangeText={(text) => {
+      setWeight(text);
+      setErrors((prev) => ({ ...prev, weight: '' }));
+    }}
+  />
+  {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
+</View>
+
+
+
+
+
+
+
             </ScrollView>
 
             <TouchableOpacity style={styles.nextButton} onPress={validateAndProceed}>
