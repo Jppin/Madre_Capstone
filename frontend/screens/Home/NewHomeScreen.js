@@ -493,8 +493,9 @@ const CombinedScreen = () => {
             </TouchableOpacity>
           </View>
         ))}
-      
+       
       </View>
+      <View style={{ height: 40 }} />
     </ScrollView>
   );
 };
