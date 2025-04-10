@@ -26,7 +26,9 @@ const InfoComplete = () => {
                 const subPregnancy = await AsyncStorage.getItem("user_subPregnancy");
                 const pregnancyWeek = await AsyncStorage.getItem("user_pregnancyWeek");
                 const nausea = await AsyncStorage.getItem("user_nausea") || "0";
-
+                const weightBefore = await AsyncStorage.getItem("user_weightBefore");
+                const height = await AsyncStorage.getItem("user_height");
+                const weight = await AsyncStorage.getItem("user_weight");
 
                 setNickname(storedNickname || "사용자님");
 
@@ -34,6 +36,9 @@ const InfoComplete = () => {
                     email,
                     nickname: storedNickname,
                     birthYear: parseInt(birthYear),
+                    height: parseFloat(height),            // ✅ 추가
+                    weight: parseFloat(weight),            // ✅ 추가
+                    weightBefore: parseFloat(weightBefore),// ✅ 추가
                     exercise: parseInt(exercise),
                     pregnancy,
                     subPregnancy,

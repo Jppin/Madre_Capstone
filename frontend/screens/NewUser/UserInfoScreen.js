@@ -20,12 +20,19 @@ const UserInfoScreen = () => {
     const [birthYear, setBirthYear] = useState(null);
     const [errors, setErrors] = useState({});
     const [modalVisible, setModalVisible] = useState(false);
+    const [height, setHeight] = useState('');
+    const [weight, setWeight] = useState('');
+
+
+
 
     const validateAndProceed = async () => {
         let newErrors = {};
         if (!nickname.trim()) newErrors.nickname = '닉네임을 입력해주세요.';
         if (!birthYear) newErrors.birthYear = '태어난 연도를 선택해주세요.';
-        
+        if (!height.trim()) newErrors.height = '키를 입력해주세요.';
+        if (!weight.trim()) newErrors.weight = '몸무게를 입력해주세요.';
+
         
         setErrors(newErrors);
         
@@ -33,6 +40,10 @@ const UserInfoScreen = () => {
             try {
                 await AsyncStorage.setItem("user_nickname", nickname);
                 await AsyncStorage.setItem("user_birthYear", JSON.stringify(birthYear));
+                await AsyncStorage.setItem("user_height", height);
+                await AsyncStorage.setItem("user_weight", weight);
+
+
 
                 setModalVisible(true);
             } catch (error) {
@@ -46,6 +57,15 @@ const UserInfoScreen = () => {
         navigation.navigate('SignupComplete');
     };
 
+
+
+
+
+
+
+
+
+
     return (
         <View style={styles.container}>
             <TouchableOpacity 
@@ -53,7 +73,7 @@ const UserInfoScreen = () => {
                     if (navigation.canGoBack()) {
                         navigation.goBack();
                     } else {
-                        navigation.navigate("Login");
+                        navigation.navigate("Signup");
                     }
                 }} 
                 style={styles.backButton}
@@ -98,19 +118,54 @@ const UserInfoScreen = () => {
                     {errors.birthYear && <Text style={styles.errorText}>{errors.birthYear}</Text>}
                 </View>
 
-                
+
+
+                <View style={styles.section}>
+                    <Text style={styles.label}>키를 입력해주세요 (cm)</Text>
+                    <TextInput
+                        style={[styles.input, errors.height && styles.errorInput]}
+                        placeholder="예: 165"
+                        keyboardType="numeric"
+                        value={height}
+                        onChangeText={(text) => {
+                        setHeight(text);
+                        setErrors((prev) => ({ ...prev, height: '' }));
+                        }}
+                    />
+                    {errors.height && <Text style={styles.errorText}>{errors.height}</Text>}
+                    </View>
+
+                <View style={styles.section}>
+                <Text style={styles.label}>몸무게를 입력해주세요 (kg)</Text>
+                <TextInput
+                    style={[styles.input, errors.weight && styles.errorInput]}
+                    placeholder="예: 55"
+                    keyboardType="numeric"
+                    value={weight}
+                    onChangeText={(text) => {
+                    setWeight(text);
+                    setErrors((prev) => ({ ...prev, weight: '' }));
+                    }}
+                />
+                {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
+                </View>
             </ScrollView>
+
 
             <TouchableOpacity style={styles.nextButton} onPress={validateAndProceed}>
                 <Text style={styles.nextText}>회원 가입 완료하기</Text>
             </TouchableOpacity>
 
+
+            
             <Modal visible={modalVisible} transparent animationType="slide">
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>입력하신 정보를 확인해주세요!</Text>
                         <Text style={styles.modalText}>닉네임: {nickname}</Text>
                         <Text style={styles.modalText}>태어난 연도: {birthYear}년</Text>
+                        <Text style={styles.modalText}>키: {height}cm</Text>
+                        <Text style={styles.modalText}>몸무게: {weight}kg</Text>
                         <View style={styles.modalButtonContainer}>
                             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalButton}>
                                 <Text style={styles.modalButtonText}>수정하기</Text>
@@ -152,11 +207,11 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         color: '#FBAF8B',
-        marginBottom: 40,
-        marginTop : 20,
+        marginBottom: 20,
+        marginTop : 10,
     },
     section: {
-        marginBottom: 40,
+        marginBottom: 30,
     },
     label: {
         fontSize: 16,
