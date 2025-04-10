@@ -64,7 +64,7 @@ const ProfilepicEdit = () => {
         // AsyncStorage에 새 URL 업데이트
         await AsyncStorage.setItem("profileImage", result.profileImage);
         Alert.alert("완료", "사진 변경이 완료되었습니다.", [
-          { text: "확인", onPress: () => navigation.navigate("MainTabs", { screen: "MyPage" }) }
+          { text: "확인", onPress: () => navigation.navigate("MyPageScreen") }
         ]);
       } else {
         Alert.alert("오류", "이미지 업로드 실패");
@@ -97,7 +97,7 @@ const ProfilepicEdit = () => {
         // AsyncStorage에서 기존 이미지 제거
         await AsyncStorage.removeItem("profileImage");
         Alert.alert("완료", "기본 프로필 사진으로 변경되었습니다.", [
-          { text: "확인", onPress: () => navigation.navigate("MainTabs", { screen: "MyPage" }) }
+          { text: "확인", onPress: () => navigation.navigate("MyPageScreen") }
         ]);
       } else {
         Alert.alert("오류", "기본 이미지 변경에 실패했습니다.");
