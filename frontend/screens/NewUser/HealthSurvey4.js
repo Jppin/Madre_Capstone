@@ -5,6 +5,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native
 import { useNavigation } from '@react-navigation/native';
 import LoadingScreen from '../../components/LoadingScreen'; // ✅ 로딩 스크린 추가
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const HealthSurvey4 = () => {
     const navigation = useNavigation();
@@ -94,7 +95,7 @@ const HealthSurvey4 = () => {
 
             <View style={{ height: 15 }} />
             
-            <View contentContainerStyle={styles.concernContainer} showsVerticalScrollIndicator={false}>
+            <ScrollView contentContainerStyle={styles.concernContainer} showsVerticalScrollIndicator={false}>
             
                 {/* 피부/외형 변화 */}
                 <View style={styles.subtitleWrapper}>
@@ -155,7 +156,7 @@ const HealthSurvey4 = () => {
                         </TouchableOpacity>
                     ))}
                 </View>
-            </View>
+            </ScrollView>
 
 
             {/* 에러 메시지 */}

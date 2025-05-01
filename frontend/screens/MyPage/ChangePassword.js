@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+import createAPI from '../../api';
 import Feather from "react-native-vector-icons/Feather";
 import { AuthContext } from "../../context/AuthContext";
 
@@ -41,9 +41,10 @@ function ChangePassword() {
 
     try {
       const token = await AsyncStorage.getItem("token");
+      
+      const api = await createAPI();
 
-      const response = await axios.post(
-        "http://10.0.2.2:5001/api/change-password",
+      const response = await api.post("/api/change-password",
         {
           currentPassword,
           newPassword,

@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+import createAPI from '../api';
 
 export const AuthContext = createContext({});
 
@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
 
     async function getData() {
         try {
+            const api = await createAPI();
             const token = await AsyncStorage.getItem("token");
             const newUserStatus = await AsyncStorage.getItem("isNewUser");
 
@@ -21,7 +22,7 @@ export const AuthProvider = ({ children }) => {
                 return;
             }
 
-            const res = await axios.get("http://10.0.2.2:5001/user-full-data", {
+            const res = await api.get("/user-full-data", {
                 headers: { Authorization: `Bearer ${token}` },
             });
 

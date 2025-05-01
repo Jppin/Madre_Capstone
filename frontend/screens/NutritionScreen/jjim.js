@@ -11,7 +11,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useFocusEffect } from "@react-navigation/native";
-
+import createAPI from "../../api";
 
 
 const { width } = Dimensions.get("window");
@@ -22,17 +22,32 @@ const JjimScreen = ({ navigation }) => {
     const fetchLikedNutrients = async () => {
       try {
         const token = await AsyncStorage.getItem("token");
-        const response = await fetch("http://10.0.2.2:5001/api/liked-nutrients", {
-          method: "GET",
+        const api = await createAPI();
+
+        console.log("✅ 저장된 토큰:", token);
+        if (!token) {
+          console.error("토큰이 없습니다.");
+          return;
+        }
+    
+        const res = await api.get("/api/liked-nutrients", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-  
-        const json = await response.json();
-        setLikedNutrients(json.likedNutrients || []);
+
+        console.log("📡 찜한 영양성분 응답:", res.data);
+        setLikedNutrients(res.data.likedNutrients || []);
+        
       } catch (error) {
-        console.error("찜한 영양성분 불러오기 오류:", error);
+        console.error("❌ 찜 API 호출 오류:", error.message);
+        if (error.response) {
+          console.error("❌ 서버 응답:", error.response.data);
+        } else if (error.request) {
+          console.error("❌ 요청은 보냈지만 응답 없음:", error.request);
+        } else {
+          console.error("❌ 설정 에러:", error.message);
+        }
       }
     };
   

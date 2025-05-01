@@ -4,12 +4,13 @@ import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Feather from "react-native-vector-icons/Feather";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+import createAPI from '../../api';
 import { AuthContext } from "../../context/AuthContext";
 
 const SignupScreen = () => {
     const navigation = useNavigation();
     const { getData } = useContext(AuthContext);
+    
 
     const [email, setEmail] = useState("");
     const [emailVerify, setEmailVerify] = useState(false);
@@ -44,6 +45,9 @@ const SignupScreen = () => {
 
     // ✅ 회원가입 요청
     const handleSubmit = async () => {
+
+        const api = await createAPI();
+
         if (!emailVerify || !passwordVerify || !confirmPasswordVerify) {
             Alert.alert("입력 오류", "필수 항목을 올바르게 입력하세요.");
             return;
@@ -52,7 +56,7 @@ const SignupScreen = () => {
         const userData = { email, password };
     
         try {
-            const res = await axios.post("http://10.0.2.2:5001/register", userData);
+            const res = await api.post("/register", userData);
     
             console.log("서버 응답:", res.data);
             if (res.data.status === "ok" && res.data.token) {

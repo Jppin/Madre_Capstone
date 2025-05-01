@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from "../context/AuthContext";
 import Feather from "react-native-vector-icons/Feather";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import createAPI from '../api';
 
 const LoginScreen = () => {
     const navigation = useNavigation();
@@ -14,6 +14,7 @@ const LoginScreen = () => {
     const [password, setPassword] = useState('');
     const { isNewUser, loading, getData } = useContext(AuthContext);
     const [showPassword, setShowPassword] = useState(false);
+    
 
     // ✅ 로그인 버튼 (토큰 저장 후 Main으로 이동)
     const handleLogin = async () => {
@@ -23,9 +24,10 @@ const LoginScreen = () => {
         }
     
         const userData = { email, password };
+        const api = await createAPI();
     
         try {
-            const res = await axios.post("http://10.0.2.2:5001/login-user", userData);
+            const res = await api.post("/login-user", userData);
     
             if (res.data.status === "ok" && res.data.token) {
                 await AsyncStorage.setItem("token", res.data.token);
@@ -54,9 +56,14 @@ const LoginScreen = () => {
                 Alert.alert("로그인 실패", res.data.message || "아이디 또는 비밀번호를 확인하세요.");
             }
         } catch (error) {
-            console.error("Login error:", error.response?.data || error.message);
+            console.log("❌ Login error 발생!");
+            console.log("📛 error.message:", error.message);
+            console.log("📦 error.response:", error.response);
+            console.log("📨 error.request:", error.request);
+            console.log("🔥 전체 error:", error);
             Alert.alert("오류", "로그인 중 문제가 발생했습니다.");
         }
+        
     };
     
     

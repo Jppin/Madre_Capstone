@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Feather from "react-native-vector-icons/Feather";
 import CustomSpinner from '../../components/CustomSpinner';
-
+import createAPI from '../../api';
 
 
 
@@ -90,39 +90,41 @@ const ConcernsEdit = () => {
         try {
             const token = await AsyncStorage.getItem("token");
             if (!token) {
-                Alert.alert("오류", "로그인이 필요합니다.");
-                return;
+            Alert.alert("오류", "로그인이 필요합니다.");
+            return;
             }
 
-            const response = await fetch("http://10.0.2.2:5001/update-user-concerns", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ concerns: selectedConcerns }),
-            });
+            const api = await createAPI();
 
-            const result = await response.json();
+            const res = await api.post(
+            "/update-user-concerns",
+            { concerns: selectedConcerns },
+            {
+                headers: {
+                Authorization: `Bearer ${token}`,
+                },
+            }
+            );
+
+            const result = res.data;
             console.log("🟢 서버 응답:", result);
 
             if (result.status === "ok") {
-                console.log("✅ 건강 고민 업데이트 성공!");
-                // ✅ 업데이트 성공 시 AsyncStorage에도 반영
-                await AsyncStorage.setItem("user_concerns", JSON.stringify(selectedConcerns));
+            console.log("✅ 건강 고민 업데이트 성공!");
 
-                Alert.alert("완료", "정보가 수정되었습니다.\n수정된 정보로 홈 정보가 갱신됩니다.", [
-                    { 
-                      text: "확인", 
-                      onPress: () => {
-                        navigation.navigate("MyPageScreen");
-                      }
-                    }
-                  ]);
+            await AsyncStorage.setItem("user_concerns", JSON.stringify(selectedConcerns));
+
+            Alert.alert("완료", "정보가 수정되었습니다.\n수정된 정보로 홈 정보가 갱신됩니다.", [
+                {
+                text: "확인",
+                onPress: () => {
+                    navigation.navigate("MyPageScreen");
+                },
+                },
+            ]);
             } else {
-                console.error("❌ 건강 고민 업데이트 실패:", result.message);
-                Alert.alert("오류", "정보 수정에 실패했습니다.");
-                setLoading(false);
+            console.error("❌ 건강 고민 업데이트 실패:", result.message);
+            Alert.alert("오류", "정보 수정에 실패했습니다.");
             }
         } catch (error) {
             console.error("❌ 건강 고민 업데이트 중 오류 발생:", error);

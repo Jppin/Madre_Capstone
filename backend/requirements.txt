@@ -14,3 +14,8 @@ pillow
 google-api-python-client
 isodate
 jinja2
+fastapi
+uvicorn
+openai
+faiss-cpu
+pydantic
