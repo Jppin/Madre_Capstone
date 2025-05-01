@@ -5,7 +5,7 @@ const path = require("path");
 const fs = require("fs");
 const express = require("express");
 const app = express();
-app.use(express.json());
+
 const { spawn } = require("child_process");
 const Drug = require("./models/Drug");
 const stringSimilarity = require("string-similarity");
@@ -28,6 +28,110 @@ const mongoUrl = process.env.MONGO_URI;
 // ✅ .env에서 JWT_SECRET 불러오기 (보안 강화)
 const JWT_SECRET = process.env.JWT_SECRET || "default_jwt_secret";
 
+
+
+// app.js 최상단에 추가해
+app.use((req, res, next) => {
+  console.log(`📥 요청 도착: ${req.method} ${req.url}`);
+  next();
+});
+
+
+
+
+
+// ✅ 이미지 저장 폴더 설정
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+      const uploadDir = path.join(__dirname, "uploads");
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+      cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+      cb(null, `${Date.now()}_${file.originalname}`);
+  }
+});
+
+const upload = multer({ storage });
+
+
+// ✅ 약품 이미지 업로드 엔드포인트 추가
+app.post("/upload", upload.single("image"), async (req, res) => {
+  console.log("📸 이미지 업로드 요청 도착!");
+  console.log("✅ 업로드된 파일 정보:", req.file);
+  if (!req.file) {
+    console.error("❌ 파일이 업로드되지 않았음.");
+    return res.status(400).json({ status: "error", message: "파일이 업로드되지 않았습니다." });
+  }
+
+  try {
+    const imagePath = path.join(__dirname, "uploads", req.file.filename);
+    console.log(`📸 업로드된 이미지 경로: ${imagePath}`);
+
+
+    // ✅ Python OCR 처리 실행
+    const pythonProcess = spawn("python", ["test/ocr_test.py", imagePath]);
+    pythonProcess.stdout.setEncoding("utf8");  // ✅ 이거 꼭 있어야 함!
+    pythonProcess.stderr.setEncoding("utf8");  // ✅ 얘도 한글 깨짐 방지!
+
+    console.log(`🛠 OCR 실행 시작: ${imagePath}`);
+
+
+
+    let stdoutData = "";
+    let stderrData = "";
+
+
+    pythonProcess.stdout.on("data", (data) => {
+      stdoutData += data.toString();
+      console.log("OCR 실행 결과:", data.toString());
+    });
+
+    pythonProcess.stderr.on("data", (data) => {
+      stderrData += data.toString();
+      console.error("OCR 실행 정보:", data.toString());
+    });
+
+    pythonProcess.on("close", (code) => {
+      console.log(`🛠 Python OCR 종료 코드: ${code}`);
+      if (code === 0) {
+        try {
+          const jsonData = JSON.parse(stdoutData);
+          res.setHeader("Content-Type", "application/json");
+          res.json({ status: "ok", message: "OCR 처리 완료", medicine: jsonData });
+        } catch (parseError) {
+          console.error("❌ JSON 파싱 오류:", parseError);
+          res.status(500).json({ status: "error", message: "OCR 결과 파싱 실패" });
+        }
+      } else {
+        console.error("❌ Python OCR 스크립트 오류 발생:", stderrData);
+        res.status(500).json({ status: "error", message: "OCR 처리 실패", details: stderrData });
+      }
+    });
+
+  } catch (error) {
+    if (error.response) {
+      // 서버가 4xx, 5xx 응답 보냈을 때
+      console.error("❌ 서버 오류:", error.response.data);
+    } else if (error.request) {
+      // 서버 응답이 없을 때
+      console.error("❌ 응답 없음:", error.request);
+    } else {
+      // 그 외 오류
+      console.error("❌ 요청 설정 중 오류:", error.message);
+    }
+  }
+});
+
+
+
+
+app.use(express.json());
+
+
+
+
+
 mongoose
   .connect(mongoUrl)
   .then(() => console.log("Database Connected"))
@@ -45,7 +149,7 @@ app.get("/", (req, res) => {
 
 
 app.use(cors()); // 프론트엔드 요청 허용
-app.use(express.json());
+
 //24시간에 한번만 youtube api 호출하게 하기 
 // ✅ Redis 클라이언트 설정
 const redis = require("redis");
@@ -474,87 +578,6 @@ app.post("/update-user-concerns", async (req, res) => {
 
 
 
-
-
-
-// ✅ 이미지 저장 폴더 설정
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-      const uploadDir = path.join(__dirname, "uploads");
-      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-      cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-      cb(null, `${Date.now()}_${file.originalname}`);
-  }
-});
-
-const upload = multer({ storage });
-
-
-
-
-
-
-
-
-
-// ✅ 약품 이미지 업로드 엔드포인트 추가
-app.post("/upload", upload.single("image"), async (req, res) => {
-  console.log("📸 이미지 업로드 요청 도착!");
-  console.log("✅ 업로드된 파일 정보:", req.file);
-  if (!req.file) {
-    console.error("❌ 파일이 업로드되지 않았음.");
-    return res.status(400).json({ status: "error", message: "파일이 업로드되지 않았습니다." });
-  }
-
-  try {
-    const imagePath = path.join(__dirname, "uploads", req.file.filename);
-    console.log(`📸 업로드된 이미지 경로: ${imagePath}`);
-
-
-    // ✅ Python OCR 처리 실행
-    const pythonProcess = spawn("python", ["test/ocr_test.py", imagePath]);
-    console.log(`🛠 OCR 실행 시작: ${imagePath}`);
-
-
-
-    let stdoutData = "";
-    let stderrData = "";
-
-
-    pythonProcess.stdout.on("data", (data) => {
-      stdoutData += data.toString();
-      console.log("OCR 실행 결과:", data.toString());
-    });
-
-    pythonProcess.stderr.on("data", (data) => {
-      stderrData += data.toString();
-      console.error("OCR 실행 정보:", data.toString());
-    });
-
-    pythonProcess.on("close", (code) => {
-      console.log(`🛠 Python OCR 종료 코드: ${code}`);
-      if (code === 0) {
-        try {
-          const jsonData = JSON.parse(stdoutData);
-          res.json({ status: "ok", message: "OCR 처리 완료", medicine: jsonData });
-        } catch (parseError) {
-          console.error("❌ JSON 파싱 오류:", parseError);
-          res.status(500).json({ status: "error", message: "OCR 결과 파싱 실패" });
-        }
-      } else {
-        console.error("❌ Python OCR 스크립트 오류 발생:", stderrData);
-        res.status(500).json({ status: "error", message: "OCR 처리 실패", details: stderrData });
-      }
-    });
-
-  } catch (error) {
-    console.error("❌ 서버 오류:", error);
-    res.status(500).json({ message: "서버 오류 발생" });
-  }
-});
-
 // ✅ 서버에서 이미지 제공
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -599,7 +622,7 @@ app.post("/upload-profile", upload.single("image"), async (req, res) => {
 
 
       // ✅ 업로드된 이미지 경로를 MongoDB에 저장
-      const fullUrl = `http://10.0.2.2:5001/uploads/${uniqueFilename}`;
+      const fullUrl = `/uploads/${uniqueFilename}`;
       user.profileImage = fullUrl;
       await user.save();
 
@@ -1009,21 +1032,18 @@ app.get("/nutrients/recommendations", async (req, res) => {
           return res.status(400).json({ status: "error", message: "No concerns provided" });
       }
 
-      // 관심사 배열을 JSON으로 변환
-      const concernArray = JSON.parse(concerns);
-
       // Mongoose를 사용하여 관심사에 맞는 영양소 찾기
       const nutrients = await Nutrition.find({
           "recommendations.category": "건강관심사",
-          "recommendations.keyword": { $in: concernArray }
+          "recommendations.keyword": { $in: concerns }
       });
 
       // recommendations 내부 값을 명확하게 출력
       nutrients.forEach(nutrient => {
-        console.log(`🔎 ${nutrient.name}의 recommendations:`, JSON.stringify(nutrient.recommendations, null, 2));
+        //console.log(`🔎 ${nutrient.name}의 recommendations:`, JSON.stringify(nutrient.recommendations, null, 2));
       });
 
-      console.log("🎯 필터링된 nutrients:", nutrients);
+      //console.log("🎯 필터링된 nutrients:", nutrients);
       res.json({ status: "ok", data: nutrients });
 
   } catch (error) {
@@ -1039,7 +1059,7 @@ const db = mongoose.connection;  // ✅ DB 직접 접근 가능하도록 추가
 
 app.get("/nutrient-recommendations", async (req, res) => {
   try {
-    console.log("🔍 [START] 영양 성분 추천 API 호출");
+    //console.log("🔍 [START] 영양 성분 추천 API 호출");
 
     // ✅ 사용자 정보 가져오기
     const authHeader = req.headers.authorization;
@@ -1055,7 +1075,7 @@ app.get("/nutrient-recommendations", async (req, res) => {
       return res.status(404).json({ message: "사용자 정보를 찾을 수 없습니다." });
     }
 
-    console.log("✅ [USER INFO] 사용자 데이터 로드 완료:", user);
+    //console.log("✅ [USER INFO] 사용자 데이터 로드 완료:", user);
 
     // ✅ 사용자 정보 기반 필터링 키워드 생성
     const keywords = [
@@ -1065,7 +1085,7 @@ app.get("/nutrient-recommendations", async (req, res) => {
       ...user.concerns.map((concern) => ({ category: "건강관심사", keyword: concern })),
     ];
 
-    console.log("🔍 [FILTERING] 생성된 검색 키워드 목록:", keywords);
+    //console.log("🔍 [FILTERING] 생성된 검색 키워드 목록:", keywords);
 
     // ✅ MongoDB에서 영양 성분 추천 검색
     const results = await db.collection("nutritions").find({
@@ -1079,7 +1099,7 @@ app.get("/nutrient-recommendations", async (req, res) => {
       },
     }).toArray();  // ✅ MongoDB 네이티브 쿼리 사용
 
-    console.log("✅ [MATCHED NUTRIENTS] 검색된 영양 성분:", results);
+    //console.log("✅ [MATCHED NUTRIENTS] 검색된 영양 성분:", results);
 
     // ✅ 추천/주의 성분 분류
     const recommendList = [];
@@ -1117,8 +1137,8 @@ app.get("/nutrient-recommendations", async (req, res) => {
       });
     });
 
-    console.log("✅ [FINAL RECOMMENDATIONS] 추천 리스트:", recommendList);
-    console.log("✅ [FINAL WARNINGS] 주의 리스트:", warningList);
+    //console.log("✅ [FINAL RECOMMENDATIONS] 추천 리스트:", recommendList);
+    //console.log("✅ [FINAL WARNINGS] 주의 리스트:", warningList);
 
     res.json({ recommendList, warningList });
 
@@ -1127,11 +1147,6 @@ app.get("/nutrient-recommendations", async (req, res) => {
     res.status(500).json({ message: "서버 오류 발생" });
   }
 });
-
-
-
-
-
 
 
 
@@ -1247,5 +1262,5 @@ const PORT = process.env.PORT || 5001;
 
 // ✅ 서버 시작
 app.listen(PORT, "0.0.0.0",() => {
-  console.log("Node.js server started on port 5001.");
+  console.log("Node.js server started.");
 }) ;

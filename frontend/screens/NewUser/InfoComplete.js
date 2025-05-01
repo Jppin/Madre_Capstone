@@ -4,8 +4,9 @@ import React, { useEffect, useContext, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import createAPI from '../../api';
 import { AuthContext } from '../../context/AuthContext';
+
 
 const InfoComplete = () => {
     const navigation = useNavigation();
@@ -51,7 +52,9 @@ const InfoComplete = () => {
                 console.log("📢 백엔드로 전송할 데이터:", userData);
 
                 // ✅ 백엔드로 사용자 데이터 저장 요청
-                const response = await axios.post("http://10.0.2.2:5001/save-user-info", userData);
+
+                const api = await createAPI();
+                const response = await api.post("/save-user-info", userData);
 
                 if (response.data.status === "ok") {
                     console.log("✅ 사용자 데이터 저장 완료:", response.data);
@@ -81,8 +84,8 @@ const InfoComplete = () => {
     const updateIsNewUserInDB = async (email) => {
         try {
             console.log("📢 DB의 isNewUser 상태를 false로 업데이트 중...");
-
-            const response = await axios.post("http://10.0.2.2:5001/update-isnewuser", {
+            const api = await createAPI();
+            const response = await api.post("/update-isnewuser", {
                 email,
                 isNewUser: false,  // DB 업데이트 요청
             });

@@ -8,11 +8,12 @@ import { launchImageLibrary } from "react-native-image-picker";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Feather from "react-native-vector-icons/Feather";
-
+import createAPI from "../../api";
 
 
 const ProfilepicEdit = () => {
   const [imageUri, setImageUri] = useState(null); 
+  const [baseURL, setBaseURL] = useState(null);
   const navigation = useNavigation();
   const route = useRoute();
   const currentProfileImage = route.params?.currentProfileImage;
@@ -44,27 +45,30 @@ const ProfilepicEdit = () => {
       formData.append("image", {
         uri,
         name: "profile.jpg",
-        type: "image/jpeg"
+        type: "image/jpeg",
       });
-
+  
       const token = await AsyncStorage.getItem("token");
-
-      const response = await fetch("http://10.0.2.2:5001/upload-profile", {
-        method: "POST",
+      if (!token) {
+        Alert.alert("오류", "로그인이 필요합니다.");
+        return;
+      }
+  
+      const api = await createAPI();
+  
+      const res = await api.post("/upload-profile", formData, {
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
-        body: formData,
       });
-
-      const result = await response.json();
+  
+      const result = res.data;
       console.log("🟢 서버 응답:", result);
-
+  
       if (result.status === "ok") {
-        // AsyncStorage에 새 URL 업데이트
         await AsyncStorage.setItem("profileImage", result.profileImage);
         Alert.alert("완료", "사진 변경이 완료되었습니다.", [
-          { text: "확인", onPress: () => navigation.navigate("MyPageScreen") }
+          { text: "확인", onPress: () => navigation.navigate("MyPageScreen") },
         ]);
       } else {
         Alert.alert("오류", "이미지 업로드 실패");
@@ -83,21 +87,31 @@ const ProfilepicEdit = () => {
   const resetToDefault = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch("http://10.0.2.2:5001/reset-profile", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ profileImage: "" })
-      });
-      const result = await response.json();
+      if (!token) {
+        Alert.alert("오류", "로그인이 필요합니다.");
+        return;
+      }
+  
+      const api = await createAPI();
+  
+      const res = await api.post(
+        "/reset-profile",
+        { profileImage: "" },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      const result = res.data;
       console.log("🟢 리셋 응답:", result);
+  
       if (result.status === "ok") {
-        // AsyncStorage에서 기존 이미지 제거
         await AsyncStorage.removeItem("profileImage");
+  
         Alert.alert("완료", "기본 프로필 사진으로 변경되었습니다.", [
-          { text: "확인", onPress: () => navigation.navigate("MyPageScreen") }
+          { text: "확인", onPress: () => navigation.navigate("MyPageScreen") },
         ]);
       } else {
         Alert.alert("오류", "기본 이미지 변경에 실패했습니다.");
@@ -108,36 +122,33 @@ const ProfilepicEdit = () => {
     }
   };
 
+
+  const defaultImageUri = baseURL ? `${baseURL}/uploads/default_profile.png` : null;
+
   return (
     <View style={styles.container}>
-
-
-
-
       {/* 상단 뒤로 가기 버튼 */}
-      <TouchableOpacity 
-                onPress={() => navigation.goBack()} 
-                style={styles.backButton}
-            >
-                <Feather name="chevron-left" size={40} color="gray" />
-            </TouchableOpacity>
-
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <Feather name="chevron-left" size={40} color="gray" />
+      </TouchableOpacity>
 
       <Text style={styles.title}>프로필 사진 변경</Text>
 
       <View style={styles.imageContainer}>
-      <Image
-  source={
-    imageUri
-      ? { uri: imageUri }
-      : currentProfileImage
-      ? (typeof currentProfileImage === "string"
-          ? { uri: currentProfileImage }
-          : currentProfileImage)
-      : { uri: "http://10.0.2.2:5001/uploads/default_profile.png" } // ✅ 기본 프로필 이미지 URL 적용
-  }
-  style={styles.profileImage}
-/>
+        <Image
+          source={
+            imageUri
+              ? { uri: imageUri }
+              : currentProfileImage
+              ? typeof currentProfileImage === "string"
+                ? { uri: currentProfileImage }
+                : currentProfileImage
+              : defaultImageUri
+              ? { uri: defaultImageUri }
+              : null
+          }
+          style={styles.profileImage}
+        />
 
 
           {/* 기본 이미지로 변경 버튼 */}
