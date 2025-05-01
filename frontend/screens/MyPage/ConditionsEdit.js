@@ -6,7 +6,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'rea
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Feather from "react-native-vector-icons/Feather";
-
+import createAPI from '../../api';
 
 
 
@@ -48,52 +48,53 @@ const ConditionsEdit = () => {
     
     const handleNext = async () => {
         if (selectedConditions.length === 0) {
-            setErrorMessage('질문에 답해주세요.');
-            return;
+          setErrorMessage('질문에 답해주세요.');
+          return;
         }
-    
+      
         try {
-            const token = await AsyncStorage.getItem("token");
-            if (!token) {
-                Alert.alert("오류", "로그인이 필요합니다.");
-                return;
+          const token = await AsyncStorage.getItem("token");
+          if (!token) {
+            Alert.alert("오류", "로그인이 필요합니다.");
+            return;
+          }
+      
+          const api = await createAPI();
+      
+          const res = await api.post(
+            "/update-conditions",
+            { conditions: selectedConditions },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
             }
-    
-            // MongoDB 업데이트 요청
-            const response = await fetch("http://10.0.2.2:5001/update-conditions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
+          );
+      
+          const result = res.data;
+          console.log("🟢 서버 응답:", result);
+      
+          if (result.status === "ok") {
+            console.log("✅ 만성질환 정보 업데이트 성공!");
+            await AsyncStorage.setItem("user_conditions", JSON.stringify(selectedConditions));
+      
+            Alert.alert("완료", "정보가 수정되었습니다.\n수정된 정보를 기반으로 홈이 갱신됩니다.", [
+              {
+                text: "확인",
+                onPress: () => {
+                  navigation.navigate("MyPageScreen");
                 },
-                body: JSON.stringify({ conditions: selectedConditions }),
-            });
-    
-            const result = await response.json();
-            console.log("🟢 서버 응답:", result);
-    
-            if (result.status === "ok") {
-                console.log("✅ 만성질환 정보 업데이트 성공!");
-                await AsyncStorage.setItem("user_conditions", JSON.stringify(selectedConditions));
-    
-                // ✅ 성공 메시지 표시 후 MyPage로 이동
-                Alert.alert("완료", "정보가 수정되었습니다.\n수정된 정보를 기반으로 홈이 갱신됩니다.", [
-                    { 
-                      text: "확인", 
-                      onPress: () => {
-                        navigation.navigate("MyPageScreen");
-                      }
-                    }
-                  ]);
-            } else {
-                console.error("❌ 만성질환 정보 업데이트 실패:", result.message);
-                Alert.alert("오류", "정보 수정에 실패했습니다.");
-            }
+              },
+            ]);
+          } else {
+            console.error("❌ 만성질환 정보 업데이트 실패:", result.message);
+            Alert.alert("오류", "정보 수정에 실패했습니다.");
+          }
         } catch (error) {
-            console.error("❌ 만성질환 정보 업데이트 중 오류 발생:", error);
-            Alert.alert("오류", "네트워크 오류가 발생했습니다.");
+          console.error("❌ 만성질환 정보 업데이트 중 오류 발생:", error);
+          Alert.alert("오류", "네트워크 오류가 발생했습니다.");
         }
-    };
+      };
     
 
 

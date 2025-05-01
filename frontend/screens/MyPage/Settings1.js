@@ -6,8 +6,11 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthContext } from "../../context/AuthContext";
 import Feather from "react-native-vector-icons/Feather";
-import axios from "axios";
+import createAPI from '../../api';
+
 import { useNavigation } from "@react-navigation/native"; // ← 추가
+
+
 
 function Settings1() {
   const { setUserData } = useContext(AuthContext);
@@ -41,12 +44,14 @@ function Settings1() {
         onPress: async () => {
           try {
             const token = await AsyncStorage.getItem("token");
+
+            const api = await createAPI();
             if (!token) {
               Alert.alert("오류", "인증 토큰이 없습니다.");
               return;
             }
             // 회원 탈퇴 API 호출 (DELETE 메서드)
-            await axios.delete("http://10.0.2.2:5001/withdraw", {
+            await api.delete("/withdraw", {
               headers: {
                 "Authorization": `Bearer ${token}`,
               },

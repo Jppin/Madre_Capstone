@@ -16,6 +16,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import Feather from "react-native-vector-icons/Feather";
+import createAPI from "../../api";
 
 const MedicineDetailScreen = () => {
   const navigation = useNavigation();
@@ -104,31 +105,35 @@ const MedicineDetailScreen = () => {
 
   const handleUpdate = async () => {
     if (!currentMedicine) return;
+  
     try {
       const token = await AsyncStorage.getItem("token");
       if (!token) {
         Alert.alert("오류", "인증 토큰이 없습니다. 다시 로그인 해주세요.");
         return;
       }
-      const response = await fetch(`http://10.0.2.2:5001/medicines/${currentMedicine._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(editedData),
-      });
-      if (response.ok) {
-        const updatedData = await response.json();
-        Alert.alert("완료", "약품 정보가 수정되었습니다.");
-        setEditMode(false);
-        const updatedMedicine = updatedData.medicine;
-        const updatedList = [...medicineList];
-        updatedList[currentIndex] = updatedMedicine;
-        setMedicineList(updatedList);
-      } else {
-        Alert.alert("오류", "수정에 실패했습니다.");
-      }
+  
+      const api = await createAPI();
+  
+      const res = await api.put(
+        `/medicines/${currentMedicine._id}`,
+        editedData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      const updatedMedicine = res.data.medicine;
+  
+      Alert.alert("완료", "약품 정보가 수정되었습니다.");
+      setEditMode(false);
+  
+      const updatedList = [...medicineList];
+      updatedList[currentIndex] = updatedMedicine;
+      setMedicineList(updatedList);
+  
     } catch (error) {
       console.error("수정 오류:", error);
       Alert.alert("오류", "수정 중 문제가 발생했습니다.");
@@ -303,7 +308,7 @@ const MedicineDetailScreen = () => {
               )}
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>⚠️ 부작용</Text>
+              <Text style={styles.label}>ℹ️ 상세 정보</Text>
               {editMode ? (
                 <TextInput
                   style={styles.valueInput}

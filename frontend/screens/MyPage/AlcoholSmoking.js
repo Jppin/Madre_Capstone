@@ -6,6 +6,7 @@ import Slider from '@react-native-community/slider';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Feather from "react-native-vector-icons/Feather";
+import createAPI from '../../api';
 
 const AlcoholSmoking = () => {
     const navigation = useNavigation();
@@ -27,100 +28,79 @@ const AlcoholSmoking = () => {
 
     // ✅ MongoDB에 정보 업데이트하는 함수
     const updateUserInfo = async () => {
-        
-
         if (pregnancy === null) {
-            setErrorMessage('모든 질문에 답해주세요.');
-            return;
+          setErrorMessage('모든 질문에 답해주세요.');
+          return;
         }
-
-        // 만약 '임신 중'이면 추가 체크
+      
         if (pregnancy === '임신 중') {
-            if (subPregnancy === null || pregnancyWeek.trim() === '') {
-                setErrorMessage('임신 단계, 주차, 임신 전 몸무게를 모두 입력해주세요.');
-                return;
-            }
+          if (subPregnancy === null || pregnancyWeek.trim() === '') {
+            setErrorMessage('임신 단계, 주차, 임신 전 몸무게를 모두 입력해주세요.');
+            return;
+          }
         }
-
-
+      
         try {
-            const token = await AsyncStorage.getItem("token");
-            if (!token) {
-                Alert.alert("오류", "로그인이 필요합니다.");
-                return;
-            }
-
-        
-
-
-            const updateData = {
-                exercise,
-                pregnancy
-            };
-            if (pregnancy === '임신 중') {
-                updateData.subPregnancy = subPregnancy;
-                updateData.pregnancyWeek = parseInt(pregnancyWeek);
-                updateData.nausea = nausea;
-                updateData.weightBefore = weightBefore;
-            }
-            console.log("🔵 업데이트 요청 데이터:", updateData); // ✅ 전송 데이터 확인
-
-
-
-
-
-            const response = await fetch("http://10.0.2.2:5001/update-user-info", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(updateData),
-            });
-
-
-
-
-            // 🚨 응답이 정상인지 확인
-        if (!response.ok) {
-            throw new Error(`서버 응답 오류: ${response.status}`);
-        }
-
-        // ✅ 서버 응답 처리
-        const result = await response.json();
-        console.log("🟢 서버 응답:", result);
-
-        if (result.status === "ok") {
+          const token = await AsyncStorage.getItem("token");
+          if (!token) {
+            Alert.alert("오류", "로그인이 필요합니다.");
+            return;
+          }
+      
+          const updateData = {
+            exercise,
+            pregnancy,
+          };
+      
+          if (pregnancy === '임신 중') {
+            updateData.subPregnancy = subPregnancy;
+            updateData.pregnancyWeek = parseInt(pregnancyWeek);
+            updateData.nausea = nausea;
+            updateData.weightBefore = weightBefore;
+          }
+      
+          console.log("🔵 업데이트 요청 데이터:", updateData);
+      
+          const api = await createAPI();
+          const res = await api.post("/update-user-info", updateData, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+      
+          const result = res.data;
+          console.log("🟢 서버 응답:", result);
+      
+          if (result.status === "ok") {
             console.log("✅ 사용자 정보 업데이트 성공!");
-
-            // ✅ 업데이트 성공 시 AsyncStorage에도 반영
+      
             await AsyncStorage.setItem("user_alcohol", String(exercise));
             await AsyncStorage.setItem("user_pregnancy", pregnancy);
+      
             if (pregnancy === "임신 중") {
-                await AsyncStorage.setItem("user_subPregnancy", subPregnancy);
-                await AsyncStorage.setItem("user_pregnancyWeek", pregnancyWeek);
-                await AsyncStorage.setItem("user_nausea", String(nausea));
-                await AsyncStorage.setItem("user_weightBefore", weightBefore);
-
+              await AsyncStorage.setItem("user_subPregnancy", subPregnancy);
+              await AsyncStorage.setItem("user_pregnancyWeek", pregnancyWeek);
+              await AsyncStorage.setItem("user_nausea", String(nausea));
+              await AsyncStorage.setItem("user_weightBefore", weightBefore);
             }
-            // ✅ 성공 메시지 표시 후 MyPage로 이동
+      
             Alert.alert("완료", "정보가 수정되었습니다.\n수정된 정보를 기반으로 홈이 갱신됩니다.", [
-                { 
-                  text: "확인", 
-                  onPress: () => {
-                    navigation.navigate("MyPageScreen");
-                  }
-                }
-              ]);
-        } else {
+              {
+                text: "확인",
+                onPress: () => {
+                  navigation.navigate("MyPageScreen");
+                },
+              },
+            ]);
+          } else {
             console.error("❌ 사용자 정보 업데이트 실패:", result.message);
             Alert.alert("오류", "정보 수정에 실패했습니다.");
+          }
+        } catch (error) {
+          console.error("❌ 사용자 정보 업데이트 중 오류 발생:", error);
+          Alert.alert("오류", "네트워크 오류가 발생했습니다.");
         }
-    } catch (error) {
-        console.error("❌ 사용자 정보 업데이트 중 오류 발생:", error);
-        Alert.alert("오류", "네트워크 오류가 발생했습니다.");
-    }
-    };
+      };
 
     
 
