@@ -15,10 +15,12 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import PagerView from 'react-native-pager-view';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { AuthContext } from '../../context/AuthContext';
+import createAPI from '../../api';
 
 const { width } = Dimensions.get('window');
 
 const CombinedScreen = () => {
+
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const { userData } = useContext(AuthContext);
@@ -49,30 +51,19 @@ const CombinedScreen = () => {
 
   const toggleLike = async (nutrientName) => {
     try {
-      const token = await AsyncStorage.getItem("token");
+      const token = await AsyncStorage.getItem('token');
+      const api = await createAPI();
       const isLiked = likedNutrients[nutrientName];
   
-      if (isLiked) {
-        // 삭제 요청
-        await fetch("http://10.0.2.2:5001/api/unlike-nutrient", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ nutrientName }),
-        });
-      } else {
-        // 저장 요청
-        await fetch("http://10.0.2.2:5001/api/like-nutrient", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ nutrientName }),
-        });
-      }
+      const endpoint = isLiked
+        ? '/api/unlike-nutrient'
+        : '/api/like-nutrient';
+  
+      await api.post(endpoint, { nutrientName }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
   
       // 상태 업데이트
       setLikedNutrients((prev) => ({
@@ -80,18 +71,10 @@ const CombinedScreen = () => {
         [nutrientName]: !prev[nutrientName],
       }));
     } catch (error) {
-      console.error("찜 토글 오류:", error);
+      console.error('찜 토글 오류:', error);
     }
-  };  
+  };
   
-
-
-
-
-
-
-
-
 
   // 📍 추천리스트 가공 함수
   const mergeRecommendationsByName = (list) => {
@@ -112,34 +95,30 @@ const CombinedScreen = () => {
     return Object.values(merged); // 객체 -> 배열로 변환
   };
   
-  
-
-
-
-
 
   const fetchRecommendations = async () => {
     try {
-      if (!userData?._id) return; // ✅ 사용자 정보 없으면 실행 안 함!
+      if (!userData?._id) {
+        return;
+      }
+  
       setLoading(true);
   
       const token = await AsyncStorage.getItem('token');
-      const response = await fetch('http://10.0.2.2:5001/nutrient-recommendations', {
+      const api = await createAPI();
+      const { data } = await api.get('/nutrient-recommendations', {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
       });
   
-      const json = await response.json();
+      if (Array.isArray(data.recommendList) && Array.isArray(data.warningList)) {
+        const mergedRecommend = mergeRecommendationsByName(data.recommendList);
+        const mergedWarning = mergeRecommendationsByName(data.warningList);
   
-      if (json.recommendList && json.warningList) {
-
-      const mergedRecommend = mergeRecommendationsByName(json.recommendList);
-      const mergedWarning = mergeRecommendationsByName(json.warningList);
-
         setRecommendNutrients(mergedRecommend);
         setWarningNutrients(mergedWarning);
+
       }
     } catch (error) {
       console.error('추천 영양성분 가져오기 오류:', error);
@@ -147,6 +126,7 @@ const CombinedScreen = () => {
       setLoading(false);
     }
   };
+  
   
 
 
@@ -183,23 +163,36 @@ const CombinedScreen = () => {
   }, [pageIndex, images.length]);
 
   useEffect(() => {
-    const fetchNutrients = async () => {
+    const fetchLikedNutrients = async () => {
       try {
-        if (!userConcerns.length) return;
-
-        const response = await fetch(`http://10.0.2.2:5001/nutrients/recommendations?concerns=${JSON.stringify(userConcerns)}`);
-        const json = await response.json();
-
-        if (json.status === "ok") {
-          setNutrientList(json.data);
+        const api = await createAPI();
+        const token = await AsyncStorage.getItem("token");
+        const { data } = await api.get("/api/liked-nutrients", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        if (Array.isArray(data.likedNutrients)) {
+          const parsed = {};
+          data.likedNutrients.forEach((name) => {
+            parsed[name] = true;
+          });
+          setLikedNutrients(parsed);
+        } else {
+          console.warn("likedNutrients 응답 없음");
         }
       } catch (error) {
-        console.error("Error fetching nutrients:", error);
+        console.error("찜 목록 불러오기 오류:", error);
       }
     };
-
-    fetchNutrients();
-  }, [userConcerns, isFocused]);
+  
+    if (userData && isFocused) {
+      fetchLikedNutrients();
+    }
+    
+  }, [userData, isFocused]); 
+  
 
   const toggleConcern = (concern) => {
     setSelectedConcern(concern);
@@ -232,22 +225,23 @@ const CombinedScreen = () => {
   useEffect(() => {
   const fetchLikedNutrients = async () => {
     try {
+      const api = await createAPI();
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch("http://10.0.2.2:5001/api/liked-nutrients", {
-        method: "GET",
+      const { data } = await api.get("/api/liked-nutrients", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      const json = await response.json();
-
-      const parsed = {};
-      json.likedNutrients.forEach((name) => {
-        parsed[name] = true;
-      });
-
-      setLikedNutrients(parsed);
+      if (Array.isArray(data.likedNutrients)) {
+        const parsed = {};
+        data.likedNutrients.forEach((name) => {
+          parsed[name] = true;
+        });
+        setLikedNutrients(parsed);
+      } else {
+        console.warn("likedNutrients 응답 없음");
+      }
     } catch (error) {
       console.error("찜 목록 불러오기 오류:", error);
     }
@@ -256,6 +250,7 @@ const CombinedScreen = () => {
   if (userData && isFocused) {
     fetchLikedNutrients();
   }
+  
 }, [userData, isFocused]); 
   
 
@@ -349,7 +344,7 @@ const CombinedScreen = () => {
       {/* 건강 관심사 추천 */}
       <View style={homeStyles.recommendationSection}>
           <Text style={homeStyles.sectionTitle} numberOfLines={2} adjustsFontSizeToFit>
-            {nickname}님의 관심사 맞춤 영양성분 추천
+            {nickname}님의 건강고민별 맟춤 영양성분
           </Text>
 
           <ScrollView 
@@ -438,8 +433,8 @@ const CombinedScreen = () => {
 
       {/* 추천/비추천 버튼 */}
       <View style={nutritionStyles.recommendationContainer}>
-        
-        <Text style={nutritionStyles.recommendationText}>{nickname}님의 추천/비추천 영양성분입니다</Text>
+      <Text style={nutritionStyles.recommendationText2}>필요/주의 영양소를 한눈에!</Text>
+        <Text style={nutritionStyles.recommendationText}>{nickname}님 영양성분 List</Text>
         <View style={nutritionStyles.buttonRow}>
 
           <TouchableOpacity
@@ -455,7 +450,7 @@ const CombinedScreen = () => {
                 selectedButton === 'recommend' && nutritionStyles.recommendButtonTextActive,
               ]}
             >
-              👍 추천해요
+              👍 필요해요
             </Text>
 
           </TouchableOpacity>
@@ -582,7 +577,7 @@ const homeStyles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ddd',
         borderRadius: 10,
-        marginVertical: 10,
+        marginVertical: 30,
         marginHorizontal: 10,
       },
       sectionTitle: {
@@ -823,7 +818,7 @@ const nutritionStyles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 40,
-    width: 165,
+    width: 150,
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#ccc",
@@ -835,17 +830,27 @@ const nutritionStyles = StyleSheet.create({
     color: "#333",
   },
   recommendationContainer: {
-    backgroundColor: "#fee2d5",  // 배경색 추가
+    backgroundColor: "#f3feff",  // 배경색 추가
     borderRadius: 20,           // 둥근 모서리
     padding: 20,                // 내부 패딩
     marginHorizontal: 10,
-    paddingBottom: 30,          // 버튼과 내용 간 여백 추가
+    paddingBottom: 30,   
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,       // 버튼과 내용 간 여백 추가
   },
   recommendationText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
     textAlign: "left",
     marginBottom: 10, // 버튼과 간격 추가
+  },
+  recommendationText2: {
+    fontSize: 13,
+    fontWeight: "bold",
+    textAlign: "left",
+    marginBottom: 5, // 버튼과 간격 추가
+    color: "#FBAF8B",
   },
 
   recommendButtonActive: {
@@ -873,6 +878,11 @@ const nutritionStyles = StyleSheet.create({
     marginBottom:7,
   },
   nutrientTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#bbda6c",
+  },
+  nutrientTitle2: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#F15A24",

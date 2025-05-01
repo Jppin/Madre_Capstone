@@ -1,6 +1,8 @@
 //backend/models/UserDetails.js
 
 const mongoose = require("mongoose");
+require('dotenv').config();
+
 
 const UserDetailSchema = new mongoose.Schema(
   {
@@ -21,7 +23,7 @@ const UserDetailSchema = new mongoose.Schema(
     nausea: { type: Number, default: 0 }, // 입덧 정도
     profileImage: { 
       type: String, 
-      default: "http://10.0.2.2:5001/uploads/default_profile.png" // ✅ 기본값을 서버 이미지 URL로 설정
+      default: `${process.env.BASE_URL}:${process.env.PORT}/uploads/default_profile.png` // ✅ 기본값을 서버 이미지 URL로 설정
     },
   },
   {
