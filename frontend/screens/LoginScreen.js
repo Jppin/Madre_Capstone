@@ -27,8 +27,6 @@ const LoginScreen = () => {
         const api = await createAPI();
     
         try {
-            console.log("📤 로그인 요청 시작:", userData);
-
             const res = await api.post("/login-user", userData);
     
             if (res.data.status === "ok" && res.data.token) {
