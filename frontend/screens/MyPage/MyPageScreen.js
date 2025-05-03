@@ -159,7 +159,7 @@ const MyPageScreen = () => {
       <View style={styles.profileContainer}>
         <View style={styles.profileImageWrapper}>
           <Image
-            source={profileImage ? profileImage : require('../../assets/icons/capybara1.png')}
+            source={profileImage ? profileImage : require('../../assets/icons/madrelogo.png')}
             style={styles.profileImage}
           />
           <TouchableOpacity style={styles.cameraButton} onPress={() => navigation.navigate("ProfilepicEdit", { currentProfileImage: profileImage })}>

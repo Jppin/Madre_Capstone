@@ -101,7 +101,6 @@ const CombinedScreen = () => {
       if (!userData?._id) {
         return;
       }
-  
       setLoading(true);
   
       const token = await AsyncStorage.getItem('token');
@@ -111,14 +110,11 @@ const CombinedScreen = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-  
       if (Array.isArray(data.recommendList) && Array.isArray(data.warningList)) {
         const mergedRecommend = mergeRecommendationsByName(data.recommendList);
         const mergedWarning = mergeRecommendationsByName(data.warningList);
-  
         setRecommendNutrients(mergedRecommend);
         setWarningNutrients(mergedWarning);
-
       }
     } catch (error) {
       console.error('추천 영양성분 가져오기 오류:', error);
@@ -126,18 +122,6 @@ const CombinedScreen = () => {
       setLoading(false);
     }
   };
-  
-  
-
-
-
-
-
-
-
-
-
-
 
 
   /** 추천/주의 버튼에 따른 데이터 갱신 */
@@ -151,16 +135,16 @@ const CombinedScreen = () => {
     }
   }, [selectedButton, recommendNutrients, warningNutrients]);
 
-  /** HomeScreen 관련 로직 */
+
   useEffect(() => {
     const interval = setInterval(() => {
       const nextIndex = (pageIndex + 1) % images.length;
       setPageIndex(nextIndex);
       pagerRef.current?.setPage(nextIndex);
     }, 5000);
-
     return () => clearInterval(interval);
   }, [pageIndex, images.length]);
+
 
   useEffect(() => {
     const fetchLikedNutrients = async () => {
@@ -172,7 +156,6 @@ const CombinedScreen = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-  
         if (Array.isArray(data.likedNutrients)) {
           const parsed = {};
           data.likedNutrients.forEach((name) => {
@@ -186,11 +169,9 @@ const CombinedScreen = () => {
         console.error("찜 목록 불러오기 오류:", error);
       }
     };
-  
     if (userData && isFocused) {
       fetchLikedNutrients();
     }
-    
   }, [userData, isFocused]); 
   
 
@@ -198,10 +179,12 @@ const CombinedScreen = () => {
     setSelectedConcern(concern);
   };
 
+
   const navigateToDetail = (nutrient) => {
     navigation.navigate('NutrientDetail', { nutrient });
   };
   
+
   const handleNutrientClick = (nutrient) => {
     setSelectedNutrient((prev) => (prev === nutrient.name ? null : nutrient.name));
     setSelectedReason(
@@ -211,6 +194,7 @@ const CombinedScreen = () => {
     );
   };
   
+
   const filteredNutrients = nutrientList.filter((nutrient) =>
     selectedConcern
       ? nutrient.recommendations?.some(
@@ -218,8 +202,6 @@ const CombinedScreen = () => {
         )
       : true
   );
-
-
 
 
   useEffect(() => {
@@ -246,15 +228,11 @@ const CombinedScreen = () => {
       console.error("찜 목록 불러오기 오류:", error);
     }
   };
-
   if (userData && isFocused) {
     fetchLikedNutrients();
   }
-  
 }, [userData, isFocused]); 
   
-
-
 
   useEffect(() => {
     if (userData) {
@@ -266,8 +244,6 @@ const CombinedScreen = () => {
     }
   }, [userData]);
   
-
-
 
   useEffect(() => {
     if (isFocused) {
