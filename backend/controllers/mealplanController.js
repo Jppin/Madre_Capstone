@@ -59,6 +59,8 @@ export const generateMealPlan = async (req, res) => {
       - 하루 총 섭취 열량: ${kcal} kcal
       - 탄단지 비율: ${Object.entries(macroRatio).map(([k,v]) => `${k} ${v}`).join(", ")}
       - 미량영양소 필요량: ${Object.entries(micronutrients).map(([k,v]) => `${k}: ${v}`).join(", ")}
+
+      [출력 형식 예시]
       
       [식단 테마]
       - 테마: (예: 철분 강화 식단)
