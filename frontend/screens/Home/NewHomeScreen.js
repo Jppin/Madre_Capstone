@@ -23,17 +23,15 @@ const CombinedScreen = () => {
 
   const navigation = useNavigation();
   const isFocused = useIsFocused();
-  const { userData } = useContext(AuthContext);
+  const { userData, loading } = useContext(AuthContext);
 
   // 공통 및 NutritionScreen 관련 state
   const [nickname, setNickname] = useState('사용자');
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedButton, setSelectedButton] = useState('recommend');
   const [nutrients, setNutrients] = useState([]);
   const [likedNutrients, setLikedNutrients] = useState({});
   const [recommendNutrients, setRecommendNutrients] = useState([]);
   const [warningNutrients, setWarningNutrients] = useState([]);
-  const [loading, setLoading] = useState(false);
 
   // HomeScreen 관련 state
   const images = [
@@ -49,6 +47,60 @@ const CombinedScreen = () => {
   const [selectedNutrient, setSelectedNutrient] = useState(null);
   const [selectedReason, setSelectedReason] = useState('');
 
+  useEffect(() => {
+    if (!loading && userData && userData.concerns?.length > 0 && isFocused) {
+      setNickname(userData.nickname || "사용자");
+      setUserConcerns(userData.concerns);
+      setSelectedConcern(userData.concerns[0]);
+      fetchData(userData); // 🔹 확실하게 넘김
+    }
+  }, [userData, loading, isFocused]);
+  
+  const fetchData = async (user) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const api = await createAPI();
+  
+      // 찜 목록
+      const likesRes = await api.get("/nutrient/likes", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (Array.isArray(likesRes.data.likedNutrients)) {
+        const parsed = {};
+        likesRes.data.likedNutrients.forEach((name) => {
+          parsed[name] = true;
+        });
+        setLikedNutrients(parsed);
+      }
+  
+      // 관심사 기반 추천
+      const recRes = await api.get("/nutrient/recommendations", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { concerns: user.concerns }, // 🔥 여기에 명시적으로 포함
+      });
+      if (Array.isArray(recRes.data.recommendList)) {
+        setNutrientList(recRes.data.recommendList);
+      }
+  
+      // 개인화 추천/주의 리스트
+      const personalRes = await api.get("/nutrient/personal", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { concerns: user.concerns }, // 🔥 마찬가지로 명시
+      });
+      if (
+        Array.isArray(personalRes.data.recommendList) &&
+        Array.isArray(personalRes.data.warningList)
+      ) {
+        setRecommendNutrients(mergeRecommendationsByName(personalRes.data.recommendList));
+        setWarningNutrients(mergeRecommendationsByName(personalRes.data.warningList));
+      }
+    } catch (err) {
+      console.error("전체 데이터 불러오기 오류:", err.response?.data || err.message || err);
+    }
+  };
+  
+  
+
   const toggleLike = async (nutrientName) => {
     try {
       const token = await AsyncStorage.getItem('token');
@@ -56,8 +108,8 @@ const CombinedScreen = () => {
       const isLiked = likedNutrients[nutrientName];
   
       const endpoint = isLiked
-        ? '/api/unlike-nutrient'
-        : '/api/like-nutrient';
+        ? '/nutrient/like'
+        : '/nutrient/unlike';
   
       await api.post(endpoint, { nutrientName }, {
         headers: {
@@ -96,34 +148,6 @@ const CombinedScreen = () => {
   };
   
 
-  const fetchRecommendations = async () => {
-    try {
-      if (!userData?._id) {
-        return;
-      }
-      setLoading(true);
-  
-      const token = await AsyncStorage.getItem('token');
-      const api = await createAPI();
-      const { data } = await api.get('/nutrient-recommendations', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (Array.isArray(data.recommendList) && Array.isArray(data.warningList)) {
-        const mergedRecommend = mergeRecommendationsByName(data.recommendList);
-        const mergedWarning = mergeRecommendationsByName(data.warningList);
-        setRecommendNutrients(mergedRecommend);
-        setWarningNutrients(mergedWarning);
-      }
-    } catch (error) {
-      console.error('추천 영양성분 가져오기 오류:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
   /** 추천/주의 버튼에 따른 데이터 갱신 */
   useEffect(() => {
     if (selectedButton === "recommend") {
@@ -145,35 +169,6 @@ const CombinedScreen = () => {
     return () => clearInterval(interval);
   }, [pageIndex, images.length]);
 
-
-  useEffect(() => {
-    const fetchLikedNutrients = async () => {
-      try {
-        const api = await createAPI();
-        const token = await AsyncStorage.getItem("token");
-        const { data } = await api.get("/api/liked-nutrients", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (Array.isArray(data.likedNutrients)) {
-          const parsed = {};
-          data.likedNutrients.forEach((name) => {
-            parsed[name] = true;
-          });
-          setLikedNutrients(parsed);
-        } else {
-          console.warn("likedNutrients 응답 없음");
-        }
-      } catch (error) {
-        console.error("찜 목록 불러오기 오류:", error);
-      }
-    };
-    if (userData && isFocused) {
-      fetchLikedNutrients();
-    }
-  }, [userData, isFocused]); 
-  
 
   const toggleConcern = (concern) => {
     setSelectedConcern(concern);
@@ -202,66 +197,6 @@ const CombinedScreen = () => {
         )
       : true
   );
-
-
-  useEffect(() => {
-  const fetchLikedNutrients = async () => {
-    try {
-      const api = await createAPI();
-      const token = await AsyncStorage.getItem("token");
-      const { data } = await api.get("/api/liked-nutrients", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (Array.isArray(data.likedNutrients)) {
-        const parsed = {};
-        data.likedNutrients.forEach((name) => {
-          parsed[name] = true;
-        });
-        setLikedNutrients(parsed);
-      } else {
-        console.warn("likedNutrients 응답 없음");
-      }
-    } catch (error) {
-      console.error("찜 목록 불러오기 오류:", error);
-    }
-  };
-  if (userData && isFocused) {
-    fetchLikedNutrients();
-  }
-}, [userData, isFocused]); 
-  
-
-  useEffect(() => {
-    if (userData) {
-      setNickname(userData.nickname || "사용자");
-      setUserConcerns(userData.concerns || []);
-      if (userData.concerns?.length > 0) {
-        setSelectedConcern(userData.concerns[0]);
-      }
-    }
-  }, [userData]);
-  
-
-  useEffect(() => {
-    if (isFocused) {
-      fetchRecommendations();
-    }
-  }, [isFocused]);
-  
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -320,7 +255,7 @@ const CombinedScreen = () => {
       {/* 건강 관심사 추천 */}
       <View style={homeStyles.recommendationSection}>
           <Text style={homeStyles.sectionTitle} numberOfLines={2} adjustsFontSizeToFit>
-            {nickname}님의 건강고민별 맟춤 영양성분
+            {nickname}님의 건강고민별 맞춤 영양성분
           </Text>
 
           <ScrollView 
@@ -342,10 +277,6 @@ const CombinedScreen = () => {
               </TouchableOpacity>
             ))}
           </ScrollView>
-
-
-
-
 
 
           {/* 영양성분 버튼 영역 */}
