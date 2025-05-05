@@ -1,5 +1,8 @@
 # 기말 시연 핵심 요소기술 1: ocr->텍스트 처리
 # ocr_test.py
+
+
+
 import re
 import datetime
 import sys
@@ -9,6 +12,10 @@ import json
 from PIL import Image, ImageSequence
 import os
 import base64
+
+
+sys.stdout.reconfigure(encoding='utf-8')  # Python 3.7 이상
+sys.stderr.reconfigure(encoding='utf-8')
 
 # ocr_test.py 파일이 backend/test에 있다고 가정하고, 부모 디렉토리(backend)를 sys.path에 추가
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))

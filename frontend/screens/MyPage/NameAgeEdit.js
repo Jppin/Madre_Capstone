@@ -7,6 +7,8 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNPickerSelect from 'react-native-picker-select';
 import Feather from "react-native-vector-icons/Feather";
+import createAPI from '../../api';
+
 
 const generateYearOptions = () => {
     const currentYear = new Date().getFullYear();
@@ -31,56 +33,58 @@ const NameAgeEdit = () => {
     // ✅ 사용자 정보 업데이트 함수 (MongoDB 반영)
     const updateUserInfo = async () => {
         try {
-            const token = await AsyncStorage.getItem("token");
-            if (!token) {
-                console.error("토큰 없음, 로그인 필요");
-                Alert.alert("오류", "로그인이 필요합니다.");
-                return;
+          const token = await AsyncStorage.getItem("token");
+          if (!token) {
+            console.error("토큰 없음, 로그인 필요");
+            Alert.alert("오류", "로그인이 필요합니다.");
+            return;
+          }
+      
+          const api = await createAPI();
+      
+          const res = await api.post(
+            "/update-user-info",
+            {
+              nickname,
+              birthYear,
+              height,
+              weight,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
             }
-    
-            const response = await fetch("http://10.0.2.2:5001/update-user-info", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
+          );
+      
+          const result = res.data;
+      
+          if (result.status === "ok") {
+            console.log("✅ 사용자 정보 업데이트 성공");
+      
+            await AsyncStorage.setItem("user_nickname", nickname);
+            await AsyncStorage.setItem("user_birthYear", JSON.stringify(birthYear));
+            await AsyncStorage.setItem("user_height", height);
+            await AsyncStorage.setItem("user_weight", weight);
+      
+            Alert.alert("완료", "정보가 수정되었습니다.", [
+              {
+                text: "확인",
+                onPress: () => {
+                  navigation.navigate("MyPageScreen");
                 },
-                body: JSON.stringify({
-                    nickname,
-                    birthYear,
-                    height,
-                    weight
-                }),
-            });
-    
-            const result = await response.json();
-    
-            if (result.status === "ok") {
-                console.log("✅ 사용자 정보 업데이트 성공");
-    
-                // ✅ MongoDB 업데이트 성공하면 AsyncStorage에도 반영
-                await AsyncStorage.setItem("user_nickname", nickname);
-                await AsyncStorage.setItem("user_birthYear", JSON.stringify(birthYear));
-                await AsyncStorage.setItem("user_height", height);
-                await AsyncStorage.setItem("user_weight", weight);
-
-                // ✅ 모달 제거하고 Alert로 메시지 띄운 후 MyPage로 이동
-                Alert.alert("완료", "정보가 수정되었습니다.", [
-                    { 
-                      text: "확인", 
-                      onPress: () => {
-                        navigation.navigate("MyPageScreen"); // ✅ 정확한 경로로 이동
-                      }
-                    }
-                  ]);
-            } else {
-                console.error("❌ 사용자 정보 업데이트 실패:", result.message);
-                Alert.alert("오류", "정보 수정에 실패했습니다.");
-            }
+              },
+            ]);
+          } else {
+            console.error("❌ 사용자 정보 업데이트 실패:", result.message);
+            Alert.alert("오류", "정보 수정에 실패했습니다.");
+          }
         } catch (error) {
-            console.error("❌ 사용자 정보 업데이트 중 오류 발생:", error);
-            Alert.alert("오류", "네트워크 오류가 발생했습니다.");
+          console.error("❌ 사용자 정보 업데이트 중 오류 발생:", error);
+          Alert.alert("오류", "네트워크 오류가 발생했습니다.");
         }
-    };
+      };
 
 
 

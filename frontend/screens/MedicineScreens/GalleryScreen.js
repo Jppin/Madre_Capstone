@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image, Platform } from "react-native";
 import { launchImageLibrary } from "react-native-image-picker";
-import axios from "axios";
+import createAPI from '../../api';
 import LoadingScreen from "../../components/LoadingScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 const GalleryScreen = ({ navigation }) => {
   const [photo, setPhoto] = useState(null);
@@ -36,51 +37,76 @@ const GalleryScreen = ({ navigation }) => {
   const uploadPhoto = async () => {
     if (!photo) return;
     setLoading(true);
-
-    const formData = new FormData();
-    const fileName = photo.split("/").pop();
-    const fileType = fileName.split(".").pop();
-
-    formData.append("image", {
-      uri: Platform.OS === "android" ? photo : photo.replace("file://", ""),
-      name: fileName,
-      type: `image/${fileType}`,
-    });
-
+  
     try {
-      console.log("📤 업로드 시작:", formData);
-      // 첫 번째 호출: OCR 처리
-      const response = await axios.post("http://10.0.2.2:5001/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const uri = Platform.OS === "android" ? photo : photo.replace("file://", "");
+      const fileName = uri.split("/").pop();
+      const fileType = fileName.split(".").pop().toLowerCase();
+      const mimeType =
+        fileType === "jpg" || fileType === "jpeg"
+          ? "image/jpeg"
+          : fileType === "png"
+          ? "image/png"
+          : "application/octet-stream";
+  
+      const formData = new FormData();
+      formData.append("image", {
+        uri,
+        name: fileName,
+        type: mimeType,
       });
-      console.log("서버 응답:", response.data);
-
-      // 두 번째 호출: OCR 결과를 바탕으로 약품 등록 (몽고디비 저장 후 _id 포함)
+  
       const token = await AsyncStorage.getItem("token");
-      if (!token) return;
-
-      const saveResponse = await axios.post(
-        "http://10.0.2.2:5001/medicines",
+      const api = await createAPI();
+  
+      console.log("📤 업로드 시작");
+      console.log("📎 fileName:", fileName);
+      console.log("📎 mimeType:", mimeType);
+      console.log("📎 uri:", uri);
+  
+      const response = await api.post("/ocr", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+        transformRequest: (data) => data,
+      });
+  
+      console.log("✅ 서버 응답:", response.data);
+  
+      const saveResponse = await api.post(
+        "/medicines",
         response.data.medicine,
         {
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         }
       );
-
-      // 저장된 약품 객체( _id 포함 )를 MedicineDetailScreen에 전달
-      const medicineData = saveResponse.data.medicine || saveResponse.data.medicines;
+  
+      const medicineData =
+        saveResponse.data.medicine || saveResponse.data.medicines;
+  
       navigation.replace("MedicineDetailScreen", {
-      medicine: medicineData,
+        medicine: medicineData,
       });
     } catch (error) {
-      console.error("업로드 실패:", error);
+      console.error("❌ 업로드 실패:", error.message);
+      if (error.response) {
+        console.error("❌ 서버 응답 오류:", error.response.data);
+      } else if (error.request) {
+        console.error("❌ 요청은 됐지만 응답 없음:", error.request);
+      } else {
+        console.error("❌ 설정 오류:", error.message);
+      }
     } finally {
       setLoading(false);
     }
   };
+  
+  
+  
+  
 
   return (
     <View style={styles.container}>

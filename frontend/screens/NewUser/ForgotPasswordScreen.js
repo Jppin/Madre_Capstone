@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Feather from "react-native-vector-icons/Feather";
+import createAPI from "../../api";
+
 
 const ForgotPasswordScreen = () => {
     const navigation = useNavigation();
@@ -10,33 +12,41 @@ const ForgotPasswordScreen = () => {
 
     // ✅ API 요청: 비밀번호 찾기
     const handleForgotPassword = async () => {
-        if (!email.trim()) {
-            Alert.alert("입력 오류", "이메일을 입력해주세요.");
-            return;
+    if (!email.trim()) {
+        Alert.alert("입력 오류", "이메일을 입력해주세요.");
+        return;
+    }
+
+    setLoading(true);
+
+    try {
+        const api = await createAPI();
+
+        const res = await api.post(
+        "/forgot-password",
+        { email },
+        {
+            headers: {
+            "Content-Type": "application/json",
+            },
         }
+        );
 
-        setLoading(true); // ✅ 로딩 상태 시작
-        try {
-            const response = await fetch("http://10.0.2.2:5001/api/forgot-password", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email }),
-            });
+        setLoading(false);
 
-            const data = await response.json();
-            setLoading(false); // ✅ 로딩 상태 종료
-
-            if (response.ok) {
-                Alert.alert("이메일 전송 완료", "임시 비밀번호가 이메일로 발송되었습니다.");
-                navigation.goBack(); // ✅ 성공 시 로그인 화면으로 이동
-            } else {
-                Alert.alert("오류", data.message || "요청을 처리할 수 없습니다.");
-            }
-        } catch (error) {
-            setLoading(false);
-            Alert.alert("서버 오류", "네트워크 문제로 요청을 처리할 수 없습니다.");
+        if (res.status === 200) {
+        Alert.alert("이메일 전송 완료", "임시 비밀번호가 이메일로 발송되었습니다.");
+        navigation.goBack();
+        } else {
+        Alert.alert("오류", res.data.message || "요청을 처리할 수 없습니다.");
         }
+    } catch (error) {
+        setLoading(false);
+        console.error("❌ 비밀번호 재설정 요청 중 오류:", error);
+        Alert.alert("서버 오류", "네트워크 문제로 요청을 처리할 수 없습니다.");
+    }
     };
+
 
     return (
         <View style={styles.container}>

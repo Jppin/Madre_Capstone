@@ -13,7 +13,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native"; 
-
+import createAPI from "../../api";
 
 
 
@@ -38,38 +38,32 @@ const NutrientRecommendationScreen = () => {
   const toggleLike = async (nutrient) => {
     try {
       const token = await AsyncStorage.getItem("token");
-  
-      if (likedNutrients[nutrient]) {
-        // ✅ 이미 찜한 상태라면 → 백엔드에서 삭제 요청
-        await fetch("http://10.0.2.2:5001/api/unlike-nutrient", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ nutrientName: nutrient }),
-        });
-  
-        setLikedNutrients((prev) => ({
-          ...prev,
-          [nutrient]: false,
-        }));
-      } else {
-        // ✅ 찜한 상태가 아니라면 → 백엔드에 저장 요청
-        await fetch("http://10.0.2.2:5001/api/like-nutrient", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ nutrientName: nutrient }),
-        });
-  
-        setLikedNutrients((prev) => ({
-          ...prev,
-          [nutrient]: true,
-        }));
+      if (!token) {
+        console.error("❌ 인증 토큰 없음");
+        return;
       }
+  
+      const api = await createAPI();
+  
+      const endpoint = likedNutrients[nutrient]
+        ? "/nutrient/like"
+        : "/nutrient/unlike";
+  
+      await api.post(
+        endpoint,
+        { nutrientName: nutrient },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      setLikedNutrients((prev) => ({
+        ...prev,
+        [nutrient]: !prev[nutrient],
+      }));
     } catch (error) {
       console.error("찜한 영양 성분 업데이트 오류:", error);
     }
@@ -85,27 +79,30 @@ const NutrientRecommendationScreen = () => {
 
   const fetchRecommendations = async () => {
     try {
-      setLoading(true);  // 🔥 로딩 시작
+      setLoading(true);
+  
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch("http://10.0.2.2:5001/nutrient-recommendations", {
-        method: "GET",
+      if (!token) return;
+  
+      const api = await createAPI();
+  
+      const res = await api.get("/nutrient/recommendations", {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
   
-      const json = await response.json();
-      
+      const json = res.data;
+  
       if (json.recommendList && json.warningList) {
         setRecommendNutrients(json.recommendList);
         setWarningNutrients(json.warningList);
       }
     } catch (error) {
       console.error("❌ 추천 영양성분 가져오기 오류:", error);
-    }
-    finally {
-      setLoading(false);  // 🔥 로딩 종료
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -114,30 +111,32 @@ const NutrientRecommendationScreen = () => {
 
 
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const token = await AsyncStorage.getItem("token");
-        const response = await fetch("http://10.0.2.2:5001/user-full-data", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        const json = await response.json();
-        if (json.status === "ok" && json.data.nickname) {
-          setNickname(json.data.nickname);
-
-          // ✅ 사용자 정보 불러온 후 영양 성분 추천 API 호출
+  const fetchUserData = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) return;
+  
+      const api = await createAPI();
+  
+      const res = await api.get("/user-full-data", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      const json = res.data;
+      if (json.status === "ok" && json.data.nickname) {
+        setNickname(json.data.nickname);
+  
+        // ✅ 사용자 정보 불러온 후 추천 API 호출
         fetchRecommendations();
-        }
-      } catch (error) {
-        console.error("사용자 데이터 불러오기 오류:", error);
       }
-    };
-
+    } catch (error) {
+      console.error("사용자 데이터 불러오기 오류:", error);
+    }
+  };
+  useEffect(() => {
     fetchUserData();
   }, []);
 

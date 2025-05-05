@@ -18,7 +18,7 @@ import {
 } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import createAPI from "../../api";
 
 
 
@@ -48,27 +48,29 @@ const MedicineScreen = () => {
   const fetchMedicines = async () => {
     try {
       setLoadingMedicines(true);
-      const token = await AsyncStorage.getItem("token"); // ✅ 저장된 토큰 가져오기
+  
+      const token = await AsyncStorage.getItem("token");
       if (!token) {
         console.error("인증 토큰이 없습니다.");
         return;
       }
   
-      const response = await fetch("http://10.0.2.2:5001/medicines", {
-        headers: { Authorization: `Bearer ${token}` }, // ✅ 요청 헤더에 토큰 포함
+      const api = await createAPI();
+  
+      const res = await api.get("/medicines", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-      if (!response.ok) {
-        throw new Error(`서버 오류 발생: ${response.status}`);
+  
+      const data = res.data;
+      setMedicines(Array.isArray(data) ? data : []);
+  
+    } catch (error) {
+      console.error("약품 데이터를 불러오는 중 오류 발생:", error);
+    } finally {
+      setLoadingMedicines(false);
     }
-
-    const data = await response.json(); // ✅ JSON 직접 파싱
-    setMedicines(Array.isArray(data) ? data : []); // ✅ 데이터가 배열인지 확인 후 저장
-} catch (error) {
-    console.error("약품 데이터를 불러오는 중 오류 발생:", error);
-}
-finally {
-  setLoadingMedicines(false); // 로딩 종료
-}
   };
   
 
@@ -76,19 +78,19 @@ finally {
 
 
 
-const deleteMedicine = async (id) => {
-  try {
-    await fetch(`http://10.0.2.2:5001/medicines/${id}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-    });
-    // 삭제 후 최신 데이터 불러오기
-    fetchMedicines();
-  } catch (error) {
-    console.error("약품 삭제 오류:", error);
-    Alert.alert("삭제 오류", "약품 삭제 중 오류가 발생했습니다.");
-  }
-};
+  const deleteMedicine = async (id) => {
+    try {
+      const api = await createAPI();
+  
+      await api.delete(`/medicines/${id}`); // DELETE는 body 안 써도 됨
+  
+      // 삭제 후 최신 데이터 불러오기
+      fetchMedicines();
+    } catch (error) {
+      console.error("약품 삭제 오류:", error);
+      Alert.alert("삭제 오류", "약품 삭제 중 오류가 발생했습니다.");
+    }
+  };
 
 
 
@@ -225,25 +227,24 @@ const deleteMedicine = async (id) => {
 
 
 
-  // 약품 복용 여부 토글
   const toggleMedicine = async (id) => {
     try {
+      // Optimistic UI: 먼저 화면에서 토글 상태 반영
       const updatedMedicines = medicines.map((medicine) =>
         medicine._id === id ? { ...medicine, active: !medicine.active } : medicine
       );
-  
       setMedicines(updatedMedicines);
-  
-      await fetch(`http://10.0.2.2:5001/medicines/${id}/toggle`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const token = await AsyncStorage.getItem("token");
+      const api = await createAPI();
+      await api.post(`/medicines/${id}/toggle`, null, {
+        headers: { Authorization: `Bearer ${token}` },
       });
   
-      // ✅ 최신 데이터 불러오기
+      // ✅ 최신 데이터로 동기화
       fetchMedicines();
-  
     } catch (error) {
-      console.error("복용 상태 업데이트 실패:", error);
+      console.error("복용 상태 업데이트 실패:", error.response?.data || error.message || error);
+      Alert.alert("업데이트 오류", "복용 상태 업데이트 중 문제가 발생했습니다.");
     }
   };
   

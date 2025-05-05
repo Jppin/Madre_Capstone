@@ -1,13 +1,9 @@
   import React,{useEffect,useState,useContext} from 'react';
   import {  View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator,StyleSheet } from 'react-native';
   import { useNavigation } from '@react-navigation/native';
-  import axios from 'axios';
   import AsyncStorage from '@react-native-async-storage/async-storage'; // ✅ 추가
   import { AuthContext } from '../../context/AuthContext';
-
-
-  const API_URL = "http://10.0.2.2:5001/youtube"; // ✅ 백엔드 API 주소 (에뮬레이터용)
-
+  import createAPI from '../../api'; 
 
   const YoutubeScreen = () => {
     const [videos, setVideos] = useState([]);
@@ -20,32 +16,48 @@
       const fetchUserData = async () => {
         try {
           const token = await AsyncStorage.getItem("token");
-          const response = await fetch("http://10.0.2.2:5001/user-full-data", {
-            method: "GET",
+          if (!token) {
+            console.error("❌ 토큰이 없습니다.");
+            return;
+          }
+      
+          const api = await createAPI();
+      
+          const res = await api.get("/user-full-data", {
             headers: {
-              "Authorization": `Bearer ${token}`,
-              "Content-Type": "application/json"
-        }   
-      });
-      const json = await response.json() ;
-      if (json.status == "ok"){
-        setNickname(json.data.nickname || "사용자");
-
-      } else {
-        console.error("사용자 데이터를 불러오는 중 오류",json.message);
-      }
-      }catch (error) {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json", // GET에는 생략해도 무방하지만 유지해도 OK
+            },
+          });
+      
+          const json = res.data;
+      
+          if (json.status === "ok") {
+            setNickname(json.data.nickname || "사용자");
+          } else {
+            console.error("사용자 데이터를 불러오는 중 오류:", json.message);
+          }
+        } catch (error) {
           console.error("데이터 불러오기 오류:", error);
         }
-
-    };
+      };
       fetchUserData() ;
 
       
       const fetchVideos = async () => {
         try {
+          const token = await AsyncStorage.getItem("token");
+          if (!token) {
+            console.error("❌ 토큰이 없습니다 (영상 요청)");
+            return;
+          }
+        const api = await createAPI();
           console.log("🔄 Fetching YouTube Shorts...");
-    const response = await axios.get(API_URL);
+          const response = await api.get('/youtube', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          });
           console.log("✅ API Response:", response.data);
           if (response.data && response.data.results) {
             const extractedVideos = response.data.results.flatMap(item => item.videos || []);
@@ -81,7 +93,7 @@
       },
     ]);
         } catch (error) {
-          console.error("❌ Error fetching YouTube videos:", error);
+          console.error("❌ Error fetching YouTube videos:", error.response?.data || error.message || error);
         } finally {
           setLoading(false);
         }      
