@@ -23,9 +23,8 @@ const LikedNutrientsScreen = ({ navigation }) => {
   useEffect(() => {
     const fetchLiked = async () => {
       const token = await AsyncStorage.getItem("token");
-      
       const api = await createAPI();
-      const { data } = await api.get("/api/liked-nutrients", {
+      const { data } = await get("/nutrient/likes", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const nutrientMap = {};
@@ -38,7 +37,7 @@ const LikedNutrientsScreen = ({ navigation }) => {
     const fetchRecommendations = async () => {
       const token = await AsyncStorage.getItem("token");
       const api = await createAPI();
-      const { data } = await api.get("/api/nutrient-recommendations", {
+      const { data } = await api.get("/nutrient/personal", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const combined = [];

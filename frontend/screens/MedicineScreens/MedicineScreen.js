@@ -234,15 +234,16 @@ const MedicineScreen = () => {
         medicine._id === id ? { ...medicine, active: !medicine.active } : medicine
       );
       setMedicines(updatedMedicines);
-  
+      const token = await AsyncStorage.getItem("token");
       const api = await createAPI();
-  
-      await api.post(`/medicines/${id}/toggle`);
+      await api.post(`/medicines/${id}/toggle`, null, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
   
       // ✅ 최신 데이터로 동기화
       fetchMedicines();
     } catch (error) {
-      console.error("복용 상태 업데이트 실패:", error);
+      console.error("복용 상태 업데이트 실패:", error.response?.data || error.message || error);
       Alert.alert("업데이트 오류", "복용 상태 업데이트 중 문제가 발생했습니다.");
     }
   };
