@@ -15,23 +15,23 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import PagerView from 'react-native-pager-view';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { AuthContext } from '../../context/AuthContext';
+import createAPI from '../../api';
 
 const { width } = Dimensions.get('window');
 
 const CombinedScreen = () => {
+
   const navigation = useNavigation();
   const isFocused = useIsFocused();
-  const { userData } = useContext(AuthContext);
+  const { userData, loading } = useContext(AuthContext);
 
   // 공통 및 NutritionScreen 관련 state
   const [nickname, setNickname] = useState('사용자');
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedButton, setSelectedButton] = useState('recommend');
   const [nutrients, setNutrients] = useState([]);
   const [likedNutrients, setLikedNutrients] = useState({});
   const [recommendNutrients, setRecommendNutrients] = useState([]);
   const [warningNutrients, setWarningNutrients] = useState([]);
-  const [loading, setLoading] = useState(false);
 
   // HomeScreen 관련 state
   const images = [
@@ -47,32 +47,75 @@ const CombinedScreen = () => {
   const [selectedNutrient, setSelectedNutrient] = useState(null);
   const [selectedReason, setSelectedReason] = useState('');
 
-  const toggleLike = async (nutrientName) => {
+  useEffect(() => {
+    if (!loading && userData && userData.concerns?.length > 0 && isFocused) {
+      setNickname(userData.nickname || "사용자");
+      setUserConcerns(userData.concerns);
+      setSelectedConcern(userData.concerns[0]);
+      fetchData(userData); // 🔹 확실하게 넘김
+    }
+  }, [userData, loading, isFocused]);
+  
+  const fetchData = async (user) => {
     try {
       const token = await AsyncStorage.getItem("token");
+      const api = await createAPI();
+  
+      // 찜 목록
+      const likesRes = await api.get("/nutrient/likes", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (Array.isArray(likesRes.data.likedNutrients)) {
+        const parsed = {};
+        likesRes.data.likedNutrients.forEach((name) => {
+          parsed[name] = true;
+        });
+        setLikedNutrients(parsed);
+      }
+  
+      // 관심사 기반 추천
+      const recRes = await api.get("/nutrient/recommendations", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { concerns: user.concerns }, // 🔥 여기에 명시적으로 포함
+      });
+      if (Array.isArray(recRes.data.recommendList)) {
+        setNutrientList(recRes.data.recommendList);
+      }
+  
+      // 개인화 추천/주의 리스트
+      const personalRes = await api.get("/nutrient/personal", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { concerns: user.concerns }, // 🔥 마찬가지로 명시
+      });
+      if (
+        Array.isArray(personalRes.data.recommendList) &&
+        Array.isArray(personalRes.data.warningList)
+      ) {
+        setRecommendNutrients(mergeRecommendationsByName(personalRes.data.recommendList));
+        setWarningNutrients(mergeRecommendationsByName(personalRes.data.warningList));
+      }
+    } catch (err) {
+      console.error("전체 데이터 불러오기 오류:", err.response?.data || err.message || err);
+    }
+  };
+  
+  
+
+  const toggleLike = async (nutrientName) => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const api = await createAPI();
       const isLiked = likedNutrients[nutrientName];
   
-      if (isLiked) {
-        // 삭제 요청
-        await fetch("http://10.0.2.2:5001/api/unlike-nutrient", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ nutrientName }),
-        });
-      } else {
-        // 저장 요청
-        await fetch("http://10.0.2.2:5001/api/like-nutrient", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ nutrientName }),
-        });
-      }
+      const endpoint = isLiked
+        ? '/nutrient/like'
+        : '/nutrient/unlike';
+  
+      await api.post(endpoint, { nutrientName }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
   
       // 상태 업데이트
       setLikedNutrients((prev) => ({
@@ -80,18 +123,10 @@ const CombinedScreen = () => {
         [nutrientName]: !prev[nutrientName],
       }));
     } catch (error) {
-      console.error("찜 토글 오류:", error);
+      console.error('찜 토글 오류:', error);
     }
-  };  
+  };
   
-
-
-
-
-
-
-
-
 
   // 📍 추천리스트 가공 함수
   const mergeRecommendationsByName = (list) => {
@@ -112,53 +147,6 @@ const CombinedScreen = () => {
     return Object.values(merged); // 객체 -> 배열로 변환
   };
   
-  
-
-
-
-
-
-  const fetchRecommendations = async () => {
-    try {
-      if (!userData?._id) return; // ✅ 사용자 정보 없으면 실행 안 함!
-      setLoading(true);
-  
-      const token = await AsyncStorage.getItem('token');
-      const response = await fetch('http://10.0.2.2:5001/nutrient-recommendations', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-  
-      const json = await response.json();
-  
-      if (json.recommendList && json.warningList) {
-
-      const mergedRecommend = mergeRecommendationsByName(json.recommendList);
-      const mergedWarning = mergeRecommendationsByName(json.warningList);
-
-        setRecommendNutrients(mergedRecommend);
-        setWarningNutrients(mergedWarning);
-      }
-    } catch (error) {
-      console.error('추천 영양성분 가져오기 오류:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-
-
-
-
-
-
-
-
-
-
-
 
   /** 추천/주의 버튼에 따른 데이터 갱신 */
   useEffect(() => {
@@ -171,44 +159,27 @@ const CombinedScreen = () => {
     }
   }, [selectedButton, recommendNutrients, warningNutrients]);
 
-  /** HomeScreen 관련 로직 */
+
   useEffect(() => {
     const interval = setInterval(() => {
       const nextIndex = (pageIndex + 1) % images.length;
       setPageIndex(nextIndex);
       pagerRef.current?.setPage(nextIndex);
     }, 5000);
-
     return () => clearInterval(interval);
   }, [pageIndex, images.length]);
 
-  useEffect(() => {
-    const fetchNutrients = async () => {
-      try {
-        if (!userConcerns.length) return;
-
-        const response = await fetch(`http://10.0.2.2:5001/nutrients/recommendations?concerns=${JSON.stringify(userConcerns)}`);
-        const json = await response.json();
-
-        if (json.status === "ok") {
-          setNutrientList(json.data);
-        }
-      } catch (error) {
-        console.error("Error fetching nutrients:", error);
-      }
-    };
-
-    fetchNutrients();
-  }, [userConcerns, isFocused]);
 
   const toggleConcern = (concern) => {
     setSelectedConcern(concern);
   };
 
+
   const navigateToDetail = (nutrient) => {
     navigation.navigate('NutrientDetail', { nutrient });
   };
   
+
   const handleNutrientClick = (nutrient) => {
     setSelectedNutrient((prev) => (prev === nutrient.name ? null : nutrient.name));
     setSelectedReason(
@@ -218,6 +189,7 @@ const CombinedScreen = () => {
     );
   };
   
+
   const filteredNutrients = nutrientList.filter((nutrient) =>
     selectedConcern
       ? nutrient.recommendations?.some(
@@ -225,72 +197,6 @@ const CombinedScreen = () => {
         )
       : true
   );
-
-
-
-
-  useEffect(() => {
-  const fetchLikedNutrients = async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-      const response = await fetch("http://10.0.2.2:5001/api/liked-nutrients", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const json = await response.json();
-
-      const parsed = {};
-      json.likedNutrients.forEach((name) => {
-        parsed[name] = true;
-      });
-
-      setLikedNutrients(parsed);
-    } catch (error) {
-      console.error("찜 목록 불러오기 오류:", error);
-    }
-  };
-
-  if (userData && isFocused) {
-    fetchLikedNutrients();
-  }
-}, [userData, isFocused]); 
-  
-
-
-
-  useEffect(() => {
-    if (userData) {
-      setNickname(userData.nickname || "사용자");
-      setUserConcerns(userData.concerns || []);
-      if (userData.concerns?.length > 0) {
-        setSelectedConcern(userData.concerns[0]);
-      }
-    }
-  }, [userData]);
-  
-
-
-
-  useEffect(() => {
-    if (isFocused) {
-      fetchRecommendations();
-    }
-  }, [isFocused]);
-  
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -349,7 +255,7 @@ const CombinedScreen = () => {
       {/* 건강 관심사 추천 */}
       <View style={homeStyles.recommendationSection}>
           <Text style={homeStyles.sectionTitle} numberOfLines={2} adjustsFontSizeToFit>
-            {nickname}님의 관심사 맞춤 영양성분 추천
+            {nickname}님의 건강고민별 맞춤 영양성분
           </Text>
 
           <ScrollView 
@@ -371,10 +277,6 @@ const CombinedScreen = () => {
               </TouchableOpacity>
             ))}
           </ScrollView>
-
-
-
-
 
 
           {/* 영양성분 버튼 영역 */}
@@ -438,8 +340,8 @@ const CombinedScreen = () => {
 
       {/* 추천/비추천 버튼 */}
       <View style={nutritionStyles.recommendationContainer}>
-        
-        <Text style={nutritionStyles.recommendationText}>{nickname}님의 추천/비추천 영양성분입니다</Text>
+      <Text style={nutritionStyles.recommendationText2}>필요/주의 영양소를 한눈에!</Text>
+        <Text style={nutritionStyles.recommendationText}>{nickname}님 영양성분 List</Text>
         <View style={nutritionStyles.buttonRow}>
 
           <TouchableOpacity
@@ -455,7 +357,7 @@ const CombinedScreen = () => {
                 selectedButton === 'recommend' && nutritionStyles.recommendButtonTextActive,
               ]}
             >
-              👍 추천해요
+              👍 필요해요
             </Text>
 
           </TouchableOpacity>
@@ -582,7 +484,7 @@ const homeStyles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ddd',
         borderRadius: 10,
-        marginVertical: 10,
+        marginVertical: 30,
         marginHorizontal: 10,
       },
       sectionTitle: {
@@ -823,7 +725,7 @@ const nutritionStyles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 40,
-    width: 165,
+    width: 150,
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#ccc",
@@ -835,17 +737,27 @@ const nutritionStyles = StyleSheet.create({
     color: "#333",
   },
   recommendationContainer: {
-    backgroundColor: "#fee2d5",  // 배경색 추가
+    backgroundColor: "#f3feff",  // 배경색 추가
     borderRadius: 20,           // 둥근 모서리
     padding: 20,                // 내부 패딩
     marginHorizontal: 10,
-    paddingBottom: 30,          // 버튼과 내용 간 여백 추가
+    paddingBottom: 30,   
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,       // 버튼과 내용 간 여백 추가
   },
   recommendationText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
     textAlign: "left",
     marginBottom: 10, // 버튼과 간격 추가
+  },
+  recommendationText2: {
+    fontSize: 13,
+    fontWeight: "bold",
+    textAlign: "left",
+    marginBottom: 5, // 버튼과 간격 추가
+    color: "#FBAF8B",
   },
 
   recommendButtonActive: {
@@ -873,6 +785,11 @@ const nutritionStyles = StyleSheet.create({
     marginBottom:7,
   },
   nutrientTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#bbda6c",
+  },
+  nutrientTitle2: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#F15A24",

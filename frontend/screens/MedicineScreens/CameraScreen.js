@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image, Platform, PermissionsAndroid } from "react-native";
 import { launchCamera } from "react-native-image-picker";
-import axios from "axios";
+import createAPI from "../../api";
 import LoadingScreen from "../../components/LoadingScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -63,45 +63,58 @@ const CameraScreen = ({ navigation }) => {
     if (!photo) return;
     setLoading(true);
   
-    const formData = new FormData();
-    let fileName = photo.split("/").pop(); // 파일명 추출
-    let fileType = fileName.split(".").pop(); // 확장자 추출
-  
-    formData.append("image", {
-      uri: Platform.OS === "android" ? photo : photo.replace("file://", ""), // iOS에서는 `file://` 제거
-      name: fileName,
-      type: `image/${fileType}`,
-    });
+    const api = await createAPI();
+    const token = await AsyncStorage.getItem("token");
+    if (!token) return;
 
+    const uri = Platform.OS === "android" ? photo : photo.replace("file://", "");
+    const fileName = uri.split("/").pop();
+    const ext = fileName.split(".").pop().toLowerCase();
+    const mimeType =
+      ext === "jpg" || ext === "jpeg"
+        ? "image/jpeg"
+        : ext === "png"
+        ? "image/png"
+        : "application/octet-stream";
+
+    const formData = new FormData();
+    formData.append("image", {
+      uri,
+      name: fileName,
+      type: mimeType,
+    });
+    console.log("photo:", photo); // 경로 확인
+    console.log("uri:", uri);
+    console.log("fileName:", fileName);
+    console.log("mimeType:", mimeType);
+
+
+  
     try {
       console.log("📤 업로드 시작:", formData);
-      const response = await axios.post("http://10.0.2.2:5001/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      console.log("서버 응답:", response.data);
-
-
-      // ✅ OCR 결과를 서버에 저장 (약 추가 API 호출)
-      const token = await AsyncStorage.getItem("token"); // 인증 토큰 가져오기
-      if (!token) return;
-
-      const saveResponse = await axios.post(
-        "http://10.0.2.2:5001/medicines", response.data.medicine, {
+      const response = await api.post("/ocr", formData, {
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-      // 여기서 saveResponse.data.medicine는 MongoDB에 저장된 약품 객체이며 _id가 포함됨.
+  
+      console.log("서버 응답:", response.data);
+  
+      const saveResponse = await api.post("/medicines", response.data.medicine, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
       const medicineData = saveResponse.data.medicine || saveResponse.data.medicines;
       navigation.replace("MedicineDetailScreen", { medicine: medicineData });
     } catch (error) {
       console.error("업로드 실패:", error);
     } finally {
-      setLoading(false); // ✅ 로딩 종료
+      setLoading(false);
     }
   };
+  
 
 
 

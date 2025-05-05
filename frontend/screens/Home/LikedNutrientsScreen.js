@@ -11,6 +11,8 @@ import Feather from 'react-native-vector-icons/Feather';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthContext } from '../../context/AuthContext';
 import CustomSpinner from "../../components/CustomSpinner";
+import createAPI from '../../api';
+
 
 const LikedNutrientsScreen = ({ navigation }) => {
   const { userData } = useContext(AuthContext);
@@ -21,12 +23,12 @@ const LikedNutrientsScreen = ({ navigation }) => {
   useEffect(() => {
     const fetchLiked = async () => {
       const token = await AsyncStorage.getItem("token");
-      const res = await fetch("http://10.0.2.2:5001/api/liked-nutrients", {
+      const api = await createAPI();
+      const { data } = await get("/nutrient/likes", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const json = await res.json();
       const nutrientMap = {};
-      json.likedNutrients.forEach((name) => {
+      data.likedNutrients.forEach((name) => {
         nutrientMap[name] = true;
       });
       setLikedOnly(nutrientMap);
@@ -34,14 +36,14 @@ const LikedNutrientsScreen = ({ navigation }) => {
 
     const fetchRecommendations = async () => {
       const token = await AsyncStorage.getItem("token");
-      const res = await fetch("http://10.0.2.2:5001/nutrient-recommendations", {
+      const api = await createAPI();
+      const { data } = await api.get("/nutrient/personal", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const json = await res.json();
       const combined = [];
 
-      if (json.recommendList) {
-        json.recommendList.forEach((item) =>
+      if (data.recommendList) {
+        data.recommendList.forEach((item) =>
           combined.push({
             name: item.name,
             effect: item.effect,
@@ -51,7 +53,7 @@ const LikedNutrientsScreen = ({ navigation }) => {
         );
       }
     
-      if (json.warningList) {
+      if (data.warningList) {
         json.warningList.forEach((item) =>
           combined.push({
             name: item.name,

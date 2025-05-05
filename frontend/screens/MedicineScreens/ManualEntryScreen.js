@@ -13,13 +13,14 @@ import {
   Alert,
   Image
 } from "react-native";
-import axios from "axios";
+import createAPI from '../../api';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LoadingScreen from "../../components/LoadingScreen";
 import { useNavigation } from "@react-navigation/native";
-
+import Feather from "react-native-vector-icons/Feather";
 const ManualEntryScreen = () => {
   const navigation = useNavigation();
+  
 
   // 입력 필드 상태
   const [name, setName] = useState("");
@@ -48,6 +49,9 @@ const ManualEntryScreen = () => {
   const confirmSubmission = async () => {
     setConfirmVisible(false);
     setLoading(true);
+    
+    const api = await createAPI();
+    
     try {
       const token = await AsyncStorage.getItem("token");
       if (!token) {
@@ -68,9 +72,8 @@ const ManualEntryScreen = () => {
         appearance: appearance.trim() ? appearance : defaultValue, // ✅ 성상 추가
       };
 
-      const response = await axios.post("http://10.0.2.2:5001/medicines", data, {
+      const response = await api.post("/medicines", data, {
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });

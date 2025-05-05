@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Feather from "react-native-vector-icons/Feather";
 import CustomSpinner from '../../components/CustomSpinner';
-
+import createAPI from '../../api';
 
 
 
@@ -59,54 +59,61 @@ const ConcernsEdit2 = () => {
     // ✅ MongoDB 업데이트 함수
     const updateUserInfo = async () => {
         if (selectedConcerns.length === 0) {
-            setErrorMessage('고민되는 건강 항목을 선택해주세요.');
-            return;
+          setErrorMessage('고민되는 건강 항목을 선택해주세요.');
+          return;
         }
-
+      
         setLoading(true);
-
+      
         try {
-            const token = await AsyncStorage.getItem("token");
-            const prevConcerns = JSON.parse(await AsyncStorage.getItem("user_concerns")) || [];
-            const mergedConcerns = Array.from(new Set([...prevConcerns, ...selectedConcerns]));
-
-            const response = await fetch("http://10.0.2.2:5001/update-user-concerns", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ concerns: mergedConcerns }),
-            });
-
-            const result = await response.json();
-            console.log("🟢 서버 응답:", result);
-
-            if (result.status === "ok") {
-                console.log("✅ 건강 고민 업데이트 성공!");
-                // ✅ 업데이트 성공 시 AsyncStorage에도 반영
-                await AsyncStorage.setItem("user_concerns", JSON.stringify(mergedConcerns));
-
-                Alert.alert("완료", "정보가 수정되었습니다.\n수정된 정보를 기반으로 홈이 갱신됩니다.", [
-                    { 
-                      text: "확인", 
-                      onPress: () => {
-                        navigation.navigate("MyPageScreen");
-                      }
-                    }
-                  ]);
-            } else {
-                console.error("❌ 건강 고민 업데이트 실패:", result.message);
-                Alert.alert("오류", "정보 수정에 실패했습니다.");
-                setLoading(false);
+          const token = await AsyncStorage.getItem("token");
+          if (!token) {
+            Alert.alert("오류", "로그인이 필요합니다.");
+            return;
+          }
+      
+          const prevConcerns = JSON.parse(await AsyncStorage.getItem("user_concerns")) || [];
+          const mergedConcerns = Array.from(new Set([...prevConcerns, ...selectedConcerns]));
+      
+          const api = await createAPI();
+      
+          const res = await api.post(
+            "/update-user-concerns",
+            { concerns: mergedConcerns },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
             }
+          );
+      
+          const result = res.data;
+          console.log("🟢 서버 응답:", result);
+      
+          if (result.status === "ok") {
+            console.log("✅ 건강 고민 업데이트 성공!");
+      
+            await AsyncStorage.setItem("user_concerns", JSON.stringify(mergedConcerns));
+      
+            Alert.alert("완료", "정보가 수정되었습니다.\n수정된 정보를 기반으로 홈이 갱신됩니다.", [
+              {
+                text: "확인",
+                onPress: () => {
+                  navigation.navigate("MyPageScreen");
+                },
+              },
+            ]);
+          } else {
+            console.error("❌ 건강 고민 업데이트 실패:", result.message);
+            Alert.alert("오류", "정보 수정에 실패했습니다.");
+          }
         } catch (error) {
-            console.error("❌ 건강 고민 업데이트 중 오류 발생:", error);
-            Alert.alert("오류", "네트워크 오류가 발생했습니다.");
+          console.error("❌ 건강 고민 업데이트 중 오류 발생:", error);
+          Alert.alert("오류", "네트워크 오류가 발생했습니다.");
         } finally {
-            setLoading(false);
+          setLoading(false);
         }
-    };
+      };
 
 
 
@@ -132,7 +139,8 @@ const ConcernsEdit2 = () => {
             <View style={{ height: 40 }} />
 
 
-            <View contentContainerStyle={styles.concernContainer} showsVerticalScrollIndicator={false}>
+            <ScrollView contentContainerStyle={styles.concernContainer} 
+            showsVerticalScrollIndicator={false}>
                         
                             {/* 피부/외형 변화 */}
                             <View style={styles.subtitleWrapper}>
@@ -193,7 +201,7 @@ const ConcernsEdit2 = () => {
                                     </TouchableOpacity>
                                 ))}
                             </View>
-                        </View>
+            </ScrollView>
 
             {/* 에러 메시지 */}
             {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}

@@ -5,7 +5,7 @@ import { StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomSpinner from "../../components/CustomSpinner";
 import Feather from "react-native-vector-icons/Feather";
-
+import createAPI from '../../api';
 
 
 const MyPageScreen = () => {
@@ -22,15 +22,24 @@ const MyPageScreen = () => {
   const loadProfileImage = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch("http://10.0.2.2:5001/user-full-data", {
-        method: "GET",
-        headers: { "Authorization": `Bearer ${token}` },
+      if (!token) {
+        console.error("❌ 토큰이 없습니다.");
+        return;
+      }
+  
+      const api = await createAPI();
+      const res = await api.get("/user-full-data", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      const result = await response.json();
+  
+      const result = res.data;
+  
       if (result.status === "ok" && result.data.profileImage) {
         setProfileImage({ uri: result.data.profileImage });
       } else {
-        setProfileImage({ uri: "http://10.0.2.2:5001/uploads/default_profile.png" });
+        // baseURL 이용해 기본 이미지 URI 구성
+        const { baseURL } = api.defaults;
+        setProfileImage({ uri: `/uploads/default_profile.png` });
       }
     } catch (error) {
       console.error("❌ 프로필 이미지 로드 오류:", error);
@@ -42,12 +51,14 @@ const MyPageScreen = () => {
     try {
       const token = await AsyncStorage.getItem("token");
       if (!token) return;
-      const response = await fetch("http://10.0.2.2:5001/medicines", {
-        method: "GET",
-        headers: { "Authorization": `Bearer ${token}` },
+  
+      const api = await createAPI();
+  
+      const res = await api.get("/medicines", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await response.json();
-      // active 필드가 true인 약품만 필터링
+  
+      const data = res.data;
       const active = Array.isArray(data) ? data.filter(med => med.active) : [];
       setActiveMedicines(active);
     } catch (error) {
@@ -64,15 +75,18 @@ const MyPageScreen = () => {
         console.error("토큰 없음, 로그인 필요");
         return;
       }
-      const response = await fetch("http://10.0.2.2:5001/user-full-data", {
-        method: "GET",
+  
+      const api = await createAPI();
+  
+      const res = await api.get("/user-full-data", {
         headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
-      const result = await response.json();
+  
+      const result = res.data;
       console.log("🟢 서버에서 받은 응답:", result.data);
+  
       if (result.status === "ok") {
         setUserInfo(result.data);
       } else {
@@ -145,7 +159,7 @@ const MyPageScreen = () => {
       <View style={styles.profileContainer}>
         <View style={styles.profileImageWrapper}>
           <Image
-            source={profileImage ? profileImage : require('../../assets/icons/capybara1.png')}
+            source={profileImage ? profileImage : require('../../assets/icons/madrelogo.png')}
             style={styles.profileImage}
           />
           <TouchableOpacity style={styles.cameraButton} onPress={() => navigation.navigate("ProfilepicEdit", { currentProfileImage: profileImage })}>
