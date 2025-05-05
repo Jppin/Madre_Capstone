@@ -46,8 +46,8 @@ const NutrientRecommendationScreen = () => {
       const api = await createAPI();
   
       const endpoint = likedNutrients[nutrient]
-        ? "/api/unlike-nutrient"
-        : "/api/like-nutrient";
+        ? "/nutrient/like"
+        : "/nutrient/unlike";
   
       await api.post(
         endpoint,
@@ -86,7 +86,7 @@ const NutrientRecommendationScreen = () => {
   
       const api = await createAPI();
   
-      const res = await api.get("/nutrient-recommendations", {
+      const res = await api.get("/nutrient/recommendations", {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

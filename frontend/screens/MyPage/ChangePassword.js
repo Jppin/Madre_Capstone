@@ -44,7 +44,7 @@ function ChangePassword() {
       
       const api = await createAPI();
 
-      const response = await api.post("/api/change-password",
+      const response = await api.post("/change-password",
         {
           currentPassword,
           newPassword,

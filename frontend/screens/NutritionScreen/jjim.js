@@ -30,7 +30,7 @@ const JjimScreen = ({ navigation }) => {
           return;
         }
     
-        const res = await api.get("/api/liked-nutrients", {
+        const res = await api.get("/nutrient/likes", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

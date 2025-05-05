@@ -45,10 +45,19 @@
 
       
       const fetchVideos = async () => {
-        const api = await createAPI();
         try {
+          const token = await AsyncStorage.getItem("token");
+          if (!token) {
+            console.error("❌ 토큰이 없습니다 (영상 요청)");
+            return;
+          }
+        const api = await createAPI();
           console.log("🔄 Fetching YouTube Shorts...");
-          const response = await api.get('/youtube');
+          const response = await api.get('/youtube', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          });
           console.log("✅ API Response:", response.data);
           if (response.data && response.data.results) {
             const extractedVideos = response.data.results.flatMap(item => item.videos || []);
@@ -84,7 +93,7 @@
       },
     ]);
         } catch (error) {
-          console.error("❌ Error fetching YouTube videos:", error);
+          console.error("❌ Error fetching YouTube videos:", error.response?.data || error.message || error);
         } finally {
           setLoading(false);
         }      

@@ -64,7 +64,7 @@ const GalleryScreen = ({ navigation }) => {
       console.log("📎 mimeType:", mimeType);
       console.log("📎 uri:", uri);
   
-      const response = await api.post("/upload", formData, {
+      const response = await api.post("/ocr", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
