@@ -23,7 +23,7 @@ const ForgotPasswordScreen = () => {
         const api = await createAPI();
 
         const res = await api.post(
-        "/api/forgot-password",
+        "/forgot-password",
         { email },
         {
             headers: {

@@ -92,7 +92,7 @@ const CameraScreen = ({ navigation }) => {
   
     try {
       console.log("📤 업로드 시작:", formData);
-      const response = await api.post("/upload", formData, {
+      const response = await api.post("/ocr", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

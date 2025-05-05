@@ -1,6 +1,4 @@
-//Medicine.js
-
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const MedicineSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -11,8 +9,9 @@ const MedicineSchema = new mongoose.Schema({
   warning: { type: String },
   appearance: { type: String },
   sideEffects: { type: String },
-  active: { type: Boolean, default: true }, // 복용 여부
+  active: { type: Boolean, default: true },
   user_id: { type: mongoose.Schema.Types.ObjectId, ref: "UserInfo" },
 });
 
-module.exports = mongoose.model("Medicine", MedicineSchema);
+const Medicine = mongoose.model("Medicine", MedicineSchema);
+export default Medicine;
