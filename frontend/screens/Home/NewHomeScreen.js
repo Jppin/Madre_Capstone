@@ -78,9 +78,9 @@ const CombinedScreen = () => {
         headers: { Authorization: `Bearer ${token}` },
         params: { concerns: user.concerns }, // 🔥 여기에 명시적으로 포함
       });
-      if (Array.isArray(recRes.data.recommendList)) {
-        setNutrientList(recRes.data.recommendList);
-      }
+
+      const recommendList = recRes.data?.data ?? [];
+      setNutrientList(recommendList);
   
       // 개인화 추천/주의 리스트
       const personalRes = await api.get("/nutrient/personal", {
@@ -93,6 +93,7 @@ const CombinedScreen = () => {
       ) {
         setRecommendNutrients(mergeRecommendationsByName(personalRes.data.recommendList));
         setWarningNutrients(mergeRecommendationsByName(personalRes.data.warningList));
+        
       }
     } catch (err) {
       console.error("전체 데이터 불러오기 오류:", err.response?.data || err.message || err);
@@ -102,14 +103,15 @@ const CombinedScreen = () => {
   
 
   const toggleLike = async (nutrientName) => {
+    console.log("[toggleLike] 하트 눌림:", nutrientName);
     try {
       const token = await AsyncStorage.getItem('token');
       const api = await createAPI();
       const isLiked = likedNutrients[nutrientName];
   
       const endpoint = isLiked
-        ? '/nutrient/like'
-        : '/nutrient/unlike';
+        ? '/nutrient/unlike'
+        : '/nutrient/like';
   
       await api.post(endpoint, { nutrientName }, {
         headers: {

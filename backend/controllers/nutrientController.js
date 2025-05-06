@@ -2,6 +2,8 @@
 import Nutrition from "../models/Nutrient.cjs";
 import LikedNutrient from "../models/LikedNutrient.js";
 
+
+
 const labelMap = {
   "0": "운동 없음",
   "1": "주 1회 운동",
@@ -38,7 +40,7 @@ export const getPersonalizedNutrients = async (req, res) => {
 
     const keywords = [
       { category: "운동", keyword: String(user.exercise) },
-      { category: "임신", keyword: user.pregnancy },
+      { category: "임신", keyword: user.subPregnancy },
       ...user.conditions.map((c) => ({ category: "건강문제", keyword: c })),
       ...user.concerns.map((c) => ({ category: "건강관심사", keyword: c }))
     ];
@@ -77,6 +79,8 @@ export const getPersonalizedNutrients = async (req, res) => {
 
 export const likeNutrient = async (req, res) => {
   try {
+    console.log("[likeNutrient] req.user:", req.user); // 🔥 추가
+    console.log("[likeNutrient] nutrientName:", req.body.nutrientName); // 🔥 추가
     const { nutrientName } = req.body;
     const exists = await LikedNutrient.findOne({ email: req.user.email, nutrientName });
     if (exists) {

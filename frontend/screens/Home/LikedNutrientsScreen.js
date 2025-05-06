@@ -24,7 +24,7 @@ const LikedNutrientsScreen = ({ navigation }) => {
     const fetchLiked = async () => {
       const token = await AsyncStorage.getItem("token");
       const api = await createAPI();
-      const { data } = await get("/nutrient/likes", {
+      const { data } = await api.get("/nutrient/likes", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const nutrientMap = {};
@@ -54,7 +54,7 @@ const LikedNutrientsScreen = ({ navigation }) => {
       }
     
       if (data.warningList) {
-        json.warningList.forEach((item) =>
+        data.warningList.forEach((item) =>
           combined.push({
             name: item.name,
             effect: item.effect,

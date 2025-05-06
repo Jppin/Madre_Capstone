@@ -84,43 +84,45 @@ const ProfilepicEdit = () => {
 
   
   // 기본 이미지로 리셋하는 함수
-  const resetToDefault = async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-      if (!token) {
-        Alert.alert("오류", "로그인이 필요합니다.");
-        return;
-      }
-  
-      const api = await createAPI();
-  
-      const res = await api.post(
-        "/reset-profile",
-        { profileImage: "" },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-  
-      const result = res.data;
-      console.log("🟢 리셋 응답:", result);
-  
-      if (result.status === "ok") {
-        await AsyncStorage.removeItem("profileImage");
-  
-        Alert.alert("완료", "기본 프로필 사진으로 변경되었습니다.", [
-          { text: "확인", onPress: () => navigation.navigate("MyPageScreen") },
-        ]);
-      } else {
-        Alert.alert("오류", "기본 이미지 변경에 실패했습니다.");
-      }
-    } catch (error) {
-      console.error("❌ 기본 이미지 변경 오류:", error);
-      Alert.alert("오류", "서버와의 통신 중 문제가 발생했습니다.");
+// 기본 이미지로 리셋하는 함수
+const resetToDefault = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) {
+      Alert.alert("오류", "로그인이 필요합니다.");
+      return;
     }
-  };
+
+    const api = await createAPI();
+    const defaultImageUrl = `${api.defaults.baseURL}/uploads/default_profile.png`; // ✅ 기본 이미지 주소 설정
+
+    const res = await api.post(
+      "/reset-profile",
+      { profileImage: defaultImageUrl },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const result = res.data;
+    console.log("🟢 리셋 응답:", result);
+
+    if (result.status === "ok") {
+      await AsyncStorage.setItem("profileImage", defaultImageUrl); // ✅ 로컬에도 저장
+      Alert.alert("완료", "기본 프로필 사진으로 변경되었습니다.", [
+        { text: "확인", onPress: () => navigation.navigate("MyPageScreen") },
+      ]);
+    } else {
+      Alert.alert("오류", "기본 이미지 변경에 실패했습니다.");
+    }
+  } catch (error) {
+    console.error("❌ 기본 이미지 변경 오류:", error);
+    Alert.alert("오류", "서버와의 통신 중 문제가 발생했습니다.");
+  }
+};
+
 
 
   const defaultImageUri = baseURL ? `${baseURL}/uploads/default_profile.png` : null;
