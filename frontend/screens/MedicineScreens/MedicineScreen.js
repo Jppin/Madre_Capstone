@@ -28,6 +28,7 @@ const MedicineScreen = () => {
   const isFocused = useIsFocused(); // ✅ 화면 포커스 감지
   const [medicines, setMedicines] = useState([]);
   const [loadingMedicines, setLoadingMedicines] = useState(true);
+  const [updatedStatuses, setUpdatedStatuses] = useState({});
 
 
 
@@ -64,7 +65,14 @@ const MedicineScreen = () => {
       });
   
       const data = res.data;
-      setMedicines(Array.isArray(data) ? data : []);
+      // 🔥 수정: updatedStatuses에 반영된 복용 상태 우선 적용
+    const mergedMedicines = data.map((med) =>
+      updatedStatuses.hasOwnProperty(med._id)
+        ? { ...med, active: updatedStatuses[med._id] }
+        : med
+    );
+
+    setMedicines(Array.isArray(mergedMedicines) ? mergedMedicines : []);
   
     } catch (error) {
       console.error("약품 데이터를 불러오는 중 오류 발생:", error);
@@ -227,31 +235,51 @@ const MedicineScreen = () => {
 
 
 
-  const toggleMedicine = async (id) => {
-    try {
-      // Optimistic UI: 먼저 화면에서 토글 상태 반영
-      const updatedMedicines = medicines.map((medicine) =>
-        medicine._id === id ? { ...medicine, active: !medicine.active } : medicine
-      );
-      setMedicines(updatedMedicines);
-      const token = await AsyncStorage.getItem("token");
-      const api = await createAPI();
-      await api.post(`/medicines/${id}/toggle`, null, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  const toggleMedicine = (id) => {
+    // UI만 바꿈
+    const updatedMedicines = medicines.map((medicine) =>
+      medicine._id === id ? { ...medicine, active: !medicine.active } : medicine
+    );
+    setMedicines(updatedMedicines);
   
-      // ✅ 최신 데이터로 동기화
-      fetchMedicines();
-    } catch (error) {
-      console.error("복용 상태 업데이트 실패:", error.response?.data || error.message || error);
-      Alert.alert("업데이트 오류", "복용 상태 업데이트 중 문제가 발생했습니다.");
-    }
+    // 변경 사항 기록 (기존 값 반전)
+    const current = medicines.find((m) => m._id === id);
+    setUpdatedStatuses((s) => ({
+      ...s,
+      [id]: !current.active,
+    }));
   };
   
   
+  
 
 
-
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", async () => {
+      if (Object.keys(updatedStatuses).length === 0) return; // 변경사항 없으면 종료
+  
+      try {
+        const token = await AsyncStorage.getItem("token");
+        const api = await createAPI();
+  
+        // 모든 변경사항 서버에 POST
+        await Promise.all(
+          Object.entries(updatedStatuses).map(([id, newActive]) =>
+            api.post(`/medicines/${id}/toggle`, null, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+          )
+        );
+  
+        console.log("✅ 복용 상태 변경 서버 반영 완료");
+      } catch (err) {
+        console.error("❌ 복용 상태 반영 실패:", err);
+      }
+    });
+  
+    return unsubscribe;
+  }, [updatedStatuses]);
+  
 
 
 
