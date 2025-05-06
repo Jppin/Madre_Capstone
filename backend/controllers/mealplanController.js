@@ -1,6 +1,6 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage } from "@langchain/core/messages";
-import { saveMealPlanResult } from "../scripts/saveMealPlan.js";
+import { saveMealPlanResult } from "../db_scripts/saveMealPlan.js";
 import {
   calculateBMI,
   getEnergyRequirement,

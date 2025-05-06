@@ -39,7 +39,7 @@ const MyPageScreen = () => {
       } else {
         // baseURL 이용해 기본 이미지 URI 구성
         const { baseURL } = api.defaults;
-        setProfileImage({ uri: `/uploads/default_profile.png` });
+        setProfileImage({ uri: `${baseURL}/uploads/default_profile.png` });
       }
     } catch (error) {
       console.error("❌ 프로필 이미지 로드 오류:", error);
