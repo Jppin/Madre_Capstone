@@ -17,6 +17,8 @@ import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { AuthContext } from '../../context/AuthContext';
 import createAPI from '../../api';
 
+
+
 const { width } = Dimensions.get('window');
 
 const CombinedScreen = () => {
@@ -46,6 +48,9 @@ const CombinedScreen = () => {
   const [nutrientList, setNutrientList] = useState([]);
   const [selectedNutrient, setSelectedNutrient] = useState(null);
   const [selectedReason, setSelectedReason] = useState('');
+  const [todayText, setTodayText] = useState("");
+
+
 
   useEffect(() => {
     if (!loading && userData && userData.concerns?.length > 0 && isFocused) {
@@ -99,6 +104,14 @@ const CombinedScreen = () => {
       console.error("전체 데이터 불러오기 오류:", err.response?.data || err.message || err);
     }
   };
+
+  useEffect(() => {
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    setTodayText(`${month}.${day} 오늘`);
+  }, []);
+  
   
   
 
@@ -332,18 +345,76 @@ const CombinedScreen = () => {
 
         </View>
 
-      {/* 추천 정보 다시 불러오기 버튼
-      <TouchableOpacity style={nutritionStyles.refreshButton} onPress={fetchRecommendations}>
-        <Text style={nutritionStyles.refreshButtonText}>추천 정보 다시 불러오기 {loading ? '(로딩 중...)' : ''}</Text>
-      </TouchableOpacity>
-      */}
+
+
+
+
+
+
+
+
+<View style={foodContainerStyles.mealPlanContainer}>
+  {/* 왼쪽: 타이틀 + 이미지 */}
+  <View style={foodContainerStyles.leftSection}>
+    <Text style={foodContainerStyles.mealTitle}>{nickname}님 맞춤 식단</Text>
+    <View style={foodContainerStyles.imageCircle}>
+      <Image
+        source={require('../../assets/icons/foodcalandar.png')}
+        style={foodContainerStyles.foodImage}
+        resizeMode="contain"
+      />
+      <Text style={foodContainerStyles.dateText}>{todayText}</Text>
+    </View>
+  </View>
+
+  {/* 오른쪽: 정보 + 버튼 */}
+  <View style={foodContainerStyles.rightSection}>
+    <Text style={foodContainerStyles.kcalText}>  섭취 칼로리                   <Text style={{ fontWeight: 'bold' }}>? kcal</Text></Text>
+    
+    <View style={foodContainerStyles.divider} />
+
+    <View style={foodContainerStyles.warningRow}>
+      <Image source={require('../../assets/icons/warning.png')} style={foodContainerStyles.iconSmall} />
+      <Text style={foodContainerStyles.warningText}>알레르기 / 입덧 음식 입력</Text>
+    </View>
+
+    <View style={foodContainerStyles.divider} />
+
+    <View style={foodContainerStyles.buttonWrapper}>
+  <Image
+    source={require('../../assets/icons/bowl.png')}
+    style={foodContainerStyles.bowlIcon}
+  />
+  <TouchableOpacity style={foodContainerStyles.customButton}>
+    <Text style={foodContainerStyles.customButtonText}>맞춤식단 생성하기</Text>
+  </TouchableOpacity>
+</View>
+
+  </View>
+</View>
+
+
+
+
+
+
+
 
 
 
       {/* 추천/비추천 버튼 */}
       <View style={nutritionStyles.recommendationContainer}>
-      <Text style={nutritionStyles.recommendationText2}>필요/주의 영양소를 한눈에!</Text>
-        <Text style={nutritionStyles.recommendationText}>{nickname}님 영양성분 List</Text>
+      <View style={nutritionStyles.rowWithIcon}>
+    <View style={{ flex: 1 }}>
+      <Text style={nutritionStyles.recommendationText2}>맞춤식단 생성이 반영되는</Text>
+      <Text style={nutritionStyles.recommendationText}>{nickname}님 필요/주의 성분 List</Text>
+    </View>
+    <Image 
+      source={require('../../assets/icons/balancescale.png')}
+      style={nutritionStyles.iconImage}
+    />
+  </View>
+        
         <View style={nutritionStyles.buttonRow}>
 
           <TouchableOpacity
@@ -422,6 +493,7 @@ const homeStyles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 10,
       },
+      
     
       // Header
       headerContainer: {
@@ -454,7 +526,7 @@ const homeStyles = StyleSheet.create({
       // Carousel
       carouselContainer: {
         alignItems: 'center',
-        marginVertical: 20,
+        marginTop: 16,
       },
       pagerView: {
         width: width * 0.9,
@@ -488,7 +560,8 @@ const homeStyles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ddd',
         borderRadius: 10,
-        marginVertical: 30,
+        marginTop : 10,
+        marginBottom: 10,
         marginHorizontal: 10,
       },
       sectionTitle: {
@@ -634,6 +707,133 @@ const homeStyles = StyleSheet.create({
         alignItems: 'center', // 아이콘 + 텍스트 수직 정렬 중앙
       },
 });
+
+
+
+
+
+
+
+
+
+
+
+const foodContainerStyles = StyleSheet.create({
+  mealPlanContainer: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    backgroundColor: 'white',
+    alignItems: 'flex-start',
+    marginHorizontal : 10,
+  },
+  leftSection: {
+    flex: 4,
+    alignItems: 'center',
+  },
+  mealTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  imageCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 4,
+    borderColor: '#ccc',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    
+  },
+  foodImage: {
+    width: 45,
+    height: 45,
+  },
+  dateText: {
+    position: 'absolute',
+    bottom: -22,
+    fontSize: 12,
+    color: '#666',
+  },
+  rightSection: {
+    flex: 6,
+    paddingLeft: 24,
+    justifyContent: 'flex-start',
+  },
+  kcalText: {
+    fontSize: 13,
+    color: '#333',
+    marginBottom: 8,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#ccc',
+    marginVertical: 8,
+  },
+  warningRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconSmall: {
+    width: 16,
+    height: 16,
+    marginRight: 6,
+  },
+  warningText: {
+    fontSize: 13,
+    color: '#444',
+  },
+
+
+  buttonWrapper: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  
+  bowlIcon: {
+    width: 70,
+    height: 70,
+    position: 'absolute',
+    top: -15,    // 버튼보다 위로 살짝
+    left: -18,    // 버튼 안쪽으로 겹치게
+    zIndex: 2,
+    elevation : 6,
+  },
+  
+  customButton: {
+    backgroundColor: '#FFAFA3',
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+    zIndex: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  
+  customButtonText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'white',
+    marginLeft : 5,
+  },
+  
+});
+
+
+
+
+
+
 
 
 
@@ -832,7 +1032,19 @@ const nutritionStyles = StyleSheet.create({
     marginTop:10,
     marginBottom: 15,
   },
-
+  rowWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'flex-start', // 이미지가 위쪽에 붙도록
+    justifyContent: 'space-between',
+  },
+  
+  iconImage: {
+    width: 80,
+    height: 80,
+    marginRight: 10,
+    marginTop: -20,
+  },
+  
   
 });
 
