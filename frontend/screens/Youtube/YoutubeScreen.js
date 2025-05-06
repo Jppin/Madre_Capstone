@@ -174,6 +174,7 @@
           keyExtractor={(item) => item.id}
           numColumns={2}
           columnWrapperStyle={styles.row}
+          contentContainerStyle={{ paddingBottom: 75 }}
         />
       </View>
     );

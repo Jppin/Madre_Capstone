@@ -6,33 +6,93 @@ import { LinearGradient } from 'react-native-linear-gradient';
 import { StatusBar } from "react-native";
 import {useNavigation} from '@react-navigation/native';
 import Feather from "react-native-vector-icons/Feather"
+import createAPI from '../../api';
 
 const NutrientDetail = ({ route }) => {
-  const { nutrient } = route.params;
+  const { nutrient, info, usage, precaution } = route.params;
   const navigation = useNavigation();
   const [likedNutrients, setLikedNutrients] = useState({});
+  const [detailInfo, setDetailInfo] = useState(null);
 
-   // ✅ AsyncStorage에서 likedNutrients 불러오기
-   useEffect(() => {
+
+
+
+
+  useEffect(() => {
     const fetchLikedNutrients = async () => {
       try {
-        const storedLikes = await AsyncStorage.getItem("liked_nutrients");
-        setLikedNutrients(storedLikes ? JSON.parse(storedLikes) : {});
+        const token = await AsyncStorage.getItem("token");
+        const api = await createAPI();
+        const { data } = await api.get("/nutrient/likes", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+  
+        const likesMap = {};
+        data.likedNutrients.forEach((name) => {
+          likesMap[name] = true;
+        });
+        setLikedNutrients(likesMap);
       } catch (error) {
-        console.error("좋아요 데이터 불러오기 오류:", error);
+        console.error("찜 데이터 불러오기 실패:", error);
       }
     };
-    fetchLikedNutrients();
-  }, []);
- 
-    // ✅ 하트 버튼 토글 함수 (HomeScreen과 동일한 로직)
-    const toggleLike = async () => {
-      setLikedNutrients(prev => {
-        const updatedLikes = { ...prev, [nutrient]: !prev[nutrient] };
-        AsyncStorage.setItem("liked_nutrients", JSON.stringify(updatedLikes));
-        return updatedLikes;
-      });
+
+    const fetchDetail = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        const api = await createAPI();
+        const res = await api.get(`/nutrient/detail/${encodeURIComponent(nutrient)}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setDetailInfo(res.data);
+      } catch (error) {
+        console.error("상세 정보 로딩 실패:", error);
+      }
     };
+
+
+
+
+    fetchLikedNutrients();
+    fetchDetail();  
+  }, []);
+  
+ 
+
+
+
+
+
+
+    const toggleLike = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    const api = await createAPI();
+
+    console.log("🔍 토글 요청 nutrient 이름:", nutrient); // 🔹 여기에 추가
+
+    const isLiked = likedNutrients[nutrient];
+
+    if (isLiked) {
+      await api.post("/nutrient/unlike", { nutrientName: nutrient }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } else {
+      await api.post("/nutrient/like", { nutrientName: nutrient }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    }
+
+    // 상태 업데이트
+    setLikedNutrients(prev => ({
+      ...prev,
+      [nutrient]: !prev[nutrient],
+    }));
+  } catch (err) {
+    console.error("찜 토글 실패:", err);
+  }
+};
+
   
   
  
@@ -42,13 +102,14 @@ const NutrientDetail = ({ route }) => {
   return (
     <View style={styles.container}>
       {/* ✅ 배경 Gradient */}
-      <StatusBar barStyle="light-content" backgroundColor="#6A5ACD" />
-      <LinearGradient colors={["#6A5ACD", "#A9D046"]} style={styles.background}/>
+      <StatusBar barStyle="light-content" backgroundColor="#F6EBC9" />
+      <LinearGradient colors={["#F6EBC9", "#FFF"]} locations={[0, 1]} style={styles.background}/>
       
       {/*하단반원 추가 */ }
       <LinearGradient 
-        colors={["#A9D046", "#E2F79F"]} // ✅ 하단 원의 그라디언트 색상
+        colors={["#C2DFBF", "#FFF"]} // ✅ 하단 원의 그라디언트 색상
         style={styles.circle} 
+        locations={[0, 1]}
         start={{ x: 0.5, y: 0 }} // ✅ 그라디언트 방향 (위 -> 아래)
         end={{ x: 0.5, y: 1 }} 
       />
@@ -71,6 +132,8 @@ const NutrientDetail = ({ route }) => {
      <View style={styles.card}>
         <View style={styles.header}>
           <Text style={styles.title}>{nutrient}</Text>
+
+
           {/* ✅ 하트 버튼 (HomeScreen과 같은 기능) */}
           <TouchableOpacity onPress={toggleLike} style={styles.heartButton}>
             <Icon 
@@ -80,7 +143,25 @@ const NutrientDetail = ({ route }) => {
             />
           </TouchableOpacity>
         </View>
-        <Text style={styles.content}>영양성분에 대한 상세설명을 입력하시오</Text>
+
+        {detailInfo && (
+  <>
+    <View style={styles.separator} />
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>• 영양성분 설명</Text>
+      <Text style={styles.sectionText}>{detailInfo.info}</Text>
+    </View>
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>• 섭취 방법</Text>
+      <Text style={styles.sectionText}>{detailInfo.usage}</Text>
+    </View>
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>• 복용 시 주의사항</Text>
+      <Text style={styles.sectionText}>{detailInfo.precaution}</Text>
+    </View>
+  </>
+)}
+
       </View>
     </View>
   );
@@ -116,10 +197,9 @@ heartButton: {
     right: -50,
     width: "120%",
     height: 440, // ✅ 원의 크기 조정
-    borderTopLeftRadius: 100, // ✅ 반원 효과
     borderTopRightRadius: 100,
     borderTopLeftRadius : 100,
-    backgroundColor: "#A9D046", // ✅ 원 색상
+    backgroundColor: "#C2DFBF", // ✅ 원 색상
     
   },
   card: {
@@ -142,16 +222,33 @@ heartButton: {
   title: {
     fontSize: 27,
     fontWeight: "bold",
+    marginLeft : 8,
   },
   separator: {
     height: 1,
-    backgroundColor: "rgba(87, 20, 20, 0)", // ✅ 회색 불투명 선
-    marginVertical: 10,
+    backgroundColor: "#ccc", // ✅ 회색 불투명 선
+    marginTop: 12,
+  marginBottom: 16,
   },
   content: {
     fontSize: 14,
     color: "gray",
     marginTop: 20,
   },
+  section: {
+    marginTop: 20,
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 6,
+  },
+  sectionText: {
+    fontSize: 14,
+    color: "#555",
+    lineHeight: 20,
+  },
+  
 }); 
 export default NutrientDetail; 

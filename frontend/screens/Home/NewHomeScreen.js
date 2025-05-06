@@ -387,7 +387,9 @@ const CombinedScreen = () => {
         {nutrients.map((item, idx) => (
           <View key={idx} style={nutritionStyles.nutrientCard}>
             <Text style={nutritionStyles.nutrientTitle}>{item.name}</Text>
-            <Text style={nutritionStyles.nutrientInfo}>{(item.reasons || []).join('\n\n')}</Text> 
+            <Text style={nutritionStyles.nutrientInfo}>
+  {(item.reasons || []).map((reason, idx) => `• ${reason}`).join('\n\n')}
+</Text> 
             {/* 두번이상 호출된거 한칸띄고 설명넣음ㅁ */}
             <TouchableOpacity
               onPress={() => toggleLike(item.name)}

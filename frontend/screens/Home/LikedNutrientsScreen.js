@@ -76,23 +76,31 @@ const LikedNutrientsScreen = ({ navigation }) => {
   }, []);
 
   const merged = {};
-allRecommendations.forEach(({ name, effect, type, concern }) => {
-  if (likedOnly[name]) {
-    if (!merged[name]) {
-      merged[name] = {
-        name,
-        reasons: [effect],
-        type,
-        concern: concern || "관심사 불명" // ✅ 백업용
-      };
-    } else {
-      merged[name].reasons.push(effect);
+  allRecommendations.forEach(({ name, effect, type, concern }) => {
+    if (likedOnly[name]) {
+      if (!merged[name]) {
+        merged[name] = {
+          name,
+          types: {
+            추천: { reasons: [], concerns: [] },
+            주의: { reasons: [], concerns: [] }
+          }
+        };
+      }
+  
+      // 추천 or 주의 추가
+      if (effect && !merged[name].types[type].reasons.includes(effect)) {
+        merged[name].types[type].reasons.push(effect);
+      }
+  
+      if (concern && !merged[name].types[type].concerns.includes(concern)) {
+        merged[name].types[type].concerns.push(concern);
+      }
     }
-  }
-});
-
+  });
+  
   const likedList = Object.values(merged);
-
+  
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
@@ -122,30 +130,57 @@ allRecommendations.forEach(({ name, effect, type, concern }) => {
     <Text style={styles.topText}>💖 내가 찜한 영양성분들이에요! 💖</Text>
 
     {likedList.map((item, idx) => (
-      <View key={idx} style={styles.card}>
+  <View key={idx} style={styles.card}>
+    <View style={styles.cardHeader}>
+      <Image
+        source={require("../../assets/icons/thumbsup.png")}
+        style={styles.icon}
+      />
+      <Text style={styles.nutrientTitle}>{item.name}</Text>
+    </View>
+
+    {item.types.추천.reasons.length > 0 && (
+      <>
+        <Text style={styles.concernLabel}>
+          관련 건강 문제/관심사 (추천): {item.types.추천.concerns.join(", ") || "정보 없음"}
+        </Text>
+        <Text style={styles.reasonLabel}>추천 이유</Text>
+        {item.types.추천.reasons.map((r, i) => (
+          <Text key={i} style={styles.reasonText}>• {r}</Text>
+        ))}
+      </>
+    )}
+
+
+    {/* 추천과 비추천 사이 여백 */}
+    {item.types.추천.reasons.length > 0 && item.types.주의.reasons.length > 0 && (
+      <View style={{ marginVertical: 10 }} />
+    )}
+
+
+
+    {/* 비추천 섹션 */}
+    {item.types.주의.reasons.length > 0 && (
+      <>
         <View style={styles.cardHeader}>
           <Image
-            source={
-              item.type === "추천"
-                ? require("../../assets/icons/thumbsup.png")
-                : require("../../assets/icons/thumbsdown.png")
-            }
+            source={require("../../assets/icons/thumbsdown.png")}
             style={styles.icon}
           />
-          <Text style={styles.nutrientTitle}>{item.name}</Text>
+          <Text style={styles.nutrientTitle2}>{item.name}</Text>
         </View>
-        <Text style={styles.concernLabel}>관련 건강관심사 : {item.concern}</Text>
-        <Text style={styles.reasonLabel}>
-          {item.type === "추천" ? "추천 이유" : "비추천 이유"}
+        <Text style={styles.concernLabel}>
+          관련 건강 문제/관심사 (주의): {item.types.주의.concerns.join(", ") || "정보 없음"}
         </Text>
-        {item.reasons.map((reason, i) => (
-          <Text key={i} style={styles.reasonText}>
-            • {reason} 
-          </Text>
+        <Text style={styles.reasonLabel}>비추천 이유</Text>
+        {item.types.주의.reasons.map((r, i) => (
+          <Text key={`warn-${i}`} style={styles.reasonText}>• {r}</Text>
         ))}
-      </View>
-    ))}
-  </View> // ✅ 여기 View로 감싸야 <> 없이 JSX를 return할 수 있어!
+      </>
+    )}
+  </View>
+))}
+  </View> 
 )}
     </ScrollView>
   );
@@ -232,11 +267,20 @@ const styles = StyleSheet.create({
   topText: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#F15A24',
+    color: '#FBAF8B',
     marginHorizontal: 20,
     marginTop: 15,
     textAlign: 'center',
   },
+  nutrientTitle2: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FF6B6B',
+  },
+  warningCard: {
+    backgroundColor: '#FDECEC', // 연한 분홍빛 배경
+  },
+  
   
 });
 
