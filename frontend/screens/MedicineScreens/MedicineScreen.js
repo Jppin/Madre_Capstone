@@ -440,6 +440,7 @@ const MedicineScreen = () => {
               deleteMedicine={deleteMedicine} />
             )}
             showsVerticalScrollIndicator={false}// ✅ 스크롤바 숨기기
+            contentContainerStyle={{ paddingBottom: 75 }}
           />
       )}
       </View>
