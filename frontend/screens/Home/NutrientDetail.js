@@ -9,10 +9,10 @@ import Feather from "react-native-vector-icons/Feather"
 import createAPI from '../../api';
 
 const NutrientDetail = ({ route }) => {
-  const { nutrient } = route.params;
+  const { nutrient, info, usage, precaution } = route.params;
   const navigation = useNavigation();
   const [likedNutrients, setLikedNutrients] = useState({});
-
+  const [detailInfo, setDetailInfo] = useState(null);
 
 
 
@@ -36,7 +36,25 @@ const NutrientDetail = ({ route }) => {
         console.error("찜 데이터 불러오기 실패:", error);
       }
     };
+
+    const fetchDetail = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        const api = await createAPI();
+        const res = await api.get(`/nutrient/detail/${encodeURIComponent(nutrient)}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setDetailInfo(res.data);
+      } catch (error) {
+        console.error("상세 정보 로딩 실패:", error);
+      }
+    };
+
+
+
+
     fetchLikedNutrients();
+    fetchDetail();  
   }, []);
   
  
@@ -126,9 +144,24 @@ const NutrientDetail = ({ route }) => {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.separator} />
+        {detailInfo && (
+  <>
+    <View style={styles.separator} />
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>• 영양성분 설명</Text>
+      <Text style={styles.sectionText}>{detailInfo.info}</Text>
+    </View>
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>• 섭취 방법</Text>
+      <Text style={styles.sectionText}>{detailInfo.usage}</Text>
+    </View>
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>• 복용 시 주의사항</Text>
+      <Text style={styles.sectionText}>{detailInfo.precaution}</Text>
+    </View>
+  </>
+)}
 
-        <Text style={styles.content}>영양성분에 대한 상세설명을 입력하시오</Text>
       </View>
     </View>
   );
@@ -164,7 +197,6 @@ heartButton: {
     right: -50,
     width: "120%",
     height: 440, // ✅ 원의 크기 조정
-    borderTopLeftRadius: 100, // ✅ 반원 효과
     borderTopRightRadius: 100,
     borderTopLeftRadius : 100,
     backgroundColor: "#C2DFBF", // ✅ 원 색상
@@ -203,5 +235,20 @@ heartButton: {
     color: "gray",
     marginTop: 20,
   },
+  section: {
+    marginTop: 20,
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 6,
+  },
+  sectionText: {
+    fontSize: 14,
+    color: "#555",
+    lineHeight: 20,
+  },
+  
 }); 
 export default NutrientDetail; 
