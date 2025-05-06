@@ -1,9 +1,10 @@
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const mongoose = require("mongoose");
 const fs = require("fs");
 const csv = require("csv-parser");
 const Nutrition = require("../models/Nutrient.cjs");
-const path = require("path");
+
 const csvPath = path.join(__dirname, "../data/nutrient_data.csv");
 
 
