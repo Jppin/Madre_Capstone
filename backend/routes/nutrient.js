@@ -1,3 +1,5 @@
+//backend/routes/nutrient.js
+
 import express from "express";
 import {
   getRecommendedNutrients,
@@ -7,6 +9,7 @@ import {
   unlikeNutrient
 } from "../controllers/nutrientController.js";
 import { authenticateUser } from "../middleware/auth.js";
+import { getNutrientDetail } from "../controllers/nutrientController.js";
 
 const router = express.Router();
 
@@ -20,5 +23,8 @@ router.get("/personal", authenticateUser, getPersonalizedNutrients);
 router.post("/like", authenticateUser, likeNutrient);
 router.get("/likes", authenticateUser, getLikedNutrients);
 router.post("/unlike", authenticateUser, unlikeNutrient);
+
+router.get("/detail/:name", authenticateUser, getNutrientDetail);
+
 
 export default router;

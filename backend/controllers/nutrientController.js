@@ -115,4 +115,32 @@ export const unlikeNutrient = async (req, res) => {
     console.error("[unlikeNutrient]", error);
     res.status(500).json({ message: "서버 오류 발생" });
   }
+  
 };
+
+
+
+
+
+//상세보기 페이지
+export const getNutrientDetail = async (req, res) => {
+  try {
+    const nutrientName = req.params.name;
+    const nutrient = await Nutrition.findOne({ name: nutrientName });
+
+    if (!nutrient) {
+      return res.status(404).json({ message: "해당 영양소를 찾을 수 없습니다." });
+    }
+
+    res.status(200).json({
+      name: nutrient.name,
+      info: nutrient.info,
+      usage: nutrient.usage,
+      precaution: nutrient.precaution,
+    });
+  } catch (error) {
+    console.error("[getNutrientDetail]", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+};
+
