@@ -11,6 +11,10 @@ import {
 } from "../services/nutrientUtils.js";
 import Medicine from "../models/Medicine.js";
 import { summarizeMedications } from "../services/medicationUtils.js";
+import User from "../models/UserInfo.js";
+
+
+
 
 
 export const generateMealPlan = async (req, res) => {
@@ -31,11 +35,18 @@ export const generateMealPlan = async (req, res) => {
     const medicationSummary = summarizeMedications(medicineList);
 
     const kcal = energy.kcal;
+
     const macroRatio = {
       탄수화물: `${Math.round(macronutrients.ratio.carb * 100)}%`,
       단백질: `${Math.round(macronutrients.ratio.protein * 100)}%`,
       지방: `${Math.round(macronutrients.ratio.fat * 100)}%`,
     };
+
+
+
+
+
+
     const micronutrientText = Object.entries(micronutrients)
       .map(([name, value]) => `${name}: ${value}`)
       .join(", ");
@@ -165,3 +176,31 @@ export const getEnergyAndMacroInfo = async (req, res) => {
     res.status(500).json({ status: "error", message: "서버 오류입니다." });
   }
 };
+
+
+
+
+
+
+
+
+
+export const submitAvoidedFoods = async (req, res) => {
+  try {
+    const { avoidedFoods } = req.body;
+    const email = req.user.email;
+
+    if (!avoidedFoods || !Array.isArray(avoidedFoods)) {
+      return res.status(400).json({ message: "회피 음식 정보가 올바르지 않습니다." });
+    }
+
+    // 예: 유저 모델에 저장 (User 모델에 avoidedFoods 필드가 있다고 가정)
+    await User.updateOne({ email }, { $set: {avoidedFoods} });
+
+    res.status(200).json({ message: "회피 음식 정보 저장 완료" });
+  } catch (error) {
+    console.error("[submitAvoidedFoods]", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+};
+

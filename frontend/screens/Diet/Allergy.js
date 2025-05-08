@@ -1,9 +1,12 @@
 // screens/Diet/Allergy.js
 
-import { React, useContext } from 'react';
+import { useState, React, useContext } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import Feather from "react-native-vector-icons/Feather";
 import { AuthContext } from '../../context/AuthContext';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 const Allergy = ({ navigation }) => {
@@ -11,6 +14,32 @@ const Allergy = ({ navigation }) => {
     
 const { userData } = useContext(AuthContext);
 const nickname = userData?.nickname || '사용자';
+const [avoidedFoods, setAvoidedFoods] = useState("");
+
+
+
+
+
+const handleSubmit = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    await axios.post("http://10.0.2.2:5001/mealplan/submit-avoided-foods", {
+      avoidedFoods: avoidedFoods.split(',').map(f => f.trim()),
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    navigation.navigate("Diet"); // 저장 후 다음 화면으로 이동
+  } catch (err) {
+    console.error("🥲 음식 제출 실패:", err);
+  }
+};
+
+
+
+
+
 
   return (
     <View style={styles.container}>
@@ -33,8 +62,12 @@ const nickname = userData?.nickname || '사용자';
         </Text>
 
 
-      {/* 강조 버튼 */}
-      
+      {/* 알러지 품목 사진 */}
+      <Image
+      source={require('../../assets/icons/allergy.png')}
+      style={styles.allergyImage}
+      />
+
 
       {/* 설명 문구 */}
       <Text style={styles.description}>
@@ -46,9 +79,11 @@ const nickname = userData?.nickname || '사용자';
         style={styles.input}
         placeholder="예시: 우유, 고등어, 대두 / 없는 경우 없음 입력 "
         placeholderTextColor="#aaa"
+        value={avoidedFoods}
+        onChangeText={setAvoidedFoods}
       />
 
-        <TouchableOpacity style={styles.alertButton}>
+        <TouchableOpacity style={styles.alertButton} onPress={handleSubmit}>
         <Image
           source={require('../../assets/icons/warning.png')}
           style={styles.alertIcon}
@@ -72,7 +107,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#215132',
     marginBottom: 5,
-    marginTop : 16,
+    marginTop : 24,
   },
   subtitle: {
     fontSize: 16,
@@ -124,6 +159,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     backgroundColor: '#fff',
   },
+  allergyImage: {
+    width: 400,
+    height: 300,
+    resizeMode: 'contain',
+    alignSelf: 'center',
+    
+  },
+  
 });
 
 export default Allergy;
