@@ -3,24 +3,47 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 
+
+
+
+
 const DietDetail = ({ route, navigation }) => {
-  const { meal, content } = route.params;
+  
+  
+const { meal, content } = route.params;
 
   const parseSection = (text) => {
-    const getBlock = (label) => {
-      const regex = new RegExp(`${label}[\\s\\S]*?(?=\\n\\n|$)`, 'g');
-      const match = text.match(regex);
-      return match ? match[0].replace(label, '').trim() : '';
-    };
-
-    return {
-      menu: getBlock('추천 메뉴:'),
-      caution: getBlock('주의할 점:'),
-      explanation: getBlock('설명:'),
-      tips: getBlock('똑똑한 팁:'),
-      betterWhen: getBlock('이런 상태라면 더 좋아요:'),
-    };
+    const labels = [
+      { key: 'menu', label: '추천 메뉴:' },
+      { key: 'caution', label: '주의할 점:' },
+      { key: 'explanation', label: '설명:' },
+      { key: 'betterWhen', label: '이런 상태라면 더 좋아요:' },
+      { key: 'tips', label: '똑똑한 팁:' },
+    ];
+  
+    const sections = {};
+    labels.forEach((item, idx) => {
+      const startIdx = text.indexOf(item.label);
+      if (startIdx !== -1) {
+        const nextIdx = labels
+          .slice(idx + 1)
+          .map(next => text.indexOf(next.label))
+          .filter(i => i !== -1)
+          .sort((a, b) => a - b)[0] || text.length;
+  
+        sections[item.key] = text
+          .substring(startIdx + item.label.length, nextIdx)
+          .trim()
+          .replace(/^- /gm, '•'); // 불필요한 하이픈 제거
+      } else {
+        sections[item.key] = '';
+      }
+    });
+  
+    return sections;
   };
+  
+  
 
   const parsed = parseSection(content);
 
@@ -35,28 +58,69 @@ const DietDetail = ({ route, navigation }) => {
       <View style={styles.box}>
         <View style={styles.boxSection}>
           <Text style={styles.boxTitle}>추천 메뉴</Text>
-          {parsed.menu.split('\n').map((item, idx) => (
-            <Text key={idx} style={styles.boxItem}>• {item}</Text>
-          ))}
+                {parsed.menu
+                    .split('\n')
+                    .map((item, idx) => item.trim())  // 앞뒤 공백 제거
+                    .filter(item => item && item !== '-' && item !== '•' && item !== '• -')  // 빈 항목 제거
+                    .map((item, idx) => (
+            <Text key={idx} style={styles.boxItem}>• {item.replace(/^[-•]\s*/, '')}</Text>  // 앞에 붙은 하이픈 제거
+        ))}
+
         </View>
         <View style={styles.boxSection}>
           <Text style={styles.boxTitle}>⚠️ 주의사항</Text>
-          {parsed.caution.split('\n').map((item, idx) => (
-            <Text key={idx} style={styles.boxItem}>• {item}</Text>
-          ))}
+          {parsed.caution
+            .split('\n')
+            .map(item => item.trim())
+            .filter(item => item && item !== '-' && item !== '•' && item !== '• -')
+            .map((item, idx) => (
+            <Text key={idx} style={styles.boxItem}>• {item.replace(/^[-•]\s*/, '')}</Text>
+            ))}
+
         </View>
       </View>
 
       <Text style={styles.sectionHeader}>🤖 AI가 말해주는 “오늘의 선택 이유”</Text>
-      <Text style={styles.sectionText}>{parsed.explanation}</Text>
+        {parsed.explanation
+            .split('\n')
+            .map(item => item.trim())
+            .filter(item => item && item !== '-' && item !== '•' && item !== '• -')
+            .map((item, idx) => (
+            <Text key={idx} style={styles.sectionText}>• {item.replace(/^[-•]\s*/, '')}</Text>
+        ))}
 
-      <Text style={styles.sectionHeader}>🧠 똑똑한 팁</Text>
-      <Text style={styles.sectionText}>{parsed.tips}</Text>
 
-      <Text style={styles.sectionHeader}>💡 이런 상태라면 더 좋아요</Text>
-      {parsed.betterWhen.split('\n').map((item, idx) => (
-        <Text key={idx} style={styles.sectionBullet}>• {item}</Text>
-      ))}
+        <View style={{ height: 16 }} />
+
+        {parsed.tips?.trim() ? (
+        <>
+            <Text style={styles.sectionHeader}>🧠 똑똑한 팁</Text>
+            {parsed.tips
+            .split('\n')
+            .map(item => item.trim())
+            .filter(item => item && item !== '-' && item !== '•' && item !== '• -')
+            .map((item, idx) => (
+            <Text key={idx} style={styles.sectionText}>• {item.replace(/^[-•]\s*/, '')}</Text>
+        ))}
+        </>
+        ) : null}
+
+        <View style={{ height: 16 }} />
+
+
+        {parsed.betterWhen?.trim() ? (
+        <>
+            <Text style={styles.sectionHeader}>💡 이런 상태라면 더 좋아요</Text>
+            {parsed.betterWhen
+                .split('\n')
+                .map(item => item.trim())
+                .filter(item => item && item !== '-' && item !== '•' && item !== '• -')
+                .map((item, idx) => (
+            <Text key={idx} style={styles.sectionBullet}>• {item.replace(/^[-•]\s*/, '')}</Text>
+        ))}
+        </>
+        ) : null}
+
     </ScrollView>
   );
 };

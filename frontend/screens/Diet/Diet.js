@@ -12,17 +12,16 @@ import DietDetail from './DietDetail';
 
 
 
-
-
-
 const Diet = ({ navigation }) => {
   const { userData } = useContext(AuthContext);
   const [mealPlan, setMealPlan] = useState(null);
   const [loading, setLoading] = useState(true);
-
-
-
   const [mealSections, setMealSections] = useState(null);
+  const [themeData, setThemeData] = useState({ theme: '', description: '' });
+
+
+
+
 
   const parseMealSections=(text) =>{
     const sectionRegex = /\[(아침|점심|저녁|간식)\][\s\S]*?(?=\n\[|$)/g;
@@ -43,28 +42,55 @@ const Diet = ({ navigation }) => {
 
 
 
-  useEffect(() => {
-    const fetchMealPlan = async () => {
-      try {
-        const token = await AsyncStorage.getItem("token");
-        const res = await axios.post("http://10.0.2.2:5001/mealplan/generate", {
-          recommendList: [], // 실제 데이터로 교체
-          warningList: [],
-          avoidedFoods: userData.avoidedFoods || [],
-          email: userData.email
-        }, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+
+  const parseThemeSection = (text) => {
+    const themeMatch = text.match(/\[식단 테마\][\s\S]*?(?=\n\[|$)/);
+    if (!themeMatch) return { theme: '', description: '' };
   
-        const fullText = res.data.result;
-        const parsed = parseMealSections(fullText);
-        setMealSections(parsed); // ✅ 여기
-      } catch (error) {
-        console.error("❌ 식단 요청 실패:", error);
-      } finally {
-        setLoading(false);
-      }
+    const section = themeMatch[0];
+    const themeLine = section.match(/- 테마:\s*(.*)/);
+    const descLine = section.match(/- 테마 설명:\s*(.*)/);
+  
+    return {
+      theme: themeLine ? themeLine[1].trim() : '',
+      description: descLine ? descLine[1].trim() : ''
     };
+  };
+  
+
+
+
+
+  const fetchMealPlan = async () => {
+    setLoading(true);
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const res = await axios.post("http://10.0.2.2:5001/mealplan/generate", {
+        recommendList: [], // 실제 데이터로 교체
+        warningList: [],
+        avoidedFoods: userData.avoidedFoods || [],
+        email: userData.email
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const fullText = res.data.result;
+      const parsed = parseMealSections(fullText);
+      const parsedTheme = parseThemeSection(fullText);
+      setMealSections(parsed);
+      setThemeData(parsedTheme);
+    } catch (error) {
+      console.error("❌ 식단 요청 실패:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
+
+  useEffect(() => {
+    
   
     fetchMealPlan();
   }, []);
@@ -72,6 +98,14 @@ const Diet = ({ navigation }) => {
 
 
   if (loading) return <LoadingScreen />;
+
+
+
+
+
+
+
+
 
 
 
@@ -92,14 +126,20 @@ const Diet = ({ navigation }) => {
 
         {/* 테마 카드 */}
         <View style={styles.themeCard}>
-  <Image source={require('../../assets/icons/salad.png')} style={styles.themeImage} />
-  
-  <Text style={styles.themeTitle}>철분이 풍부한 식사</Text>
-  <Text style={styles.themeDesc}>빈혈이 있는 임산부는 80~150mg의 철분을 섭취해야 해요</Text>
-  <TouchableOpacity style={styles.themeButton}>
-    <Text style={styles.themeButtonText}>상세 가이드 보러가기</Text>
-  </TouchableOpacity>
-</View>
+        {/* 제목 + 이미지 row */}
+        <View style={styles.themeHeaderRow}>
+            <Text style={styles.themeTitle}>{themeData.theme || '오늘의 건강 테마'}</Text>
+            <Image source={require('../../assets/icons/salad.png')} style={styles.themeImage} />
+        </View>
+
+        {/* 설명 + 버튼 */}
+        <Text style={styles.themeDesc}>{themeData.description || 'AI가 분석한 나만의 건강 포인트!'}</Text>
+        <TouchableOpacity style={styles.themeButton}>
+            <Text style={styles.themeButtonText}>상세 가이드 보러가기</Text>
+        </TouchableOpacity>
+        </View>
+
+
 
 
         {/* 식사 버튼 2x2 */}
@@ -150,10 +190,10 @@ const Diet = ({ navigation }) => {
 
         </View>
 
-        <TouchableOpacity style={styles.refreshButton}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <TouchableOpacity  onPress={fetchMealPlan}>
+        <View style={styles.refreshButtonContent}>
         <Feather name="rotate-ccw" size={20} color="#333" />
-        <Text style={{ marginLeft: 6, fontSize: 14, color: '#333' }}>다시 생성</Text>
+        <Text style={styles.refreshButtonText}>다시 생성</Text>
         </View>
 
         </TouchableOpacity>
@@ -198,14 +238,29 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     marginBottom: 24,
-    position: 'relative',
+  },
+  themeHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12, // 설명과 간격
+  },
+  themeContent: {
+    flex: 1,
+    paddingRight: 12, // 이미지와 여백 확보
+  },
+  themeImage: {
+    width: 80,
+    height: 80,
+    resizeMode: 'contain',
   },
   themeTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
-    marginTop : 16,
+    flex: 1, // 남은 공간 차지
+    marginRight: 12,
   },
+  
   themeDesc: {
     fontSize: 16,
     color: '#555',
@@ -224,20 +279,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
   },
-  themeImage: {
-    position: 'absolute', // ✅ 추가
-    top: 8,              // ✅ 상단 여백
-    right: 8,            // ✅ 우측 여백
-    width: 70,
-    height: 70,
-    resizeMode: 'contain',
-    marginRight: 12,
-  },
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: 8,
   },
   gridItem: {
     backgroundColor: '#FFFBF2',
@@ -297,14 +343,25 @@ const styles = StyleSheet.create({
     marginRight: 6,      // ✅ 이미지와 간격 (gap 안되면 사용)
     textAlign: 'left', 
 },
-  refreshButton: {
+refreshButton: {
+    marginTop: 10,
+    marginBottom: 20,
     alignSelf: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    backgroundColor: '#B6D7A8',
+    borderRadius: 30,
+    paddingHorizontal: 28,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  
+  refreshButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   refreshButtonText: {
     fontSize: 16,
