@@ -11,6 +11,10 @@ import {
 } from "../services/nutrientUtils.js";
 import Medicine from "../models/Medicine.js";
 import { summarizeMedications } from "../services/medicationUtils.js";
+import User from "../models/UserInfo.js";
+
+
+
 
 
 export const generateMealPlan = async (req, res) => {
@@ -31,11 +35,18 @@ export const generateMealPlan = async (req, res) => {
     const medicationSummary = summarizeMedications(medicineList);
 
     const kcal = energy.kcal;
+
     const macroRatio = {
       탄수화물: `${Math.round(macronutrients.ratio.carb * 100)}%`,
       단백질: `${Math.round(macronutrients.ratio.protein * 100)}%`,
       지방: `${Math.round(macronutrients.ratio.fat * 100)}%`,
     };
+
+
+
+
+
+
     const micronutrientText = Object.entries(micronutrients)
       .map(([name, value]) => `${name}: ${value}`)
       .join(", ");
@@ -66,31 +77,32 @@ export const generateMealPlan = async (req, res) => {
       - 테마: (예: 철분 강화 식단)
       - 테마 설명: (이 식단 테마가 왜 중요한지 간단히 설명)
 
+      (한국인이니만큼 하루 세 끼 중 두 끼 이상은 한식 밥 메뉴를 추천해주세요. 구체적 밥/구체적 국/반찬 최소 3개의 한정식 식단. 디저트 겸 구체적 과일 한 조각이나 초콜릿 몇 조각, 구체적인 후식과자 등도 좋습니다.)
       [아침]
       - 추천 메뉴:
       - 주의할 점:
-      - 설명: (섭취 시간과 맥락, 건강 효과 포함)
+      - 설명: (섭취 시간과 맥락, 건강 효과 포함 2-3문장)
       - 이런 상태라면 더 좋아요: (ex. 입덧이 있는 경우, 아침 공복 혈당이 낮은 경우 등. 해당되는 경우에만 작성)
       - 똑똑한 팁: (복용 중인 약이나 식이 상호작용을 고려한 팁. 해당되는 경우에만 작성)
 
       [점심]
       - 추천 메뉴:
       - 주의할 점:
-      - 설명: (섭취 시간과 맥락, 건강 효과 포함)
+      - 설명: (섭취 시간과 맥락, 건강 효과 포함 2-3문장)
       - 이런 상태라면 더 좋아요: (ex. 입덧이 있는 경우, 아침 공복 혈당이 낮은 경우 등. 해당되는 경우에만 작성)
       - 똑똑한 팁: (복용 중인 약이나 식이 상호작용을 고려한 팁. 해당되는 경우에만 작성)
 
       [저녁]
       - 추천 메뉴:
       - 주의할 점:
-      - 설명: (섭취 시간과 맥락, 건강 효과 포함)
+      - 설명: (섭취 시간과 맥락, 건강 효과 포함 2-3문장)
       - 이런 상태라면 더 좋아요: (ex. 입덧이 있는 경우, 아침 공복 혈당이 낮은 경우 등. 해당되는 경우에만 작성)
       - 똑똑한 팁: (복용 중인 약이나 식이 상호작용을 고려한 팁. 해당되는 경우에만 작성)
 
       [간식]
-      - 추천 메뉴:
+      - 추천 메뉴:(사용자의 건강상태에 맞춰 조금은 안건강한 간식도 가능. 예를 들어 생강 꿀차와 초코칩 쿠키 하나)
       - 주의할 점:
-      - 설명: (섭취 시간과 맥락, 건강 효과 포함)
+      - 설명: (섭취 시간과 맥락, 건강 효과 포함 2-3문장)
       - 이런 상태라면 더 좋아요: (ex. 입덧이 있는 경우, 아침 공복 혈당이 낮은 경우 등. 해당되는 경우에만 작성)
       - 똑똑한 팁: (복용 중인 약이나 식이 상호작용을 고려한 팁. 해당되는 경우에만 작성)
 
@@ -102,6 +114,8 @@ export const generateMealPlan = async (req, res) => {
       - 복용 주의사항:
         • 항목별 bullet list로 작성 (예: 철분제는 식후 1시간 후 복용 등)
 
+
+        
       `.trim();
       
 
@@ -165,3 +179,31 @@ export const getEnergyAndMacroInfo = async (req, res) => {
     res.status(500).json({ status: "error", message: "서버 오류입니다." });
   }
 };
+
+
+
+
+
+
+
+
+
+export const submitAvoidedFoods = async (req, res) => {
+  try {
+    const { avoidedFoods } = req.body;
+    const email = req.user.email;
+
+    if (!avoidedFoods || !Array.isArray(avoidedFoods)) {
+      return res.status(400).json({ message: "회피 음식 정보가 올바르지 않습니다." });
+    }
+
+    // 예: 유저 모델에 저장 (User 모델에 avoidedFoods 필드가 있다고 가정)
+    await User.updateOne({ email }, { $set: {avoidedFoods} });
+
+    res.status(200).json({ message: "회피 음식 정보 저장 완료" });
+  } catch (error) {
+    console.error("[submitAvoidedFoods]", error);
+    res.status(500).json({ message: "서버 오류 발생" });
+  }
+};
+

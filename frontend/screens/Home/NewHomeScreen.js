@@ -385,7 +385,9 @@ const CombinedScreen = () => {
     source={require('../../assets/icons/bowl.png')}
     style={foodContainerStyles.bowlIcon}
   />
-  <TouchableOpacity style={foodContainerStyles.customButton}>
+  <TouchableOpacity style={foodContainerStyles.customButton}
+    onPress={() => navigation.navigate('Allergy')}
+  >
     <Text style={foodContainerStyles.customButtonText}>맞춤식단 생성하기</Text>
   </TouchableOpacity>
 </View>
