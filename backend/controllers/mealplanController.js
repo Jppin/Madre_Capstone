@@ -113,6 +113,8 @@ export const generateMealPlan = async (req, res) => {
       - 복용 주의사항:
         • 항목별 bullet list로 작성 (예: 철분제는 식후 1시간 후 복용 등)
 
+
+        
       `.trim();
       
 
