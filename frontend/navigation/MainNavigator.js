@@ -25,6 +25,10 @@ import NutrientDetail from '../screens/Home/NutrientDetail';
 import JjimScreen from '../screens/NutritionScreen/jjim.js';
 import LikedNutrientsScreen from '../screens/Home/LikedNutrientsScreen.js';
 import MyPageScreen from "../screens/MyPage/MyPageScreen";
+import Allergy from "../screens/Diet/Allergy";
+import Diet from "../screens/Diet/Diet";
+import DietDetail from "../screens/Diet/DietDetail";
+
 
 const Stack = createStackNavigator();
 
@@ -56,6 +60,13 @@ export default function MainNavigator() {
             <Stack.Screen name="jjim" component={JjimScreen}/>
             <Stack.Screen name="LikedNutrientsScreen" component={LikedNutrientsScreen} options={{ headerShown: false }}/>
             <Stack.Screen name="MyPageScreen" component={MyPageScreen}/>
+            <Stack.Screen name="Allergy" component={Allergy}/>
+            <Stack.Screen name="Diet" component={Diet}/>
+            <Stack.Screen name="DietDetail" component={DietDetail}/>
+
+
+
+        
         </Stack.Navigator>
     );
 }
