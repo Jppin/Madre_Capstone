@@ -6,25 +6,18 @@ import Feather from 'react-native-vector-icons/Feather';
 import { AuthContext } from '../../context/AuthContext';
 
 
-
-// 1. 충족도 분석 파싱
-const parseAnalysisList = (guideText) => {
+// 1. 충족도 분석 파싱 (설명 텍스트 + 그래프 데이터 분리)
+const parseAnalysis = (guideText) => {
     const section = guideText.match(/\[하루 식단 종합 가이드\][\s\S]*?(?=\n\[[^\]]+\]|$)/)?.[0] || '';
     const analysisMatch = section.match(/- 섭취 충족도 분석:\s*([\s\S]*?)(?=\n- |$)/);
-    if (!analysisMatch) return [];
+    if (!analysisMatch) return { text: '', list: [] };
   
-    const content = analysisMatch[1].replace(/\n/g, ' ');
-    const regex = /([가-힣A-Za-z0-9\+\- ]+?)[은는]?\s*(\d{1,3})%/g;
-    const results = [];
-    let match;
-    while ((match = regex.exec(content)) !== null) {
-      results.push({
-        nutrient: match[1].trim(),
-        percent: parseInt(match[2], 10),
-      });
-    }
-    return results;
+    const fullText = analysisMatch[1].trim().replace(/\n/g, ' ');
+    
+  
+    return { text: fullText };
   };
+  
   
   // 2. 추가 섭취 가이드 파싱
   const parseSupplements = (guideText) => {
@@ -62,12 +55,14 @@ const parseAnalysisList = (guideText) => {
 
 
   const parseGuideSections = (guideText) => {
+    const { text, list } = parseAnalysis(guideText);
     return {
-      analysisList: parseAnalysisList(guideText),
+      analysisText: text,
       supplements: parseSupplements(guideText),
       cautions: parseCautions(guideText),
     };
   };
+  
   
 
 
@@ -93,19 +88,9 @@ const Guide = ({ route, navigation }) => {
 {/* 충족도 분석 */}
 <View style={styles.sectionBox}>
   <Text style={styles.sectionTitle}>오늘 식단의 영양소 충족도 분석</Text>
-  {parsed.analysisList.length > 0 ? (
-    parsed.analysisList.map((item, idx) => (
-      <View key={idx} style={styles.barGroup}>
-        <Text style={styles.barLabel}>{item.nutrient}</Text>
-        <View style={styles.progressBar}>
-          <View style={[styles.barFill, { width: `${item.percent}%` }]} />
-        </View>
-      </View>
-    ))
-  ) : (
-    <Text style={styles.sectionText}>분석 데이터를 찾을 수 없습니다.</Text>
-  )}
+  <Text style={styles.sectionText}>{parsed.analysisText || '분석 데이터를 찾을 수 없습니다.'}</Text>
 </View>
+
 
 
       {/* 추가 섭취 시도하기 */}
