@@ -28,6 +28,8 @@ import MyPageScreen from "../screens/MyPage/MyPageScreen";
 import Allergy from "../screens/Diet/Allergy";
 import Diet from "../screens/Diet/Diet";
 import DietDetail from "../screens/Diet/DietDetail";
+import Guide from "../screens/Diet/Guide";
+
 
 
 const Stack = createStackNavigator();
@@ -63,7 +65,7 @@ export default function MainNavigator() {
             <Stack.Screen name="Allergy" component={Allergy}/>
             <Stack.Screen name="Diet" component={Diet}/>
             <Stack.Screen name="DietDetail" component={DietDetail}/>
-
+            <Stack.Screen name="Guide" component={Guide}/>
 
 
         

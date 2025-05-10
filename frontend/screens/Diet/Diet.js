@@ -18,6 +18,7 @@ const Diet = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [mealSections, setMealSections] = useState(null);
   const [themeData, setThemeData] = useState({ theme: '', description: '' });
+  const [fullText, setFullText] = useState('');
 
 
 
@@ -75,10 +76,13 @@ const Diet = ({ navigation }) => {
       });
 
       const fullText = res.data.result;
+
       const parsed = parseMealSections(fullText);
       const parsedTheme = parseThemeSection(fullText);
       setMealSections(parsed);
       setThemeData(parsedTheme);
+      setFullText(fullText); // 이걸 저장하고...
+      
     } catch (error) {
       console.error("❌ 식단 요청 실패:", error);
     } finally {
@@ -134,7 +138,7 @@ const Diet = ({ navigation }) => {
 
         {/* 설명 + 버튼 */}
         <Text style={styles.themeDesc}>{themeData.description || 'AI가 분석한 나만의 건강 포인트!'}</Text>
-        <TouchableOpacity style={styles.themeButton}>
+        <TouchableOpacity style={styles.themeButton} onPress={() => navigation.navigate("Guide", { guideText: fullText })}>
             <Text style={styles.themeButtonText}>상세 가이드 보러가기</Text>
         </TouchableOpacity>
         </View>
