@@ -4,9 +4,8 @@ import { useState, React, useContext } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import Feather from "react-native-vector-icons/Feather";
 import { AuthContext } from '../../context/AuthContext';
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import createAPI from '../../api';
 
 
 const Allergy = ({ navigation }) => {
@@ -20,20 +19,9 @@ const [avoidedFoods, setAvoidedFoods] = useState("");
 
 
 
-const handleSubmit = async () => {
-  try {
-    const token = await AsyncStorage.getItem("token");
-    await axios.post("http://10.0.2.2:5001/mealplan/submit-avoided-foods", {
-      avoidedFoods: avoidedFoods.split(',').map(f => f.trim()),
-    }, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    navigation.navigate("Diet"); // 저장 후 다음 화면으로 이동
-  } catch (err) {
-    console.error("🥲 음식 제출 실패:", err);
-  }
+const handleSubmit = () => {
+  const avoidedArray = avoidedFoods.split(',').map(f => f.trim());
+  navigation.navigate("Diet", { avoidedFoods: avoidedArray });
 };
 
 
@@ -77,7 +65,7 @@ const handleSubmit = async () => {
       {/* 입력창 */}
       <TextInput
         style={styles.input}
-        placeholder="예시: 우유, 고등어, 대두 / 없는 경우 없음 입력 "
+        placeholder="예시: 우유, 고등어, 대두 / 없는 경우 '없음' 입력 "
         placeholderTextColor="#aaa"
         value={avoidedFoods}
         onChangeText={setAvoidedFoods}

@@ -6,75 +6,11 @@ import Feather from 'react-native-vector-icons/Feather';
 import { AuthContext } from '../../context/AuthContext';
 
 
-// 1. 충족도 분석 파싱 (설명 텍스트 + 그래프 데이터 분리)
-const parseAnalysis = (guideText) => {
-    const section = guideText.match(/\[하루 식단 종합 가이드\][\s\S]*?(?=\n\[[^\]]+\]|$)/)?.[0] || '';
-    const analysisMatch = section.match(/- 섭취 충족도 분석:\s*([\s\S]*?)(?=\n- |$)/);
-    if (!analysisMatch) return { text: '', list: [] };
-  
-    const fullText = analysisMatch[1].trim().replace(/\n/g, ' ');
-    
-  
-    return { text: fullText };
-  };
-  
-  
-  // 2. 추가 섭취 가이드 파싱
-  const parseSupplements = (guideText) => {
-    const section = guideText.match(/\[하루 식단 종합 가이드\][\s\S]*?(?=\n\[[^\]]+\]|$)/)?.[0] || '';
-    const match = section.match(/- 추가 섭취 가이드:[\s\S]*?(?=\n- |$)/);
-    if (!match) return { list: '', explanation: '' };
-  
-    const lines = match[0].split('\n').map(l => l.trim()).filter(Boolean);
-    const listLine = lines.find(line => line.startsWith('• 권장 영양제'));
-    const explanationLine = lines.find(line => line.startsWith('• 설명'));
-  
-    return {
-      list: listLine ? listLine.replace('• 권장 영양제:', '').trim() : '',
-      explanation: explanationLine ? explanationLine.replace('• 설명:', '').trim() : '',
-    };
-  };
-  
-  // 3. 복용 주의사항 파싱
-  const parseCautions = (guideText) => {
-    const section = guideText.match(/\[하루 식단 종합 가이드\][\s\S]*?(?=\n\[[^\]]+\]|$)/)?.[0] || '';
-    const match = section.match(/- 복용 주의사항:[\s\S]*?(?=\n- |$)/);
-    if (!match) return [];
-  
-    return match[0]
-      .split('\n')
-      .slice(1)
-      .map(line => line.trim().replace(/^•\s*/, ''))
-      .filter(Boolean);
-  };
-  
-
-
-
-
-
-
-  const parseGuideSections = (guideText) => {
-    const { text, list } = parseAnalysis(guideText);
-    return {
-      analysisText: text,
-      supplements: parseSupplements(guideText),
-      cautions: parseCautions(guideText),
-    };
-  };
-  
-  
-
 
 
 
 const Guide = ({ route, navigation }) => {
-    const { guideText } = route.params;
-
-    console.log("📦 guideText 전체 내용 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
-    console.log(guideText); // 여기가 핵심
-
-    const parsed = parseGuideSections(guideText); 
+  const { summary, guideText } = route.params;
 
   return (
     <ScrollView style={styles.container}>
@@ -85,39 +21,40 @@ const Guide = ({ route, navigation }) => {
       <Text style={styles.title}>식단 상세 가이드</Text>
 
       {/* 충족도 분석 */}
-{/* 충족도 분석 */}
-<View style={styles.sectionBox}>
-  <Text style={styles.sectionTitle}>오늘 식단의 영양소 충족도 분석</Text>
-  <Text style={styles.sectionText}>{parsed.analysisText || '분석 데이터를 찾을 수 없습니다.'}</Text>
-</View>
+      <View style={styles.sectionBox}>
+        <Text style={styles.sectionTitle}>오늘의 영양소 충족도</Text>
+        {summary?.nutrientFulfillment ? (
+          Object.entries(summary.nutrientFulfillment).map(([k, v], idx) => (
+            <Text key={idx} style={styles.bullet}>- {k} {v}</Text>
+          ))
+        ) : (
+          <Text style={styles.sectionText}>분석 데이터를 찾을 수 없습니다.</Text>
+        )}
+      </View>
 
-
-
-      {/* 추가 섭취 시도하기 */}
+      {/* 추가 섭취 */}
       <View style={styles.sectionBox}>
         <Text style={styles.highlightTitle}>💊 추가 섭취 시도하기</Text>
         <Text style={styles.sectionText}>권장 영양제:</Text>
-        {parsed.supplements.list.split('\n').map((item, idx) => (
-          <Text key={idx} style={styles.bullet}>- {item.trim()}</Text>
+        {summary?.supplementRecommendation?.supplements.map((item, idx) => (
+          <Text key={idx} style={styles.bullet}>- {item}</Text>
         ))}
-
-        <Text style={styles.sectionText}>🟡 AI 설명{"\n"}{parsed.supplements.explanation}</Text>
+        <Text style={styles.sectionText}>{"\n"}🟡 AI 설명{"\n"}{summary?.supplementRecommendation?.explanation || '해당하는 설명이 없습니다.'}</Text>
       </View>
 
-      {/* 복용주의사항 */}
+      {/* 복용 주의사항 */}
       <View style={styles.sectionBox}>
-        <Text style={styles.highlightTitle}>⚠️ 복용주의사항</Text>
-        {parsed.cautions.map((item, idx) => (
+        <Text style={styles.highlightTitle}>⚠️ 복용 주의사항</Text>
+        {summary?.precautions?.map((item, idx) => (
           <Text key={idx} style={styles.bullet}>- {item}</Text>
         ))}
       </View>
 
-        <View style={styles.warningBanner}>
-            <Text style={styles.warningBannerText}>참고 : 임산부 금기 식품 및 성분 안내</Text>
-        </View>
+      {/* 기타 안내 이미지 */}
+      <View style={styles.warningBanner}>
+        <Text style={styles.warningBannerText}>참고 : 임산부 금기 식품 및 성분 안내</Text>
+      </View>
 
-
-      {/* 위험 식품 안내 이미지 */}
       <Image source={require('../../assets/icons/dangerous11.png')} style={styles.image} />
       <Image source={require('../../assets/icons/dangerous22.png')} style={styles.image2} />
       <Image source={require('../../assets/icons/dangerous33.png')} style={styles.image3} />
@@ -125,6 +62,7 @@ const Guide = ({ route, navigation }) => {
     </ScrollView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

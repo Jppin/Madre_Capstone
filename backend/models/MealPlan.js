@@ -4,6 +4,7 @@ const MealSchema = new mongoose.Schema({
   menu: String,
   warning: String,
   explanation: String,
+  benefit: String,
   smartTip: String,
 });
 

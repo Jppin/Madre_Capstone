@@ -8,81 +8,52 @@ import { AuthContext } from '../../context/AuthContext';
 import LoadingScreen from '../../components/LoadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DietDetail from './DietDetail';
+import createAPI from '../../api';
+import { useRoute } from '@react-navigation/native';
 
 
 
 
 const Diet = ({ navigation }) => {
   const { userData } = useContext(AuthContext);
-  const [mealPlan, setMealPlan] = useState(null);
+  const route = useRoute();
+  const mealPlan = route.params?.mealPlan;
+
   const [loading, setLoading] = useState(true);
-  const [mealSections, setMealSections] = useState(null);
-  const [themeData, setThemeData] = useState({ theme: '', description: '' });
-  const [fullText, setFullText] = useState('');
-
-
-
-
-
-  const parseMealSections=(text) =>{
-    const sectionRegex = /\[(아침|점심|저녁|간식)\][\s\S]*?(?=\n\[|$)/g;
-    const sections = {};
-    let match;
-  
-    while ((match = sectionRegex.exec(text)) !== null) {
-      const meal = match[0];
-      if (meal.includes('[아침]')) sections.breakfast = meal;
-      if (meal.includes('[점심]')) sections.lunch = meal;
-      if (meal.includes('[저녁]')) sections.dinner = meal;
-      if (meal.includes('[간식]')) sections.snack = meal;
-    }
-  
-    return sections;
-  }
-
-
-
-
-
-  const parseThemeSection = (text) => {
-    const themeMatch = text.match(/\[식단 테마\][\s\S]*?(?=\n\[|$)/);
-    if (!themeMatch) return { theme: '', description: '' };
-  
-    const section = themeMatch[0];
-    const themeLine = section.match(/- 테마:\s*(.*)/);
-    const descLine = section.match(/- 테마 설명:\s*(.*)/);
-  
-    return {
-      theme: themeLine ? themeLine[1].trim() : '',
-      description: descLine ? descLine[1].trim() : ''
-    };
-  };
-  
-
-
+  const [mealSections, setMealSections] = useState({});
+  const [themeData, setThemeData] = useState({});
+  const [summary, setSummary] = useState({});
+  const [fullText, setFullText] = useState("");
 
 
   const fetchMealPlan = async () => {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
-      const res = await axios.post("http://10.0.2.2:5001/mealplan/generate", {
-        recommendList: [], // 실제 데이터로 교체
+      const api = await createAPI();
+
+      const res = await api.post("/mealplan/generate", {
+        recommendList: [],
         warningList: [],
         avoidedFoods: userData.avoidedFoods || [],
-        email: userData.email
+        email: userData.email,
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      const fullText = res.data.result;
-
-      const parsed = parseMealSections(fullText);
-      const parsedTheme = parseThemeSection(fullText);
-      setMealSections(parsed);
-      setThemeData(parsedTheme);
-      setFullText(fullText); // 이걸 저장하고...
-      
+      const generatedMealPlan = res.data; // 이게 구조화된 응답이어야 함
+      setMealSections({
+        breakfast: generatedMealPlan.breakfast,
+        lunch: generatedMealPlan.lunch,
+        dinner: generatedMealPlan.dinner,
+        snack: generatedMealPlan.snack,
+      });
+      setThemeData({
+        theme: generatedMealPlan.dailyGuide.theme,
+        description: generatedMealPlan.dailyGuide.themeComment,
+      });
+      setSummary(generatedMealPlan.dailyGuide);
+      setFullText(generatedMealPlan.llmResult);
     } catch (error) {
       console.error("❌ 식단 요청 실패:", error);
     } finally {
@@ -90,31 +61,28 @@ const Diet = ({ navigation }) => {
     }
   };
 
-
-
-
   useEffect(() => {
-    
-  
-    fetchMealPlan();
+    if (mealPlan) {
+      setMealSections({
+        breakfast: mealPlan.breakfast,
+        lunch: mealPlan.lunch,
+        dinner: mealPlan.dinner,
+        snack: mealPlan.snack,
+      });
+      setThemeData({
+        theme: mealPlan.dailyGuide.theme,
+        description: mealPlan.dailyGuide.themeComment,
+      });
+      setSummary(mealPlan.dailyGuide);
+      setFullText(mealPlan.llmResult);
+      setLoading(false);
+    } else {
+      fetchMealPlan();
+    }
   }, []);
-  
 
 
-  if (loading) return <LoadingScreen />;
-
-
-
-
-
-
-
-
-
-
-
-
-
+  if (loading) return <LoadingScreen/>;
 
 
   return (
@@ -138,8 +106,16 @@ const Diet = ({ navigation }) => {
 
         {/* 설명 + 버튼 */}
         <Text style={styles.themeDesc}>{themeData.description || 'AI가 분석한 나만의 건강 포인트!'}</Text>
-        <TouchableOpacity style={styles.themeButton} onPress={() => navigation.navigate("Guide", { guideText: fullText })}>
-            <Text style={styles.themeButtonText}>상세 가이드 보러가기</Text>
+        <TouchableOpacity
+          style={styles.themeButton}
+          onPress={() =>
+            navigation.navigate("Guide", {
+              summary,          // already structured: nutrientFulfillment, supplements, precautions
+              guideText: fullText,  // if you still want to display raw text somewhere
+            })
+          }
+        >
+          <Text style={styles.themeButtonText}>상세 가이드 보러가기</Text>
         </TouchableOpacity>
         </View>
 
@@ -153,7 +129,7 @@ const Diet = ({ navigation }) => {
         onPress={() => navigation.navigate("DietDetail", {
             meal: "아침",
             content: mealSections?.breakfast || ""
-            })}
+        })}
         >
         <Text style={styles.gridLabel}>아침</Text>
         <Image source={require('../../assets/icons/breakfast.png')} style={styles.gridIcon1} />
@@ -197,7 +173,7 @@ const Diet = ({ navigation }) => {
         <TouchableOpacity  onPress={fetchMealPlan}>
         <View style={styles.refreshButtonContent}>
         <Feather name="rotate-ccw" size={20} color="#333" />
-        <Text style={styles.refreshButtonText}>다시 생성</Text>
+        <Text style={styles.refreshButtonText}> 다시 생성</Text>
         </View>
 
         </TouchableOpacity>
