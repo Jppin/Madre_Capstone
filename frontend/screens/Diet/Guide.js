@@ -3,8 +3,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { AuthContext } from '../../context/AuthContext';
-import * as scale from 'd3-scale';
 import { BarChart } from 'react-native-gifted-charts';
 
 
@@ -20,10 +18,10 @@ const extractFulfillment = (text) => {
     .split('\n')
     .map(line => line.trim().replace(/^•/, '').trim())  // "• 비타민A 100%" → "비타민A 100%"
     .map(entry => {
-      const [name, value] = entry.split(/\s+/);         // "비타민A", "100%"
-      return { name, value: parseInt(value.replace('%', '')) };
+      const [name, value] = entry.split(/\s+/);
+      return { label: name, value: parseInt(value.replace('%', '')) };
     });
-};
+  };
 
 
 
@@ -54,19 +52,19 @@ const extractFulfillment = (text) => {
 
     return fulfillmentData.length > 0 ? (
       <BarChart
-        barWidth={26}
+        barWidth={22}
         noOfSections={5}
-        maxValue={120}
+        maxValue={150}
         frontColor="#A1CDA8"
         data={fulfillmentData}
         yAxisThickness={0}
         xAxisThickness={0}
         isAnimated
-        labelWidth={80}
+        labelWidth={20}
         xAxisLabelTextStyle={{ fontSize: 12, color: '#444' }}
         hideRules
         yAxisTextStyle={{ color: '#444' }}
-        spacing={22}
+        spacing={25}
       />
     ) : (
       <Text style={styles.sectionText}>분석 데이터를 찾을 수 없습니다.</Text>

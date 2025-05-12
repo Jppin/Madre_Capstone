@@ -3,11 +3,9 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
 import LoadingScreen from '../../components/LoadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import DietDetail from './DietDetail';
 import createAPI from '../../api';
 import { useRoute } from '@react-navigation/native';
 
