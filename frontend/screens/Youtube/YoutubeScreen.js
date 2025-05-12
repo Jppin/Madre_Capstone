@@ -277,8 +277,8 @@ const styles = StyleSheet.create({
   likedCard : {
     marginHorizontal: 10,
     marginVertical: 20,
-    width : 200,
-    height : 110 , 
+    width : "40%",
+
     borderRadius: 15,
     overflow: "hidden",
     position: "relative",

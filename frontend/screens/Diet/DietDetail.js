@@ -12,40 +12,14 @@ const DietDetail = ({ route, navigation }) => {
   
 const { meal, content } = route.params;
 
-  const parseSection = (text) => {
-    const labels = [
-      { key: 'menu', label: '추천 메뉴:' },
-      { key: 'caution', label: '주의할 점:' },
-      { key: 'explanation', label: '설명:' },
-      { key: 'betterWhen', label: '이런 상태라면 더 좋아요:' },
-      { key: 'tips', label: '똑똑한 팁:' },
-    ];
-  
-    const sections = {};
-    labels.forEach((item, idx) => {
-      const startIdx = text.indexOf(item.label);
-      if (startIdx !== -1) {
-        const nextIdx = labels
-          .slice(idx + 1)
-          .map(next => text.indexOf(next.label))
-          .filter(i => i !== -1)
-          .sort((a, b) => a - b)[0] || text.length;
-  
-        sections[item.key] = text
-          .substring(startIdx + item.label.length, nextIdx)
-          .trim()
-          .replace(/^- /gm, '•'); // 불필요한 하이픈 제거
-      } else {
-        sections[item.key] = '';
-      }
-    });
-  
-    return sections;
-  };
-  
-  
+const parsed = {
+  menu: content.menu || '',
+  caution: content.warning || '',
+  explanation: content.explanation || '',
+  betterWhen: content.benefit || '',
+  tips: content.smartTip || '',
+};
 
-  const parsed = parseSection(content);
 
   return (
     <ScrollView style={styles.container}>
