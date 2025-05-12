@@ -10,18 +10,24 @@ const Guide = ({ route, navigation }) => {
   console.log('route.params:', route.params)
 
 
+
+
+  
 const extractFulfillment = (text) => {
   const match = text.match(/- 섭취 충족도 분석:\s*([\s\S]*?)(?:\n- |\n\n|$)/);
   if (!match) return [];
 
   return match[1]
     .split('\n')
-    .map(line => line.trim().replace(/^•/, '').trim())  // "• 비타민A 100%" → "비타민A 100%"
+    .map(line => line.trim().replace(/^•/, '').trim())  // "• 비타민 A 70%" → "비타민 A 70%"
     .map(entry => {
-      const [name, value] = entry.split(/\s+/);
-      return { label: name, value: parseInt(value.replace('%', '')) };
-    });
-  };
+      const match = entry.match(/^(.+?)\s+(\d{1,3})%$/);
+      if (!match) return null;
+      return { label: match[1].trim(), value: parseInt(match[2], 10) };
+    })
+    .filter(Boolean);
+};
+
 
 
 
