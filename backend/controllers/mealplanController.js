@@ -1,5 +1,4 @@
 //   backend/controllers/mealplanController.js
-
 import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage } from "@langchain/core/messages";
 import { saveMealPlanResult } from "../db_scripts/saveMealPlan.js";
@@ -13,10 +12,7 @@ import {
 } from "../services/nutrientUtils.js";
 import Medicine from "../models/Medicine.js";
 import { summarizeMedications } from "../services/medicationUtils.js";
-import User from "../models/UserInfo.js";
-
-
-
+import MealPlan from "../models/MealPlan.js";
 
 
 export const generateMealPlan = async (req, res) => {
@@ -44,81 +40,131 @@ export const generateMealPlan = async (req, res) => {
       지방: `${Math.round(macronutrients.ratio.fat * 100)}%`,
     };
 
-
-
-
-
-
     const micronutrientText = Object.entries(micronutrients)
       .map(([name, value]) => `${name}: ${value}`)
       .join(", ");
 
-      const prompt = `
-      당신은 임산부 식단 전문가입니다. 아래 사용자 정보를 기반으로 하루 식단을 구성해 주세요.
-      
-      [사용자 정보]
-      - 임신 상태: ${user.pregnancy} ${user.subPregnancy ? `(${user.subPregnancy})` : ""}
-      - 임신 주차: ${user.pregnancyWeek || "정보 없음"}주
-      - 체중: ${user.weight || "?"}kg / 키: ${user.height || "?"}cm / BMI: ${bmi || "?"}
-      - 입덧 정도: ${user.nausea || 0}/5
-      - 만성질환 및 특이사항: ${user.conditions?.length ? user.conditions.join(", ") : "없음"}
-      - 주의 성분: ${warningList?.length ? warningList.join(", ") : "없음"}
-      - 섭취를 피해야 하는 음식: ${avoidedFoods.length ? avoidedFoods.join(", ") : "없음"}
-      
-      [복용 중인 약 정보]
-      ${medicationSummary || "없음"}
+    const mergedList = [...new Set([
+      ...recommendList,
+      ...Object.keys(micronutrients),
+    ])];
+    const topNutrients = mergedList.slice(0, 5); // 상위 5개만 사용
 
-      [영양 목표]
-      - 하루 총 섭취 열량: ${kcal} kcal
-      - 탄단지 비율: ${Object.entries(macroRatio).map(([k,v]) => `${k} ${v}`).join(", ")}
-      - 미량영양소 필요량: ${Object.entries(micronutrients).map(([k,v]) => `${k}: ${v}`).join(", ")}
 
-      [출력 형식 예시]
-      
-      [식단 테마]
-      - 테마: (예: 철분 강화 식단)
-      - 테마 설명: (이 식단 테마가 왜 중요한지 간단히 설명)
+    const weightGain = (user.weightBefore && user.weight)
+  ? ` / 체중 증가량: +${(user.weight - user.weightBefore).toFixed(1)}kg`
+  : "";
 
-      (한국인이니만큼 하루 세 끼 중 두 끼 이상은 한식 밥 메뉴를 추천해주세요. "구체적" 밥/"구체적" 국/반찬 최소 3개의 한정식 식단. 디저트 겸 구체적 과일 한 조각이나 초콜릿 몇 조각, 구체적인 후식과자 등도 좋습니다.)
-      (또, 모든 음식에 대해 구체적인 양을 정해주세요. 예를 들어 김치찌개 한 그릇, 사과 1/3개. 한 끼에 산모가 무리해서 먹지 않을 만큼만 음식 양을 배정해주세요.)
-      [아침]
-      - 추천 메뉴:
-      - 주의할 점:
-      - 설명: (섭취 시간과 맥락, 건강 효과 포함 2-3문장)
-      - 이런 상태라면 더 좋아요: (ex. 입덧이 있는 경우, 아침 공복 혈당이 낮은 경우 등. 해당되는 경우에만 작성)
-      - 똑똑한 팁: (복용 중인 약이나 식이 상호작용을 고려한 팁. 해당되는 경우에만 작성)
+    const user_info_block = `
+    ## 사용자 정보
+    - 임신 단계: ${stage} (${user.pregnancy}${user.subPregnancy ? ` / ${user.subPregnancy}` : ""})
+    - 현재 임신 주차: ${user.pregnancyWeek || "?"}주 (출산까지 약 ${user.pregnancyWeek ? 40 - user.pregnancyWeek : "?"}주 남음)
+    - 연령: ${age}세
+    - 신체 정보: 키 ${user.height || "?"}cm / 체중 ${user.weight || "?"}kg${weightGain} / BMI: ${bmi || "?"}
+    - 입덧 정도: ${user.nausea || 0}/5 (0: 없음 ~ 5: 매우 심함)
+    - 만성질환 및 특이사항: ${user.conditions?.length ? user.conditions.join(", ") : "없음"}
+    - 사용자 정보 기반 추천 성분: ${recommendList.length ? recommendList.join(", ") : "없음"}
+    - 주의해야 할 성분: ${warningList?.length ? warningList.join(", ") : "없음"}
+    - 피해야 할 음식: ${avoidedFoods.length ? avoidedFoods.join(", ") : "없음"}
+    - 복용 중인 약 요약: ${medicationSummary || "없음"}
+    `.trim();
 
-      [점심]
-      - 추천 메뉴:
-      - 주의할 점:
-      - 설명: (섭취 시간과 맥락, 건강 효과 포함 2-3문장)
-      - 이런 상태라면 더 좋아요: (ex. 입덧이 있는 경우, 아침 공복 혈당이 낮은 경우 등. 해당되는 경우에만 작성)
-      - 똑똑한 팁: (복용 중인 약이나 식이 상호작용을 고려한 팁. 해당되는 경우에만 작성)
+    const prompt = `
+    당신은 임산부 식단 전문가입니다. 아래 사용자 정보를 참고하여 하루 식단을 구성해 주세요.
 
-      [저녁]
-      - 추천 메뉴:
-      - 주의할 점:
-      - 설명: (섭취 시간과 맥락, 건강 효과 포함 2-3문장)
-      - 이런 상태라면 더 좋아요: (ex. 입덧이 있는 경우, 아침 공복 혈당이 낮은 경우 등. 해당되는 경우에만 작성)
-      - 똑똑한 팁: (복용 중인 약이나 식이 상호작용을 고려한 팁. 해당되는 경우에만 작성)
+    ${user_info_block}
 
-      [간식]
-      - 추천 메뉴:(사용자의 건강상태에 맞춰 조금은 안건강한 간식도 가능. 예를 들어 생강 꿀차와 초코칩 쿠키 하나)
-      - 주의할 점:
-      - 설명: (섭취 시간과 맥락, 건강 효과 포함 2-3문장)
-      - 이런 상태라면 더 좋아요: (ex. 입덧이 있는 경우, 아침 공복 혈당이 낮은 경우 등. 해당되는 경우에만 작성)
-      - 똑똑한 팁: (복용 중인 약이나 식이 상호작용을 고려한 팁. 해당되는 경우에만 작성)
+    ## 영양 목표
+    - 총 섭취 열량: ${kcal} kcal
+    - 탄수화물/단백질/지방 비율: ${Object.entries(macroRatio).map(([k,v]) => `${k} ${v}`).join(", ")}
+    - 주요 미량 영양소 필요량: ${Object.entries(micronutrients).map(([k,v]) => `${k}: ${v}`).join(", ")}
 
-      [하루 식단 종합 가이드-꼭 아래 형식 지켜서 반환]
-      - 섭취 충족도 분석: (예시 : 엽산 90%, 철분 70%, 비타민D 60% 등 구체적인 수치로 -> 다음과 같은 여러 개의 문장으로 반환 : 오늘 식단은 '엽산' 기준으로 1일 권장량의 90%를 채울 수 있어요. 철분은 70% 채워주고 있어요. 등등...)
-      - 추가 섭취 가이드:
-        • 권장 영양제: (예: 철분제 30~50mg, 엽산 400~600μg 등 2개 이상, 서로 다른 성분은 줄바꿈으로 반환)
-        • 설명: (3-4문장, 전체적으로 보충이 필요한 이유 설명)
-      - 복용 주의사항:
-        • 항목별 bullet list로 작성, 2개 이상 (예: 철분제는 식후 1시간 후 복용 등)
+    ---
 
-        
-      `.trim();
+   ## 식단 구성 지침
+
+    - 하루 식단은 **아침 / 점심 / 저녁 / 간식** 총 4끼로 구성해주세요.
+    - 하루 총 열량 ${kcal} kcal을 기준으로, 각 끼니에 적절히 분배해주세요.  
+      일반적인 분배 비율은 **아침 25%, 점심 35%, 저녁 30%, 간식 10%**입니다.
+    - 각 끼니는 해당 열량 범위 내에서 **탄수화물 ${macroRatio["탄수화물"]}, 단백질 ${macroRatio["단백질"]}, 지방 ${macroRatio["지방"]}** 비율을 반영해주세요.
+    - 모든 음식은 **구체적인 명칭과 1인분 기준의 정확한 양**을 포함해주세요.  
+      예: 현미밥 1/2공기, 고등어구이 1토막, 사과 1/3개
+    - **아침/점심/저녁 중 최소 2끼는 한식 스타일(밥, 국, 반찬 구성)**으로 구성해주세요.
+    - 한 끼 식사는 과하지 않은 양으로 구성하며, **작은 과일 또는 소량 디저트(예: 초콜릿 1~2조각)**는 허용됩니다.
+    - 간식은 **입덧, 식욕 저하, 기분 전환 등 건강 상태**를 고려해 부드러운 식품이나 기호식품으로 구성하되, **고열량 간식은 피해주세요.**
+    - 각 끼니의 설명은 **섭취 시점, 건강 효과, 추천 이유**를 포함하여 **2~3문장 이내**로 작성해주세요.
+    ---
+
+    ## 출력 형식
+
+    [식단 테마]
+    - 테마:
+    - 테마 설명:
+
+    [아침]
+    - 추천 메뉴:
+    - 주의할 점:
+    - 설명:
+    - 이런 상태라면 더 좋아요:
+    - 똑똑한 팁:
+
+    [점심]
+    - 추천 메뉴:
+    - 주의할 점:
+    - 설명:
+    - 이런 상태라면 더 좋아요:
+    - 똑똑한 팁:
+
+    [저녁]
+    - 추천 메뉴:
+    - 주의할 점:
+    - 설명:
+    - 이런 상태라면 더 좋아요:
+    - 똑똑한 팁:
+
+    [간식]
+    - 추천 메뉴:
+    - 주의할 점:
+    - 설명:
+    - 이런 상태라면 더 좋아요:
+    - 똑똑한 팁:
+
+    ---
+
+    ## 끼니별 항목 작성 기준
+
+    - **추천 메뉴**: 음식 이름 + 1인분 기준의 양 (예: 현미밥 1/2공기, 된장국 1그릇)
+    - **주의할 점**: 사용자 상태나 주의 성분을 반영한 경고
+    - **설명**: 영양소 효과와 맥락을 2~3문장으로 기술
+    - **이런 상태라면 더 좋아요**: 해당 식단이 특히 적합한 상황 (입덧, 기운 없음 등)
+    - **똑똑한 팁**: 복용 중인 약물이나 주의 성분 기반 식이 팁
+
+    ---
+
+    ## 하루 식단 종합 가이드
+
+    - 섭취 충족도 분석:
+      아래 형식을 반드시 따르세요. 줄바꿈된 리스트로 작성하세요.  
+      각 항목은 다음 형식으로 시작해야 합니다: '• 영양소이름 숫자%'
+      예시:  
+      • 엽산 90%  
+      • 철분 70%  
+      • 비타민 D 60%
+
+    - 추가 섭취 가이드:
+      - 권장 영양제: (줄바꿈된 리스트, '•'로 시작하지 마세요. 한 줄에 하나씩)  
+        철분제 30~50mg  
+        엽산 400~600μg
+      - 설명: (필수)  
+        식단 결과 부족한 성분에 대해 **3~4문장 이내**로 보충 필요성을 설명하세요.
+
+    - 복용 주의사항:
+      각 항목은 반드시 '-'로 시작해야 합니다. 예시:
+      - 철분제는 식사 1시간 후, 비타민 C와 함께 복용 시 흡수율이 높아져요.  
+      - 엽산 보충제는 의사 지시에 따라 복용해야 합니다.
+
+    `.trim();
+
       
 
     const model = new ChatOpenAI({
@@ -130,7 +176,8 @@ export const generateMealPlan = async (req, res) => {
     const response = await model.invoke([new HumanMessage(prompt)]);
     const resultText = response.content;
 
-    await saveMealPlanResult({
+    // ✅ MealPlan 저장
+    const mealPlan = await saveMealPlanResult({
       email,
       kcal,
       macroRatio,
@@ -139,7 +186,12 @@ export const generateMealPlan = async (req, res) => {
       llmResult: resultText,
     });
 
-    res.json({ result: resultText });
+    console.log("✅ 저장 및 파싱된 mealPlan 객체 ↓↓↓↓↓↓↓↓↓↓");
+  console.dir(mealPlan.toObject(), { depth: null });
+
+    // ✅ 구조화된 전체 응답 반환
+    res.status(200).json(mealPlan);
+
   } catch (error) {
     console.error("❌ 식단 생성 오류:", error);
     res.status(500).json({ message: "서버 오류 발생", error: error.message });
@@ -183,29 +235,34 @@ export const getEnergyAndMacroInfo = async (req, res) => {
 };
 
 
-
-
-
-
-
-
-
-export const submitAvoidedFoods = async (req, res) => {
+export const getLatestMealPlan = async (req, res) => {
   try {
-    const { avoidedFoods } = req.body;
+    console.log("✅ 요청한 유저:", req.user);
     const email = req.user.email;
+    const recent = await MealPlan.findOne({ email }).sort({ createdAt: -1 });
 
-    if (!avoidedFoods || !Array.isArray(avoidedFoods)) {
-      return res.status(400).json({ message: "회피 음식 정보가 올바르지 않습니다." });
+    if (!recent) {
+      return res.status(404).json({ message: "최근 식단이 없습니다." });
     }
 
-    // 예: 유저 모델에 저장 (User 모델에 avoidedFoods 필드가 있다고 가정)
-    await User.updateOne({ email }, { $set: {avoidedFoods} });
+    res.status(200).json({
+      kcal: recent.kcal,
+      macroRatio: recent.macroRatio,
+      micronutrients: recent.micronutrients,
+      avoidedFoods: recent.avoidedFoods,
+      llmResult: recent.llmResult,
+      breakfast: recent.breakfast,
+      lunch: recent.lunch,
+      dinner: recent.dinner,
+      snack: recent.snack,
+      dailyGuide: recent.dailyGuide,
+    });
 
-    res.status(200).json({ message: "회피 음식 정보 저장 완료" });
-  } catch (error) {
-    console.error("[submitAvoidedFoods]", error);
-    res.status(500).json({ message: "서버 오류 발생" });
+  } catch (err) {
+    console.error("[getLatestMealPlan]", err); // ❗ 이거 콘솔에 찍고,
+  res.status(500).json({ message: "최근 식단 조회 실패", error: err.message }); // ❗ 이거 프론트에도 보내줘
   }
 };
+
+
 
