@@ -4,14 +4,36 @@ import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { AuthContext } from '../../context/AuthContext';
-
-
-
+import * as scale from 'd3-scale';
+import { BarChart } from 'react-native-gifted-charts';
 
 
 const Guide = ({ route, navigation }) => {
-  const { summary, guideText } = route.params;
+  console.log('route.params:', route.params)
 
+
+const extractFulfillment = (text) => {
+  const match = text.match(/- 섭취 충족도 분석:\s*([\s\S]*?)(?:\n- |\n\n|$)/);
+  if (!match) return [];
+
+  return match[1]
+    .split('\n')
+    .map(line => line.trim().replace(/^•/, '').trim())  // "• 비타민A 100%" → "비타민A 100%"
+    .map(entry => {
+      const [name, value] = entry.split(/\s+/);         // "비타민A", "100%"
+      return { name, value: parseInt(value.replace('%', '')) };
+    });
+};
+
+
+
+
+
+
+
+
+  const { summary, guideText } = route.params;
+  const fulfillmentData = extractFulfillment(guideText);
   return (
     <ScrollView style={styles.container}>
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
@@ -20,17 +42,43 @@ const Guide = ({ route, navigation }) => {
 
       <Text style={styles.title}>식단 상세 가이드</Text>
 
+
+
+
+
       {/* 충족도 분석 */}
-      <View style={styles.sectionBox}>
-        <Text style={styles.sectionTitle}>오늘의 영양소 충족도</Text>
-        {summary?.nutrientFulfillment ? (
-          Object.entries(summary.nutrientFulfillment).map(([k, v], idx) => (
-            <Text key={idx} style={styles.bullet}>- {k} {v}</Text>
-          ))
-        ) : (
-          <Text style={styles.sectionText}>분석 데이터를 찾을 수 없습니다.</Text>
-        )}
-      </View>
+<View style={styles.sectionBox}>
+  <Text style={styles.sectionTitle}>오늘의 영양소 충족도</Text>
+  {(() => {
+    const fulfillmentData = extractFulfillment(guideText);
+
+    return fulfillmentData.length > 0 ? (
+      <BarChart
+        barWidth={26}
+        noOfSections={5}
+        maxValue={120}
+        frontColor="#A1CDA8"
+        data={fulfillmentData}
+        yAxisThickness={0}
+        xAxisThickness={0}
+        isAnimated
+        labelWidth={80}
+        xAxisLabelTextStyle={{ fontSize: 12, color: '#444' }}
+        hideRules
+        yAxisTextStyle={{ color: '#444' }}
+        spacing={22}
+      />
+    ) : (
+      <Text style={styles.sectionText}>분석 데이터를 찾을 수 없습니다.</Text>
+    );
+  })()}
+</View>
+
+
+
+
+
+
 
       {/* 추가 섭취 */}
       <View style={styles.sectionBox}>
