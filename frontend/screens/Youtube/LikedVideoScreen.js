@@ -60,7 +60,7 @@ console.log("📌 likedVideos:", likedVideos); // ✅ 디버깅 로그 추가
             ? likedVideos
             : [...likedVideos, { id: "empty", empty: true }] // ✅ 홀수면 빈 아이템 추가
         }
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
           numColumns={2} // ✅ 2열 그리드
           columnWrapperStyle={styles.row} // ✅ 줄마다 균등 정렬
           contentContainerStyle = {{marginTop:120}}
