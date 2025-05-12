@@ -171,7 +171,7 @@
         <FlatList
           data={videos}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
           numColumns={2}
           columnWrapperStyle={styles.row}
           contentContainerStyle={{ paddingBottom: 75 }}
