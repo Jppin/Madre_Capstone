@@ -23,7 +23,7 @@ const UserInfoSchema = new mongoose.Schema(
     nausea: { type: Number, default: 0 },
     profileImage: {
       type: String,
-      default: `${process.env.BASE_URL}:${process.env.PORT}/uploads/default_profile.png`,
+      default: "/uploads/default_profile.png",
     },
   },
   {
