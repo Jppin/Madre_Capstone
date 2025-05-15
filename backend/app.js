@@ -28,7 +28,7 @@ const __dirname = path.dirname(__filename);
 app.use(cors());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use((req, res, next) => {
-  console.log(`📥 요청 도착: ${req.method} ${req.url}`);
+  console.log(`[${new Date().toISOString()}] ▶ ${req.method} ${req.originalUrl}`);
   next();
 });
 
@@ -44,9 +44,10 @@ redisClient.connect().catch(console.error);
 redisClient.on("error", (err) => console.error("❌ Redis 오류:", err));
 
 // Routes 연결
+app.use(express.json());
 app.use(profileRoutes); 
 app.use(ocrRoutes);
-app.use(express.json());
+
 
 app.use(authRoutes);
 app.use(userRoutes);
@@ -54,6 +55,15 @@ app.use(authenticateUser, medicineRoutes);
 app.use("/nutrient", nutrientRoutes);
 app.use("/mealplan", mealplanRoutes);
 app.use("/youtube", youtubeRoutes);
+
+
+
+// Health Check 라우트 (디버깅용)
+//app.get("/health-check", (req, res) => {
+//  res.json({ ok: true });
+//});
+
+
 
 
 // Root

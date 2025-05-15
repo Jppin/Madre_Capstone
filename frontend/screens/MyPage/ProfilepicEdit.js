@@ -38,11 +38,10 @@ const ProfilepicEdit = () => {
   // 서버에 이미지 업로드 함수
 const uploadImageToServer = async (uri) => {
   try {
-    console.log("🖼 선택된 이미지 URI:", uri);
+    console.log("선택된 이미지 URI:", uri);
 
     const fileName = uri.split("/").pop();
     const mimeType = mime.lookup(uri) || "image/jpeg";
-
     const cleanedUri = Platform.OS === "android" ? uri : uri.replace("file://", "");
 
     const formData = new FormData();
@@ -58,15 +57,18 @@ const uploadImageToServer = async (uri) => {
       return;
     }
 
-    const api = await createAPI();
+    const baseURL = "http://10.0.2.2:5001"; // 👈 또는 await getBaseUrl() 써도 됨
 
-    const res = await api.post("/upload-profile", formData, {
+    const response = await fetch(`${baseURL}/upload-profile`, {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
+        // ❌ Content-Type은 절대 수동으로 지정하지 말 것!
       },
+      body: formData,
     });
 
-    const result = res.data;
+    const result = await response.json();
     console.log("🟢 서버 응답:", result);
 
     if (result.status === "ok") {
@@ -78,8 +80,8 @@ const uploadImageToServer = async (uri) => {
       Alert.alert("오류", "이미지 업로드 실패");
     }
   } catch (error) {
-    console.error("❌ 이미지 업로드 오류:", error);
-    Alert.alert("오류", "서버와의 통신 중 문제가 발생했습니다.");
+    console.error("❌ 이미지 업로드 오류 (fetch):", error);
+    Alert.alert("오류", "이미지 업로드 중 문제가 발생했습니다.");
   }
 };
 
