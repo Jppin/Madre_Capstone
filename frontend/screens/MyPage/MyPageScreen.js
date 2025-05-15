@@ -145,6 +145,21 @@ const loadProfileImage = async () => {
       }
     };
     loadProfileImageFromStorage();
+
+    // 💡 여기서 서버 연결 테스트 실행
+  /*const testConnection = async () => {
+    const api = await createAPI();
+    try {
+      const res = await api.get("/health-check");
+      console.log("✅ 서버 연결 성공:", res.data);
+    } catch (err) {
+      console.error("❌ 서버 연결 실패:", err.message);
+    }
+  };
+  testConnection();*/
+
+
+
   }, []);
 
 

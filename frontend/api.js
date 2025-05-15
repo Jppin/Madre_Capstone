@@ -6,7 +6,8 @@ import { getBaseUrl } from './config/config.js';
 let apiInstance = null;
 
 const createAPI = async () => {
-  if (apiInstance) return apiInstance;
+  console.log("🔧 createAPI 내부 진입");
+  //if (apiInstance) return apiInstance;
 
   const baseURL = await getBaseUrl();
   console.log("✅ 현재 baseURL:", baseURL);
