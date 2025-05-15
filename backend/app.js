@@ -26,12 +26,12 @@ const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(cors());
-app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use((req, res, next) => {
   console.log(`📥 요청 도착: ${req.method} ${req.url}`);
   next();
 });
+
 
 // DB 연결
 mongoose.connect(process.env.MONGO_URI)
@@ -44,10 +44,12 @@ redisClient.connect().catch(console.error);
 redisClient.on("error", (err) => console.error("❌ Redis 오류:", err));
 
 // Routes 연결
+app.use(profileRoutes); 
+app.use(ocrRoutes);
+app.use(express.json());
+
 app.use(authRoutes);
 app.use(userRoutes);
-app.use(profileRoutes);                        // 프로필 이미지 업로드
-app.use(ocrRoutes);                            // OCR 업로드
 app.use(authenticateUser, medicineRoutes);
 app.use("/nutrient", nutrientRoutes);
 app.use("/mealplan", mealplanRoutes);
