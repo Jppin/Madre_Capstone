@@ -18,33 +18,49 @@ const MyPageScreen = () => {
   const [loading, setLoading] = useState(true);
   const [profileImage, setProfileImage] = useState(null);
 
+
+
+
+
+  
   // 프로필 이미지 불러오기 함수
-  const loadProfileImage = async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-      if (!token) {
-        console.error("❌ 토큰이 없습니다.");
-        return;
-      }
-  
-      const api = await createAPI();
-      const res = await api.get("/user-full-data", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-  
-      const result = res.data;
-  
-      if (result.status === "ok" && result.data.profileImage) {
-        setProfileImage({ uri: result.data.profileImage });
+const loadProfileImage = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) {
+      console.error("❌ 토큰이 없습니다.");
+      return;
+    }
+
+    const api = await createAPI();
+    const res = await api.get("/user-full-data", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const result = res.data;
+
+    if (result.status === "ok") {
+      const profileImage = result.data.profileImage;
+      const baseURL = api.defaults?.baseURL || "http://10.0.2.2:5001"; // 필요시 실제 URL로 대체
+
+      if (profileImage) {
+        const isRelative = profileImage.startsWith("/"); // "/uploads/..." 같은 상대 경로인지 확인
+        const fullUri = isRelative ? `${baseURL}${profileImage}` : profileImage;
+        setProfileImage({ uri: fullUri });
       } else {
-        // baseURL 이용해 기본 이미지 URI 구성
-        const { baseURL } = api.defaults;
         setProfileImage({ uri: `${baseURL}/uploads/default_profile.png` });
       }
-    } catch (error) {
-      console.error("❌ 프로필 이미지 로드 오류:", error);
     }
-  };
+  } catch (error) {
+    console.error("❌ 프로필 이미지 로드 오류:", error);
+  }
+};
+
+
+
+
+
+
 
   // 복용 약물 불러오기 함수 (active:true인 약품)
   const fetchActiveMedicines = async () => {
@@ -65,6 +81,11 @@ const MyPageScreen = () => {
       console.error("복용 약물 불러오기 오류:", error);
     }
   };
+
+
+
+
+
 
   // 사용자 정보 가져오기 함수
   const fetchUserInfo = async () => {
@@ -99,6 +120,11 @@ const MyPageScreen = () => {
     }
   };
 
+
+
+
+
+
   // 마이페이지에 들어올 때마다 최신 정보 가져오기
   useFocusEffect(
     React.useCallback(() => {
@@ -107,6 +133,8 @@ const MyPageScreen = () => {
       fetchActiveMedicines();
     }, [])
   );
+
+
 
   // AsyncStorage에서 프로필 사진 불러오기
   useEffect(() => {
@@ -118,6 +146,8 @@ const MyPageScreen = () => {
     };
     loadProfileImageFromStorage();
   }, []);
+
+
 
   // 만성질환 처리 (생략된 기존 코드)
   const conditionList = Array.isArray(userInfo?.conditions) ? userInfo.conditions : [];

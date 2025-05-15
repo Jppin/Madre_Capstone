@@ -3,13 +3,13 @@
 
 
 import React, { useState } from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, Platform } from "react-native";
 import { launchImageLibrary } from "react-native-image-picker"; 
 import { useNavigation, useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Feather from "react-native-vector-icons/Feather";
 import createAPI from "../../api";
-
+import * as mime from 'react-native-mime-types';
 
 const ProfilepicEdit = () => {
   const [imageUri, setImageUri] = useState(null); 
@@ -26,64 +26,69 @@ const ProfilepicEdit = () => {
     };
 
     launchImageLibrary(options, async (response) => {
-      if (response.didCancel) {
-        console.log("사용자가 선택을 취소함");
-      } else if (response.errorMessage) {
-        console.error("에러 발생:", response.errorMessage);
-      } else {
-        // 선택된 이미지 저장
-        const uri = response.assets[0].uri;
-        setImageUri(uri);
-      }
-    });
+  if (!response.didCancel && !response.errorMessage && response.assets?.length > 0) {
+    const asset = response.assets[0];
+    console.log("📦 선택된 파일 전체:", asset); // 👈 여기에 찍히는 type, fileName 등 확인
+    setImageUri(asset.uri);
+  }
+});
+
   };
 
   // 서버에 이미지 업로드 함수
-  const uploadImageToServer = async (uri) => {
-    try {
-      const formData = new FormData();
-      formData.append("image", {
-        uri,
-        name: "profile.jpg",
-        type: "image/jpeg",
-      });
-  
-      const token = await AsyncStorage.getItem("token");
-      if (!token) {
-        Alert.alert("오류", "로그인이 필요합니다.");
-        return;
-      }
-  
-      const api = await createAPI();
-  
-      const res = await api.post("/upload-profile", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      const result = res.data;
-      console.log("🟢 서버 응답:", result);
-  
-      if (result.status === "ok") {
-        await AsyncStorage.setItem("profileImage", result.profileImage);
-        Alert.alert("완료", "사진 변경이 완료되었습니다.", [
-          { text: "확인", onPress: () => navigation.navigate("MyPageScreen") },
-        ]);
-      } else {
-        Alert.alert("오류", "이미지 업로드 실패");
-      }
-    } catch (error) {
-      console.error("❌ 이미지 업로드 오류:", error);
-      Alert.alert("오류", "서버와의 통신 중 문제가 발생했습니다. 다시 한 번 시도해주세요.");
+const uploadImageToServer = async (uri) => {
+  try {
+    console.log("🖼 선택된 이미지 URI:", uri);
+
+    const fileName = uri.split("/").pop();
+    const mimeType = mime.lookup(uri) || "image/jpeg";
+
+    const cleanedUri = Platform.OS === "android" ? uri : uri.replace("file://", "");
+
+    const formData = new FormData();
+    formData.append("image", {
+      uri: cleanedUri,
+      name: fileName,
+      type: mimeType,
+    });
+
+    const token = await AsyncStorage.getItem("token");
+    if (!token) {
+      Alert.alert("오류", "로그인이 필요합니다.");
+      return;
     }
-  };
+
+    const api = await createAPI();
+
+    const res = await api.post("/upload-profile", formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const result = res.data;
+    console.log("🟢 서버 응답:", result);
+
+    if (result.status === "ok") {
+      await AsyncStorage.setItem("profileImage", result.profileImage);
+      Alert.alert("완료", "사진 변경이 완료되었습니다.", [
+        { text: "확인", onPress: () => navigation.navigate("MyPageScreen") },
+      ]);
+    } else {
+      Alert.alert("오류", "이미지 업로드 실패");
+    }
+  } catch (error) {
+    console.error("❌ 이미지 업로드 오류:", error);
+    Alert.alert("오류", "서버와의 통신 중 문제가 발생했습니다.");
+  }
+};
+
+
 
 
 
 
   
-  // 기본 이미지로 리셋하는 함수
 // 기본 이미지로 리셋하는 함수
 const resetToDefault = async () => {
   try {
