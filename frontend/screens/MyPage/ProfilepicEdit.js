@@ -10,6 +10,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Feather from "react-native-vector-icons/Feather";
 import createAPI from "../../api";
 import * as mime from 'react-native-mime-types';
+import { getBaseUrl } from "../../config/config";
+
+
+
 
 const ProfilepicEdit = () => {
   const [imageUri, setImageUri] = useState(null); 
@@ -35,10 +39,17 @@ const ProfilepicEdit = () => {
 
   };
 
+
+
+
+
+
+
+
+
   // 서버에 이미지 업로드 함수
 const uploadImageToServer = async (uri) => {
   try {
-    console.log("선택된 이미지 URI:", uri);
 
     const fileName = uri.split("/").pop();
     const mimeType = mime.lookup(uri) || "image/jpeg";
@@ -57,7 +68,7 @@ const uploadImageToServer = async (uri) => {
       return;
     }
 
-    const baseURL = "http://10.0.2.2:5001"; // 👈 또는 await getBaseUrl() 써도 됨
+    const baseURL = await getBaseUrl(); 
 
     const response = await fetch(`${baseURL}/upload-profile`, {
       method: "POST",
