@@ -7,7 +7,7 @@ client.connect().catch(console.error);
 
 const CACHE_KEY = "youtube_videos";
 const CACHE_DURATION = 86400; // 24시간
-const keywords = ["건강 팁", "영양제 추천", "운동 루틴", "약사", "비타민", "피부", "면역력"];
+const keywords = ["건강 팁", "영양제 추천", "영양성분", "운동 루틴", "약사", "비타민", "면역력"];
 
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 
