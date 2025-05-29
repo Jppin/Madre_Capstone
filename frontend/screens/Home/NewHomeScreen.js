@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import {
   View,
   Text,
-  TextInput,
   Image,
   ScrollView,
   TouchableOpacity,
@@ -16,7 +15,7 @@ import PagerView from 'react-native-pager-view';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { AuthContext } from '../../context/AuthContext';
 import createAPI from '../../api';
-import { parseMealSections, parseThemeSection } from '../../../backend/services/nutrientUtils';
+import LinearGradient from 'react-native-linear-gradient';
 
 
 const { width } = Dimensions.get('window');
@@ -36,11 +35,12 @@ const CombinedScreen = () => {
   const [warningNutrients, setWarningNutrients] = useState([]);
 
   // HomeScreen 관련 state
-  const images = [
-    require('../../assets/image1.jpg'),
-    require('../../assets/image2.jpg'),
-    require('../../assets/image3.jpg'),
+  // 원래 3개 이미지였던 것을 1개 이미지 + 1개 View로 바꿈
+  const bannerItems = [
+  'CUSTOM_VIEW',
+  require('../../assets/image2.jpg'),
   ];
+
   const pagerRef = useRef(null);
   const [pageIndex, setPageIndex] = useState(0);
   const [userConcerns, setUserConcerns] = useState([]);
@@ -57,10 +57,17 @@ const CombinedScreen = () => {
       setNickname(userData.nickname || "사용자");
       setUserConcerns(userData.concerns);
       setSelectedConcern(userData.concerns[0]);
-      fetchData(userData); // 🔹 확실하게 넘김
+      fetchData(userData);
     }
   }, [userData, loading, isFocused]);
 
+  
+  
+  
+  
+  
+  
+  
   const fetchData = async (user) => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -81,7 +88,7 @@ const CombinedScreen = () => {
       // 관심사 기반 추천
       const recRes = await api.get("/nutrient/recommendations", {
         headers: { Authorization: `Bearer ${token}` },
-        params: { concerns: user.concerns }, // 🔥 여기에 명시적으로 포함
+        params: { concerns: user.concerns },
       });
 
       const recommendList = recRes.data?.data ?? [];
@@ -90,7 +97,7 @@ const CombinedScreen = () => {
       // 개인화 추천/주의 리스트
       const personalRes = await api.get("/nutrient/personal", {
         headers: { Authorization: `Bearer ${token}` },
-        params: { concerns: user.concerns }, // 🔥 마찬가지로 명시
+        params: { concerns: user.concerns },
       });
       if (
         Array.isArray(personalRes.data.recommendList) &&
@@ -132,7 +139,7 @@ const CombinedScreen = () => {
         },
       });
 
-      // 상태 업데이트
+      // 상태 업데이트......
       setLikedNutrients((prev) => ({
         ...prev,
         [nutrientName]: !prev[nutrientName],
@@ -191,14 +198,16 @@ const CombinedScreen = () => {
   }, [selectedButton, recommendNutrients, warningNutrients]);
 
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const nextIndex = (pageIndex + 1) % images.length;
-      setPageIndex(nextIndex);
-      pagerRef.current?.setPage(nextIndex);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [pageIndex, images.length]);
+
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    const nextIndex = (pageIndex + 1) % bannerItems.length;
+    setPageIndex(nextIndex);
+    pagerRef.current?.setPage(nextIndex);
+  }, 5000);
+  return () => clearInterval(interval);
+}, [pageIndex, bannerItems.length]);
 
 
   const toggleConcern = (concern) => {
@@ -234,6 +243,9 @@ const CombinedScreen = () => {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#fff' }} showsVerticalScrollIndicator={false}>
+      
+      
+      
       <View>
 
         {/* Home 헤더 */}
@@ -262,15 +274,81 @@ const CombinedScreen = () => {
 
         {/* 홈 배너 */}
         <View style={homeStyles.carouselContainer}>
-          <PagerView ref={pagerRef} style={homeStyles.pagerView} initialPage={0}>
-            {images.map((image, idx) => (
-              <View key={idx}>
-                <Image source={image} style={homeStyles.image} />
-              </View>
-            ))}
-          </PagerView>
+          <PagerView
+            ref={pagerRef}
+            style={homeStyles.pagerView}
+            initialPage={0}
+            showPageIndicator
+          >
+  {bannerItems.map((item, idx) => (
+    <View key={idx} style={{ flex: 1, borderRadius: 16, overflow: 'hidden' }}>
+      
+      {item === 'CUSTOM_VIEW' ? (
+  <LinearGradient
+  colors={['#B8E1B8', '#C2DFBF']}
+  start={{ x: 0, y: 0 }}
+  end={{ x: 1, y: 1 }}
+  style={{
+    width: width * 0.9,
+    height: 180,
+    borderRadius: 16,
+    padding: 20,
+    justifyContent: 'space-between',
+  }}
+  >
+    <View style={{ flex: 1, justifyContent: 'center', marginBottom: 20 }}>
+      <Text style={{
+        fontSize: 26,
+        fontWeight: 'bold',
+        color: '#2E4A2C',
+        lineHeight: 36,
+      }}>
+        좋은 하루에요, {nickname}님!
+      </Text>
+
+
+      <Text style={{
+        fontSize: 20,
+        fontWeight: '500',
+        color: '#2E4A2C',
+        marginTop: 12,
+        marginBottom: 10,
+      }}>
+        임신 {userData?.pregnancyWeek ?? '?'}주차에요 :)
+      </Text>
+    </View>
+
+
+    <View style={{ alignItems: 'flex-end' }}>
+      <Text style={{
+        fontSize: 14,
+        color: '#385C2B',
+        fontWeight: '600',
+      }}>
+        🤰 필요한 영양소, 매일 추천해드릴게요!
+      </Text>
+    </View>
+  </LinearGradient>
+) : (
+  <View
+  style={{
+    borderWidth: 3,
+    borderColor: '#C2DFBF',
+    borderRadius: 12,
+    overflow: 'hidden',
+  }}
+>
+  <Image source={item} style={homeStyles.image} />
+</View>
+
+)}
+
+    </View>
+  ))}
+</PagerView>
+
           <View style={homeStyles.pagination}>
-            {images.map((_, idx) => (
+            {bannerItems.map((_, idx) => (
               <View key={idx} style={[homeStyles.dot, idx === pageIndex && homeStyles.activeDot]} />
             ))}
           </View>
@@ -548,7 +626,7 @@ const homeStyles = StyleSheet.create({
   },
   pagerView: {
     width: width * 0.9,
-    height: 180,
+    height: 190,
   },
   image: {
     width: width * 0.9,
