@@ -8,11 +8,13 @@ import {
   getMacronutrientRatio,
   getMicronutrientNeedsByStage,
   getUserStage,
-  getTrimester
+  getTrimester,
+  getCurrentWeightGainGoal
 } from "../services/nutrientUtils.js";
 import Medicine from "../models/Medicine.js";
 import { summarizeMedications } from "../services/medicationUtils.js";
 import MealPlan from "../models/MealPlan.js";
+import { get } from "mongoose";
 
 
 export const generateMealPlan = async (req, res) => {
@@ -31,7 +33,7 @@ export const generateMealPlan = async (req, res) => {
     const micronutrients = getMicronutrientNeedsByStage(stage);
     const medicineList = await Medicine.find({ user_id: user._id });
     const medicationSummary = summarizeMedications(medicineList);
-
+    const weightGainGoal = getCurrentWeightGainGoal(bmi);
     const kcal = energy.kcal;
 
     const macroRatio = {
@@ -51,10 +53,6 @@ export const generateMealPlan = async (req, res) => {
     const topNutrients = mergedList.slice(0, 5); // 상위 5개만 사용
 
 
-    const weightGain = (user.weightBefore && user.weight)
-  ? ` / 체중 증가량: +${(user.weight - user.weightBefore).toFixed(1)}kg`
-  : "";
-
     const user_info_block = `
     ## 사용자 정보
     - 임신 단계: ${stage} (${user.pregnancy}${user.subPregnancy ? ` / ${user.subPregnancy}` : ""})
@@ -67,6 +65,7 @@ export const generateMealPlan = async (req, res) => {
     - 주의해야 할 성분: ${warningList?.length ? warningList.join(", ") : "없음"}
     - 피해야 할 음식: ${avoidedFoods.length ? avoidedFoods.join(", ") : "없음"}
     - 복용 중인 약 요약: ${medicationSummary || "없음"}
+    - 이번 주 체중 증가 목표: ${weightGainGoal || "없음"}
     `.trim();
 
     const prompt = `
@@ -89,7 +88,9 @@ export const generateMealPlan = async (req, res) => {
     - 각 끼니는 해당 열량 범위 내에서 **탄수화물 ${macroRatio["탄수화물"]}, 단백질 ${macroRatio["단백질"]}, 지방 ${macroRatio["지방"]}** 비율을 반영해주세요.
     - 모든 음식은 **구체적인 명칭과 1인분 기준의 정확한 양**을 포함해주세요.  
       예: 현미밥 1/2공기, 고등어구이 1토막, 사과 1/3개
-    - **아침/점심/저녁 중 최소 2끼는 한식 스타일(밥, 국, 반찬 구성)**으로 구성해주세요.
+    - 하루 지방 섭취량 중 오메가-6와 오메가-3 지방산의 비율은 약 4:1~10:1 수준으로 구성해주세요.
+    - 오메가-3는 등푸른 생선(고등어, 연어 등)이나 들기름, 아마씨유 등을 활용해 구성할 수 있습니다.
+      - **아침/점심/저녁 중 최소 2끼는 한식 스타일(밥, 국, 반찬 구성)**으로 구성해주세요.
     - 한 끼 식사는 과하지 않은 양으로 구성하며, **작은 과일 또는 소량 디저트(예: 초콜릿 1~2조각)**는 허용됩니다.
     - 간식은 **입덧, 식욕 저하, 기분 전환 등 건강 상태**를 고려해 부드러운 식품이나 기호식품으로 구성하되, **고열량 간식은 피해주세요.**
     - 각 끼니의 설명은 **섭취 시점, 건강 효과, 추천 이유**를 포함하여 **2~3문장 이내**로 작성해주세요.
@@ -187,7 +188,7 @@ export const generateMealPlan = async (req, res) => {
     });
 
     console.log("✅ 저장 및 파싱된 mealPlan 객체 ↓↓↓↓↓↓↓↓↓↓");
-  console.dir(mealPlan.toObject(), { depth: null });
+    console.dir(mealPlan.toObject(), { depth: null });
 
     // ✅ 구조화된 전체 응답 반환
     res.status(200).json(mealPlan);

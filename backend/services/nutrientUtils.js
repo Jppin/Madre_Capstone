@@ -1,3 +1,5 @@
+  //backend\services\nutrientUtils.js
+  
   export const getTrimester = (week) => {
     if (!week) return "정보 없음";
     if (week <= 12) return "초기";
@@ -142,3 +144,34 @@
     return result;
   };
   
+/**
+ * BMI와 임신 주차에 따라 지금까지 권장되는 체중 증가량 (kg)을 반환
+ */
+export const getCurrentWeightGainGoal = (bmi, week = 0, isTwins = false) => {
+  if (!bmi || !week) return null;
+
+  const rangeByBMI = isTwins
+    ? [null, [17, 25], [14, 23], [11, 19], [11, 19]] // 쌍둥이인 경우 (단, 18.5 미만은 근거 없음)
+    : [ [12.5, 18], [11.5, 16], [7, 11.5], [5, 9] ];  // [저체중, 정상, 과체중, 비만]
+
+  const getIndex = () => {
+    if (bmi < 18.5) return 0;
+    if (bmi < 25) return 1;
+    if (bmi < 30) return 2;
+    return 3;
+  };
+
+  const [minGain, maxGain] = rangeByBMI[getIndex()];
+
+  // 체중 증가 속도 (IOM 기준): 중기·후기부터 주당 증가량 적용
+  const baseGain = 1.5; // 초기 (1~13주) 권장 증가량
+  const weeklyGain = (minGain + maxGain) / 2 / (40 - 13); // 평균값 기준, 주당 증가량
+
+  if (week <= 13) {
+    return +baseGain.toFixed(1);
+  }
+
+  const extraWeeks = week - 13;
+  const totalGain = baseGain + weeklyGain * extraWeeks;
+  return +totalGain.toFixed(1);
+};
