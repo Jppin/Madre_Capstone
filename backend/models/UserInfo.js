@@ -20,6 +20,7 @@ const UserInfoSchema = new mongoose.Schema(
     isNewUser: { type: Boolean, default: true },
     subPregnancy: { type: String, default: null },
     pregnancyWeek: { type: Number, default: null },
+    pregnancyStartDate: { type: Date, default: null },
     nausea: { type: Number, default: 0 },
     profileImage: {
       type: String,

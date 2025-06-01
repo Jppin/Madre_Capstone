@@ -25,6 +25,7 @@ const CombinedScreen = () => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const { userData, loading } = useContext(AuthContext);
+  const { fetchUserData2 } = useContext(AuthContext);
 
   // 공통 및 NutritionScreen 관련 state
   const [nickname, setNickname] = useState('사용자');
@@ -51,6 +52,13 @@ const CombinedScreen = () => {
   const [todayText, setTodayText] = useState("");
 
 
+useEffect(() => {
+  if (isFocused) {
+    fetchUserData2(); // 홈 진입할 때마다 최신 userData 다시 불러오기
+  }
+}, [isFocused]);
+
+
 
   useEffect(() => {
     if (!loading && userData && userData.concerns?.length > 0 && isFocused) {
@@ -58,12 +66,22 @@ const CombinedScreen = () => {
       setUserConcerns(userData.concerns);
       setSelectedConcern(userData.concerns[0]);
       fetchData(userData);
+      console.log("🍼 pregnancyStartDate:", userData?.pregnancyStartDate);
+      console.log("🍼 계산된 주차:", calculatePregnancyWeek(userData?.pregnancyStartDate));
+
     }
   }, [userData, loading, isFocused]);
 
   
   
-  
+  const calculatePregnancyWeek = (startDateString) => {
+  if (!startDateString) return null;
+  const startDate = new Date(startDateString);
+  const today = new Date();
+  const diffDays = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+  return Math.floor(diffDays / 7); // 하루 차이 기준으로 7일 = 1주
+};
+
   
   
   
@@ -240,15 +258,58 @@ useEffect(() => {
 
 
 
+const updatePregnancyWeekToServer = async (calculatedWeek) => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+    const api = await createAPI();
+    console.log("🐣 서버로 보낼 주차:", calculatedWeek);
+    await api.post("/update-user-info", {
+      pregnancyWeek: calculatedWeek
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    console.log("✅ DB에 주차 업데이트 완료:", calculatedWeek);
+  } catch (err) {
+    console.error("❌ DB에 주차 업데이트 실패:", err.message);
+  }
+};
+
+
+/*
+useEffect(() => {
+  if (
+    userData?.pregnancy === '임신 중' &&
+    userData?.pregnancyStartDate
+  ) {
+    const calculatedWeek = calculatePregnancyWeek(userData.pregnancyStartDate);
+
+    if (
+      typeof calculatedWeek === 'number' &&
+      calculatedWeek !== userData.pregnancyWeek
+    ) {
+      updatePregnancyWeekToServer(calculatedWeek);
+    }
+  }
+}, [userData?.pregnancyStartDate]);
+*/
+
+
+
+
+
+
+
+
+  
+
 
   return (
+    
     <ScrollView style={{ flex: 1, backgroundColor: '#fff' }} showsVerticalScrollIndicator={false}>
       
       
-      
       <View>
-
-        {/* Home 헤더 */}
         <View style={homeStyles.headerContainer}>
 
           {/* 앱 로고 이미지 */}
@@ -314,8 +375,14 @@ useEffect(() => {
         marginTop: 12,
         marginBottom: 10,
       }}>
-        임신 {userData?.pregnancyWeek ?? '?'}주차에요 :)
-      </Text>
+  {userData?.pregnancy === '임신 중'
+    ? `임신 ${calculatePregnancyWeek(userData?.pregnancyStartDate) ?? '?'}주차에요 :)`
+    : userData?.pregnancy === '6개월 내에 계획 있음'
+      ? '아기를 위해 준비하는 시간이에요 :)'
+      : userData?.pregnancy === '수유 중'
+        ? '소중한 아기와 함께하는 시간이에요 :)'
+        : ''}
+</Text>
     </View>
 
 
