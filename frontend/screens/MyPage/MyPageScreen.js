@@ -1,11 +1,12 @@
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
 import { StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomSpinner from "../../components/CustomSpinner";
 import Feather from "react-native-vector-icons/Feather";
 import createAPI from '../../api';
+import { AuthContext } from "../../context/AuthContext";
 
 
 const MyPageScreen = () => {
@@ -17,6 +18,7 @@ const MyPageScreen = () => {
   const [activeMedicines, setActiveMedicines] = useState([]); // 복용 중인 약품들
   const [loading, setLoading] = useState(true);
   const [profileImage, setProfileImage] = useState(null);
+  const { getData } = useContext(AuthContext);
 
 
 
@@ -131,6 +133,7 @@ const loadProfileImage = async () => {
       fetchUserInfo();
       loadProfileImage();
       fetchActiveMedicines();
+      getData();
     }, [])
   );
 
@@ -145,18 +148,6 @@ const loadProfileImage = async () => {
       }
     };
     loadProfileImageFromStorage();
-
-    // 💡 여기서 서버 연결 테스트 실행
-  /*const testConnection = async () => {
-    const api = await createAPI();
-    try {
-      const res = await api.get("/health-check");
-      console.log("✅ 서버 연결 성공:", res.data);
-    } catch (err) {
-      console.error("❌ 서버 연결 실패:", err.message);
-    }
-  };
-  testConnection();*/
 
 
 
