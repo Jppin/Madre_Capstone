@@ -1,10 +1,11 @@
 import User from "../models/UserInfo.js";
 import jwt from "jsonwebtoken";
+import { AppError } from "../middleware/errorHandler.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // 온보딩 정보 저장
-export const saveUserInfo = async (req, res) => {
+export const saveUserInfo = async (req, res, next) => {
   const {
     email, nickname, birthYear, height, weight, exercise,
     pregnancy, subPregnancy, pregnancyWeek, weightBefore,
@@ -13,7 +14,7 @@ export const saveUserInfo = async (req, res) => {
 
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ status: "error", message: "사용자를 찾을 수 없습니다." });
+    if (!user) throw new AppError("사용자를 찾을 수 없습니다.", 404);
 
     Object.assign(user, {
       nickname, birthYear, height, weight, exercise,
@@ -25,15 +26,15 @@ export const saveUserInfo = async (req, res) => {
     res.status(200).json({ status: "ok", message: "사용자 정보 저장 완료" });
   } catch (error) {
     console.error("❌ 사용자 정보 저장 오류:", error);
-    res.status(500).json({ status: "error", message: "저장 중 오류 발생" });
+    next(error);
   }
 };
 
 // 마이페이지 - 전체 정보 조회
-export const getUserFullData = async (req, res) => {
+export const getUserFullData = async (req, res, next) => {
   try {
     const user = await User.findOne({ email: req.user.email });
-    if (!user) return res.status(404).json({ message: "사용자 정보를 찾을 수 없습니다." });
+    if (!user) throw new AppError("사용자 정보를 찾을 수 없습니다.", 404);
 
     res.status(200).json({
       status: "ok",
@@ -56,12 +57,12 @@ export const getUserFullData = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ status: "error", message: "서버 오류 발생" });
+    next(error);
   }
 };
 
 // 이름/나이 등 기본 정보 업데이트
-export const updateUserInfo = async (req, res) => {
+export const updateUserInfo = async (req, res, next) => {
   try {
     const updateFields = {};
     const fields = [
@@ -78,15 +79,15 @@ export const updateUserInfo = async (req, res) => {
       { new: true }
     );
 
-    if (!user) return res.status(404).json({ message: "사용자 정보를 찾을 수 없습니다." });
+    if (!user) throw new AppError("사용자 정보를 찾을 수 없습니다.", 404);
     res.status(200).json({ status: "ok", message: "정보 업데이트 완료" });
   } catch (error) {
-    res.status(500).json({ message: "서버 오류 발생" });
+    next(error);
   }
 };
 
 // 만성질환 업데이트
-export const updateUserConditions = async (req, res) => {
+export const updateUserConditions = async (req, res, next) => {
   try {
     const user = await User.findOneAndUpdate(
       { email: req.user.email },
@@ -94,18 +95,18 @@ export const updateUserConditions = async (req, res) => {
       { new: true }
     );
 
-    if (!user) return res.status(404).json({ message: "사용자 정보를 찾을 수 없습니다." });
+    if (!user) throw new AppError("사용자 정보를 찾을 수 없습니다.", 404);
     res.status(200).json({ status: "ok", message: "만성질환 업데이트 완료" });
   } catch (error) {
-    res.status(500).json({ message: "서버 오류 발생" });
+    next(error);
   }
 };
 
 // 건강 고민 업데이트
-export const updateUserConcerns = async (req, res) => {
+export const updateUserConcerns = async (req, res, next) => {
   try {
     const concerns = req.body.concerns;
-    if (!Array.isArray(concerns)) return res.status(400).json({ status: "error", message: "concerns는 배열이어야 합니다." });
+    if (!Array.isArray(concerns)) throw new AppError("concerns는 배열이어야 합니다.", 400);
 
     const user = await User.findOneAndUpdate(
       { email: req.user.email },
@@ -113,9 +114,9 @@ export const updateUserConcerns = async (req, res) => {
       { new: true }
     );
 
-    if (!user) return res.status(404).json({ status: "error", message: "사용자를 찾을 수 없습니다." });
+    if (!user) throw new AppError("사용자를 찾을 수 없습니다.", 404);
     res.json({ status: "ok", message: "건강 고민 업데이트 완료" });
   } catch (error) {
-    res.status(500).json({ status: "error", message: "서버 오류 발생" });
+      next(error);
   }
 };

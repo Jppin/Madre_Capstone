@@ -54,9 +54,15 @@ const extractFulfillment = (text) => {
 <View style={styles.sectionBox}>
   <Text style={styles.sectionTitle}>오늘의 영양소 충족도</Text>
   {(() => {
-    const fulfillmentData = extractFulfillment(guideText);
+    // 1순위: summary.nutrientFulfillment
+    const fulfillmentData = summary?.nutrientFulfillment
+      ? Object.entries(summary.nutrientFulfillment).map(([label, value]) => ({
+          label,
+          value: parseInt(value.replace('%', ''), 10)
+        }))
+      : extractFulfillment(guideText);
 
-    return fulfillmentData.length > 0 ? (
+    return fulfillmentData && fulfillmentData.length > 0 ? (
       <BarChart
         barWidth={22}
         noOfSections={5}

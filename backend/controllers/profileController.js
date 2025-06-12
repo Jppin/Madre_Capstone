@@ -4,18 +4,19 @@ import path from "path";
 import { fileURLToPath } from "url";
 import jwt from "jsonwebtoken";
 import User from "../models/UserInfo.js";
+import { AppError } from "../middleware/errorHandler.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const JWT_SECRET = process.env.JWT_SECRET;
 
-export const uploadProfileImage = async (req, res) => {
+export const uploadProfileImage = async (req, res, next) => {
   try {
     console.log("📥 업로드된 파일:", req.file); // ✅ 여기에 추가!
     const token = req.headers.authorization?.split(" ")[1];
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findOne({ email: decoded.email });
-    if (!user) return res.status(404).json({ message: "사용자 정보 없음" });
+    if (!user) throw new AppError("사용자 정보 없음", 404);
 
     const fileExtension = path.extname(req.file.originalname);
     const newFilename = `${decoded.email.replace(/[^a-zA-Z0-9]/g, "_")}${fileExtension}`;
@@ -27,11 +28,11 @@ export const uploadProfileImage = async (req, res) => {
 
     res.json({ status: "ok", profileImage: user.profileImage });
   } catch (e) {
-    res.status(500).json({ message: "프로필 업로드 실패" });
+    next(e);
   }
 };
 
-export const resetProfileImage = async (req, res) => {
+export const resetProfileImage = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     const decoded = jwt.verify(token, JWT_SECRET);
@@ -44,7 +45,7 @@ export const resetProfileImage = async (req, res) => {
       { new: true }
     );
 
-    if (!user) return res.status(404).json({ message: "사용자 정보 없음" });
+    if (!user) throw new AppError("사용자 정보 없음", 404);
 
     res.json({
       status: "ok",
@@ -53,7 +54,7 @@ export const resetProfileImage = async (req, res) => {
     });
   } catch (e) {
     console.error("❌ 기본 이미지 변경 오류:", e);
-    res.status(500).json({ message: "기본 이미지 복원 실패" });
+      next(e);
   }
 };
 

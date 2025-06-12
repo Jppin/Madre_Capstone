@@ -30,11 +30,11 @@ const Diet = ({ navigation }) => {
       const token = await AsyncStorage.getItem("token");
       const api = await createAPI();
 
-      const res = await api.post("/mealplan/generate", {
+      const res = await api.post("/mealplan/generate-and-save", {
         recommendList: [],
         warningList: [],
         avoidedFoods: userData.avoidedFoods || [],
-        email: userData.email,
+        user: userData,
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });

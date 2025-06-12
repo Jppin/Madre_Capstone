@@ -1,6 +1,7 @@
 // /controllers/youtubeController.js
 import axios from "axios";
 import redis from "redis";
+import { AppError } from "../middleware/errorHandler.js";
 
 const client = redis.createClient();
 client.connect().catch(console.error);
@@ -11,11 +12,11 @@ const keywords = ["건강 팁", "영양제 추천", "영양성분", "운동 루�
 
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 
-export const fetchYoutubeVideos = async (req, res) => {
+export const fetchYoutubeVideos = async (req, res, next) => {
   try {
     const cachedData = await client.get(CACHE_KEY);
     if (cachedData) {
-      return res.json({ results: JSON.parse(cachedData) });
+      res.json({ results: JSON.parse(cachedData) });
     }
 
     const videoResults = await Promise.all(
@@ -39,6 +40,6 @@ export const fetchYoutubeVideos = async (req, res) => {
     await client.setEx(CACHE_KEY, CACHE_DURATION, JSON.stringify(videoResults));
     res.json({ results: videoResults });
   } catch (error) {
-    res.status(500).json({ error: "YouTube API 호출 중 오류 발생" });
+    next(error);
   }
 };
