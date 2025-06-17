@@ -700,3 +700,9 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/reactnative,node,virtualenv,visualstudiocode,intellij,macos,windows,python,jupyternotebooks
+
+# 대용량 파일/폴더 무시
+rag-server/data/
+rag-server/chroma_db/
+*.pdf
+*.bin
