@@ -1,17 +1,18 @@
 import MealPlan from "../models/MealPlan.js";
 
-// 🔹 섹션 추출
+// 🔹 공통 섹션 추출
 const parseSection = (content, section) => {
   if (!content || typeof content !== "string") return "";
   const escaped = section.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const pattern = new RegExp(
-    `\\[${escaped}\\][ \\t]*([\\s\\S]*?)(?=\\n?\\[[^\\]]+\\]|\\n##|\\n---|\\Z)`,
+    `\\[${escaped}\\][ \\t]*([\\s\\S]*?)(?=\\n?\\[[^\\]]+\\]|\\n##|\\n---|$)`,
     "i"
   );
   const match = content.match(pattern);
   return match ? match[1].trim() : "";
 };
 
+// 🔹 끼니별 필드 추출
 const extractAllFields = (text) => {
   const fields = {
     "추천 메뉴": "",
@@ -22,9 +23,6 @@ const extractAllFields = (text) => {
   };
 
   const pattern = /[-•]?\s*(추천 메뉴|주의할 점|설명|이런 상태라면 더 좋아요|똑똑한 팁)\s*[:：]\s*([\s\S]*?)(?=\n\s*[-•]?\s*(추천 메뉴|주의할 점|설명|이런 상태라면 더 좋아요|똑똑한 팁)\s*[:：]|\n\s*---|\n\s*##|\s*$)/g;
-
-
-  // 꼭 trim을 먼저 해줘야 \Z 정규식이 정상 작동함
   text = text.trim();
 
   let match;
@@ -45,22 +43,15 @@ const extractAllFields = (text) => {
   };
 };
 
-
-
-
-
-// 🔹 테마 추출
+// 🔹 테마
 const extractTheme = (text) => {
   const themeMatch = text.match(/-?\s*테마\s*[:：]\s*(.*)/);
   const commentMatch = text.match(/-?\s*테마 설명\s*[:：]\s*([\s\S]*?)(?=\n-|\n\[|$)/);
-
-  const theme = themeMatch?.[1]?.trim() || "";
-  const themeComment = commentMatch?.[1]?.trim().replace(/\s+/g, " ") || "";
-
-  return { theme, themeComment };
+  return {
+    theme: themeMatch?.[1]?.trim() || "",
+    themeComment: commentMatch?.[1]?.trim().replace(/\s+/g, " ") || "",
+  };
 };
-
-
 
 // 🔹 충족도 분석
 const parseNutrientFulfillment = (text) => {
@@ -76,36 +67,46 @@ const parseNutrientFulfillment = (text) => {
   return map;
 };
 
-// 🔹 권장 영양제 + 설명
+// 🔹 추가 섭취 가이드 + 설명
 const extractSupplementRecommendation = (text) => {
   const supplements = [];
-  const supplementsBlock = text.match(/권장 영양제[:：]?\s*([\s\S]*?)(?=\n\s*- 설명[:：]?|\n\s*- 복용 주의사항|$)/i);
-  const explanationBlock = text.match(/설명[:：]?\s*([\s\S]*?)(?=\n\s*- 복용 주의사항|$)/i);
+  let explanation = "";
 
-  const lines = supplementsBlock?.[1]?.split(/\n|•|▪|-/).map(l => l.trim()).filter(Boolean) || [];
+  if (!text) return { supplements, explanation };
+
+  const lines = text.split("\n").map((line) => line.trim()).filter(Boolean);
+
+  let isExplanation = false;
   for (const line of lines) {
-    if (/\d+~?\d*.*(mg|μg|IU|ml|g)/i.test(line)) {
-      supplements.push(line);
+    if (line.startsWith("- 설명")) {
+      isExplanation = true;
+      explanation = line.replace(/^- 설명[:：]?\s*/, "").trim();
+    } else if (isExplanation) {
+      explanation += " " + line;
+    } else {
+      if (/\d+.*(mg|μg|IU|ml|g)/i.test(line)) {
+        supplements.push(line);
+      }
     }
   }
 
   return {
     supplements,
-    explanation: explanationBlock?.[1]?.trim().replace(/\s+/g, " ") || "",
+    explanation: explanation.trim()
   };
 };
 
-
 // 🔹 복용 주의사항
 const parsePrecautions = (text) => {
+  if (!text) return [];
   return text
-    .split(/\n|•|▪|-/)
+    .split('\n')
     .map(l => l.trim())
     .filter(l =>
-      l.length > 5 &&
-      !/^복용 주의사항[:：]?$/.test(l) &&
-      !/섭취 충족도/.test(l)
-    );
+      l.length > 3 &&
+      (/^[-•]/.test(l) || /^[가-힣A-Za-z]/.test(l))
+    )
+    .map(l => l.replace(/^[-•]\s*/, ''));
 };
 
 // 🔹 메인 저장 함수
@@ -134,7 +135,35 @@ export async function saveMealPlanResult({
   const lunchText = parseSection(fullText, "점심");
   const dinnerText = parseSection(fullText, "저녁");
   const snackText = parseSection(fullText, "간식");
-  const guideText = fullText.split(/## 하루 식단 종합 가이드/i)[1] || "";
+  
+  // 1. [하루 식단 종합 가이드] 섹션이 있는지 먼저 확인
+  let guideSection = parseSection(fullText, "하루 식단 종합 가이드");
+  let fulfillmentSection, supplementSection, precautionsSection;
+
+  if (guideSection && guideSection.length > 0) {
+    // 기존 방식: [하루 식단 종합 가이드] 안에서 파싱
+    fulfillmentSection = parseSection(guideSection, "섭취 충족도 분석");
+    supplementSection = parseSection(guideSection, "추가 섭취 가이드");
+    precautionsSection = parseSection(guideSection, "복용 주의사항");
+    if (!precautionsSection) {
+      // guideSection이 비어있거나 파싱 실패 시 전체 텍스트에서 직접 추출
+      precautionsSection = parseSection(fullText, "복용 주의사항");
+    }
+  } else {
+    // 새 방식: 전체 텍스트에서 바로 파싱
+    fulfillmentSection = parseSection(fullText, "섭취 충족도 분석");
+    supplementSection = parseSection(fullText, "추가 섭취 가이드");
+    precautionsSection = parseSection(fullText, "복용 주의사항");
+  }
+
+  const getSectionOrFallback = (text, section) => {
+    let result = parseSection(text, section);
+    if (!result) {
+      // 전체 텍스트에서 직접 추출
+      result = parseSection(fullText, section);
+    }
+    return result;
+  };
 
   const mealPlan = new MealPlan({
     email,
@@ -149,13 +178,9 @@ export async function saveMealPlanResult({
     snack: extractAllFields(snackText),
     dailyGuide: {
       ...extractTheme(themeText),
-      nutrientFulfillment: parseNutrientFulfillment(
-        guideText.match(/섭취 충족도 분석[:：]?([\s\S]*?)(?=\n-{2,}|##|^- 추가 섭취 가이드:|$)/)?.[1] || ""
-      ),
-      supplementRecommendation: extractSupplementRecommendation(guideText),
-      precautions: parsePrecautions(
-        guideText.match(/복용 주의사항[:：]?([\s\S]*?)(?=\n-{2,}|##|$)/)?.[1] || ""
-      ),
+      nutrientFulfillment: parseNutrientFulfillment(getSectionOrFallback(guideSection, "섭취 충족도 분석")),
+      supplementRecommendation: extractSupplementRecommendation(getSectionOrFallback(guideSection, "추가 섭취 가이드")),
+      precautions: parsePrecautions(getSectionOrFallback(guideSection, "복용 주의사항")),
     },
   });
 

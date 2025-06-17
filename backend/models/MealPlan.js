@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import axios from "axios";
 
 const MealSchema = new mongoose.Schema({
   menu: String,

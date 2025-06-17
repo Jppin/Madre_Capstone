@@ -1,6 +1,8 @@
 // /controllers/nutrientController.js
 import Nutrition from "../models/Nutrient.cjs";
 import LikedNutrient from "../models/LikedNutrient.js";
+import { AppError } from "../middleware/errorHandler.js";
+
 
 
 
@@ -15,11 +17,11 @@ const labelMap = {
   "7": "주 7회 운동",
 };
 
-export const getRecommendedNutrients = async (req, res) => {
+export const getRecommendedNutrients = async (req, res, next) => {
   try {
     const { concerns } = req.query;
     if (!concerns || concerns.length === 0) {
-      return res.status(400).json({ status: "error", message: "No concerns provided" });
+      throw new AppError("No concerns provided", 400);
     }
 
     const nutrients = await Nutrition.find({
@@ -30,11 +32,11 @@ export const getRecommendedNutrients = async (req, res) => {
     res.json({ status: "ok", data: nutrients });
   } catch (error) {
     console.error("[getRecommendedNutrients]", error);
-    res.status(500).json({ status: "error", message: "Internal server error" });
+    next(error);
   }
 };
 
-export const getPersonalizedNutrients = async (req, res) => {
+export const getPersonalizedNutrients = async (req, res, next) => {
   try {
     const user = req.user;
 
@@ -73,18 +75,18 @@ export const getPersonalizedNutrients = async (req, res) => {
     res.json({ recommendList, warningList });
   } catch (error) {
     console.error("[getPersonalizedNutrients]", error);
-    res.status(500).json({ message: "서버 오류 발생" });
+    next(error);
   }
 };
 
-export const likeNutrient = async (req, res) => {
+export const likeNutrient = async (req, res, next) => {
   try {
     console.log("[likeNutrient] req.user:", req.user); // 🔥 추가
     console.log("[likeNutrient] nutrientName:", req.body.nutrientName); // 🔥 추가
     const { nutrientName } = req.body;
     const exists = await LikedNutrient.findOne({ email: req.user.email, nutrientName });
     if (exists) {
-      return res.status(400).json({ message: "이미 찜한 영양 성분입니다." });
+      throw new AppError("이미 찜한 영양 성분입니다.", 400);
     }
 
     const liked = new LikedNutrient({ email: req.user.email, nutrientName });
@@ -92,28 +94,28 @@ export const likeNutrient = async (req, res) => {
     res.status(201).json({ message: "찜한 영양 성분 추가 완료" });
   } catch (error) {
     console.error("[likeNutrient]", error);
-    res.status(500).json({ message: "서버 오류 발생" });
+    next(error);
   }
 };
 
-export const getLikedNutrients = async (req, res) => {
+export const getLikedNutrients = async (req, res, next) => {
   try {
     const liked = await LikedNutrient.find({ email: req.user.email }).select("nutrientName -_id");
     res.status(200).json({ likedNutrients: liked.map(n => n.nutrientName) });
   } catch (error) {
     console.error("[getLikedNutrients]", error);
-    res.status(500).json({ message: "서버 오류 발생" });
+    next(error);
   }
 };
 
-export const unlikeNutrient = async (req, res) => {
+export const unlikeNutrient = async (req, res, next) => {
   try {
     const { nutrientName } = req.body;
     await LikedNutrient.deleteOne({ email: req.user.email, nutrientName });
     res.status(200).json({ message: "찜한 영양 성분 삭제 완료" });
   } catch (error) {
     console.error("[unlikeNutrient]", error);
-    res.status(500).json({ message: "서버 오류 발생" });
+    next(error);
   }
   
 };
@@ -123,13 +125,13 @@ export const unlikeNutrient = async (req, res) => {
 
 
 //상세보기 페이지
-export const getNutrientDetail = async (req, res) => {
+export const getNutrientDetail = async (req, res, next) => {
   try {
     const nutrientName = req.params.name;
     const nutrient = await Nutrition.findOne({ name: nutrientName });
 
     if (!nutrient) {
-      return res.status(404).json({ message: "해당 영양소를 찾을 수 없습니다." });
+      throw new AppError("해당 영양소를 찾을 수 없습니다.", 404);
     }
 
     res.status(200).json({
@@ -140,7 +142,7 @@ export const getNutrientDetail = async (req, res) => {
     });
   } catch (error) {
     console.error("[getNutrientDetail]", error);
-    res.status(500).json({ message: "서버 오류 발생" });
+    next(error);
   }
 };
 

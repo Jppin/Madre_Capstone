@@ -90,11 +90,12 @@ const InfoComplete = () => {
                 isNewUser: false,  // DB 업데이트 요청
             });
 
-            if (response.data.status === "ok") {
+            if (response.status === 200) {
                 console.log("✅ DB의 isNewUser 업데이트 완료!");
             } else {
-                throw new Error(response.data.message || "DB 업데이트 실패");
+            throw new Error(response.data.message || "DB 업데이트 실패");
             }
+
         } catch (error) {
             console.error("❌ DB 업데이트 오류:", error);
         }

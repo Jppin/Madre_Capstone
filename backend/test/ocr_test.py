@@ -98,6 +98,8 @@ def extract_text(image_path):
                 field["inferText"] for field in ocr_result["images"][0]["fields"]
             )
             sys.stderr.write(f"OCR 추출 텍스트: {extracted_text}\n")
+            # 일반 출력
+            print(f"OCR 추출 텍스트: {extracted_text}")
             return extracted_text
         else:
             sys.stderr.write(f"❌ OCR 요청 실패: {response.text}\n")
