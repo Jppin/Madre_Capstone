@@ -1,7 +1,7 @@
 // config.js
 import DeviceInfo from 'react-native-device-info';
 
-const LOCAL_PC_IP = ''; // 여기를 본인 ip주소로 고치시오!!!
+const LOCAL_PC_IP = '52.78.162.172'; // 여기를 본인 ip주소로 고치시오!!!
 
 export const getBaseUrl = async () => {
   const isEmulator = await DeviceInfo.isEmulator();
