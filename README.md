@@ -46,7 +46,7 @@ cd Madre_Capstone
 
 ### 1-1. .env 파일 추가
 /backend 디렉토리에 backend용 env 추가
-/rag-server 디렉토리에 rag-server용 env 추가
+<br>/rag-server 디렉토리에 rag-server용 env 추가
 
 ---
 
