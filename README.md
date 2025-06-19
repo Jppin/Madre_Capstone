@@ -5,7 +5,7 @@
 
 ---
 
-## 📁 Repository 구성
+## Repository 구성
 
 * `/frontend`: React Native 기반 모바일 앱 소스코드
 * `/backend`: Node.js + Express 기반 API 서버 (내부 Python 스크립트 실행 포함)
@@ -18,13 +18,13 @@
 
 ---
 
-## 🛠️ How to Install & Build
+## How to Install & Build
 
 Madre 프로젝트를 로컬 환경에서 실행하는 방법을 안내합니다.
 프론트엔드(React Native 앱), 백엔드(Node.js 서버), RAG 서버(Flask)를 각각 구성해야 하며,
 백엔드는 RAG 서버를 내부에서 자동 호출합니다.
 
-### ✅ 0. 사전 요구사항 (Pre-requisites)
+### 0. 사전 요구사항 (Pre-requisites)
 
 * Node.js (v18 이상)
 * npm
@@ -37,7 +37,7 @@ Madre 프로젝트를 로컬 환경에서 실행하는 방법을 안내합니다
 
 ---
 
-### 1️⃣ 레포지토리 클론
+### 1️. 레포지토리 클론
 
 ```bash
 git clone https://github.com/Jppin/Madre_Capstone.git
@@ -46,7 +46,7 @@ cd Madre_Capstone
 
 ---
 
-### 2️⃣ 프론트엔드 설치 및 실행 (React Native)
+### 2️. 프론트엔드 설치 및 실행 (React Native)
 
 ```bash
 cd frontend
@@ -57,7 +57,7 @@ npx react-native run-android
 * Android 디바이스 또는 에뮬레이터가 adb로 연결되어 있어야 합니다.
 * Metro bundler가 자동 실행되며 앱이 디바이스에 설치됩니다.
 
-#### 🔧 프론트 환경설정 확인사항
+#### 프론트 환경설정 확인사항
 
 * `config/config.js` 파일에서 `LOCAL_PC_IP` 변수 확인:
 
@@ -76,7 +76,7 @@ adb devices
 
 ---
 
-### 3️⃣ 백엔드 설치 및 실행 (Node.js API 서버)
+### 3. 백엔드 설치 및 실행 (Node.js API 서버)
 
 ```bash
 cd backend
@@ -84,7 +84,7 @@ npm install
 npx nodemon app
 ```
 
-#### 🔑 .env 예시 (backend/.env)
+#### .env 예시 (backend/.env)
 
 ```
 OPENAI_API_KEY="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"
@@ -108,7 +108,7 @@ PORT = 5001
 FLASK_PORT = 5002
 ```
 
-#### 🔧 백엔드 확인사항
+#### 백엔드 확인사항
 
 * `.env` 키가 정확히 입력되었는지 확인
 * BASE\_URL 설정:
@@ -133,7 +133,7 @@ pip install -r requirements.txt
 
 ---
 
-### 4️⃣ RAG 서버 설치 및 실행 (Flask + LangChain)
+### 4. RAG 서버 설치 및 실행 (Flask + LangChain)
 
 ```bash
 cd rag-server
@@ -143,7 +143,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-#### 🔑 .env 예시 (rag-server/.env)
+#### .env 예시 (rag-server/.env)
 
 ```
 # rag-server/.env
@@ -170,7 +170,7 @@ NODE_SERVER_URL=http://52.78.162.172:5001
 
 ---
 
-## ▶️ How to Test
+## ▶ How to Test
 
 1. 앱 실행 후 회원가입 → 건강 정보 입력
 2. 홈 화면에서 권장/주의 영양소 확인
@@ -180,7 +180,7 @@ NODE_SERVER_URL=http://52.78.162.172:5001
 
 ---
 
-## 🧪 Sample Data
+## Sample Data
 
 `/sample-data/`
 
@@ -190,7 +190,7 @@ NODE_SERVER_URL=http://52.78.162.172:5001
 
 ---
 
-## 🗄️ Database Info
+## Database Info
 
 MongoDB Atlas 사용
 
@@ -203,7 +203,7 @@ MongoDB Atlas 사용
 
 ---
 
-## 💡 사용 기술 스택 및 오픈소스
+## 사용 기술 스택 및 오픈소스
 
 | 구분             | 사용 기술 및 오픈소스                                 |
 | -------------- | -------------------------------------------- |
@@ -219,7 +219,7 @@ MongoDB Atlas 사용
 
 ---
 
-## 🔁 재현용 통합 실행 스크립트
+## 재현용 통합 실행 스크립트
 
 ### `scripts/setup_all.sh` (예시)
 
@@ -249,12 +249,12 @@ npm install
 
 ---
 
-## 📌 기타 안내
+## 기타 안내
 
 * 모든 외부 API Key는 `.env.example` 파일을 참고하여 `.env`에 직접 설정하세요.
 * GitHub 저장소에는 테스트용 샘플 이미지 및 JSON 파일이 포함되어 있습니다.
 * 과제 채점 기준에 따라 레포지토리만으로 전체 실행 가능하도록 구성되었습니다.
-* `git clone` 후 본 문서의 순서대로 따라가면 재생성 가능한 상태입니다 ✅
+* `git clone` 후 본 문서의 순서대로 따라가면 재생성 가능한 상태입니다.
 
 ---
 
