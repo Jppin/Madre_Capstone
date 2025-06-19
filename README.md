@@ -44,6 +44,10 @@ git clone https://github.com/Jppin/Madre_Capstone.git
 cd Madre_Capstone
 ```
 
+### 1-1. .env 파일 추가
+/backend 디렉토리에 backend용 env 추가
+/rag-server 디렉토리에 rag-server용 env 추가
+
 ---
 
 ### 2️. 프론트엔드 설치 및 실행 (React Native)
