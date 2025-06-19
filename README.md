@@ -10,10 +10,10 @@
 * `/frontend`: React Native 기반 모바일 앱 소스코드
 * `/backend`: Node.js + Express 기반 API 서버 (내부 Python 스크립트 실행 포함)
 * `/rag-server`: GPT-4o + LangChain 기반 RAG (Retrieval-Augmented Generation) 서버 소스코드
-  └── 임산부 맞춤형 식단을 생성하는 백엔드 기능 담당
-  └── 벡터DB에서 관련 영양·식품 정보를 검색한 후, 해당 정보를 기반으로 GPT가 식단을 생성
-  └── `.env` 설정 필요 : OpenAI API Key (GPT 호출용) 와 Vector DB 경로
-  └── API 사용법 : `POST /query` API로 사용자 건강 정보를 바탕으로 식단 생성 요청 가능
+  <br>└── 임산부 맞춤형 식단을 생성하는 백엔드 기능 담당
+  <br>└── 벡터DB에서 관련 영양·식품 정보를 검색한 후, 해당 정보를 기반으로 GPT가 식단을 생성
+  <br>└── `.env` 설정 필요 : OpenAI API Key (GPT 호출용) 와 Vector DB 경로
+  <br>└── API 사용법 : `POST /query` API로 사용자 건강 정보를 바탕으로 식단 생성 요청 가능
 * `/sample-data`: 프로젝트 테스트를 위한 샘플 데이터 (약봉투 OCR 이미지, 테스트 유저 정보 등)
 
 ---
@@ -163,7 +163,7 @@ NODE_SERVER_URL=http://52.78.162.172:5001
 
 ```
 
-#### 🔧 RAG 서버 확인사항
+#### RAG 서버 확인사항
 
 * `.env` 파일 생성 및 키 정확히 입력
 * `pip install -r requirements.txt`로 의존성 설치
