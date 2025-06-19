@@ -87,26 +87,13 @@ npx nodemon app
 #### .env 예시 (backend/.env)
 
 ```
-OPENAI_API_KEY="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"
-OPENAI_API_URL="https://api.openai.com/v1/chat/completions"
-
-MONGO_URI="mongodb+srv://dding921:1472uiop!!@graduationpj.w6wq3.mongodb.net/?retryWrites=true&w=majority&appName=graduationpj"
-DB_NAME="test"
-
-YOUTUBE_API_KEY=AIzaSyBkcyYs_FPy6bHk0FQ6gyUE7dsRDU3PiE0
-
-JWT_SECRET = "sdfsdferrwsdkjhk12j34##$@^&dlfjsdjfersgiobkcm"
-
-OPEN_API_URL=https://apis.data.go.kr/1471000/DURPrdlstInfoService03/getDurPrdlstInfoList03
-OPEN_API_KEY=K%2B%2BbuY9%2Bp6KetizU7E7OJGbIxbs%2BLh2heEAEOZSoeTfQ8oaovvv3BfDozlh%2FfN8H2ZjznwS6oDQk5L9A5EoBdA%3D%3D
-
-NODE_ENV=development
-REDIS_HOST=redis
-
-BASE_URL=http://52.78.162.172
-PORT = 5001
-FLASK_PORT = 5002
+PORT=5001
+JWT_SECRET=<Your JWT Secret>
+MONGODB_URI=<Your MongoDB URI>
+CLOVA_API_KEY=<Your CLOVA OCR Key>
+CLOVA_SECRET=<Your CLOVA OCR Secret>
 ```
+(실제 .env 파일 API Key는 채점 필요한 경우 메일로 송부드렸습니다.)
 
 #### 백엔드 확인사항
 
@@ -148,20 +135,11 @@ python app.py
 ```
 # rag-server/.env
 
-LANGSMITH_TRACING=true
-LANGSMITH_ENDPOINT="https://api.smith.langchain.com"
-LANGSMITH_API_KEY="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"
-LANGSMITH_PROJECT="pr-diligent-stencil-72"
-
-OPENAI_API_KEY=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
-
-ANTHROPIC_API_KEY=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
-
-OPENAI_API_URL=https://api.openai.com/v1/chat/completions
-
-NODE_SERVER_URL=http://52.78.162.172:5001
+OPENAI_API_KEY=<Your OpenAI API Key>
+VECTOR_DB_PATH=./path_to_vector_store
 
 ```
+(실제 .env 파일 API Key는 채점 필요한 경우 메일로 송부드렸습니다.)
 
 #### RAG 서버 확인사항
 
