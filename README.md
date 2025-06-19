@@ -184,9 +184,8 @@ NODE_SERVER_URL=http://52.78.162.172:5001
 
 `/sample-data/`
 
-* `prescription1.jpg`: OCR 테스트용 처방 이미지
-* `userInfo.json`: 사용자 초기 건강 정보
-* `drugData.json`: 약품 정보 샘플 (식약처 API 기반)
+* `sample-data.jpg`: OCR 테스트용 처방 이미지
+* `sample-data(2).jpg`: 사용자 초기 건강 정보
 
 ---
 
