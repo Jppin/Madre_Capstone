@@ -27,15 +27,30 @@ export const runOcrScript = async (req, res, next) => {
 
 
   pythonProcess.on("close", (code) => {
-    if (code === 0) {
-      try {
-        const result = JSON.parse(output);
-        res.json({ status: "ok", message: "OCR 완료", medicine: result });
-      } catch (e) {
-        next(new AppError("JSON 파싱 실패", 500));
-      }
-    } else {
-      next(new AppError("OCR 실패", 500, errorOutput));
+  if (code === 0) {
+    try {
+      const lines = output.trim().split('\n');
+      const jsonLine = lines.reverse().find(line => {
+        try {
+          JSON.parse(line);
+          return true;
+        } catch {
+          return false;
+        }
+      });
+
+      if (!jsonLine) throw new Error("유효한 JSON 응답 없음");
+
+      const result = JSON.parse(jsonLine);
+      res.json({ status: "ok", message: "OCR 완료", medicine: result });
+    } catch (e) {
+      console.error("❌ JSON 파싱 실패:", e.message);
+      console.log("📦 전체 출력 내용:", output);
+      next(new AppError("JSON 파싱 실패", 500));
     }
-  });
+  } else {
+    next(new AppError("OCR 실패", 500, errorOutput));
+  }
+});
+
 };

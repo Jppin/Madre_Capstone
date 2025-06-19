@@ -5,3 +5,4 @@ dnspython
 google-api-python-client 
 isodate 
 jinja2
+dotenv

@@ -12,6 +12,9 @@ import json
 from PIL import Image, ImageSequence
 import os
 import base64
+from dotenv import load_dotenv
+
+load_dotenv()  # .env 파일에서 환경 변수 로드
 
 
 sys.stdout.reconfigure(encoding='utf-8')  # Python 3.7 이상
@@ -36,11 +39,13 @@ user_info_col = db["UserInfo"]
 medication_col = db["medicines"]
 
 
+# 기존 내용
+openai_api_key = os.getenv("OPENAI_API_KEY")
+openai_api_url = os.getenv("OPENAI_API_URL")
 
-
-# ✅ 네이버 클로바 OCR API 정보
-CLOVA_OCR_URL = "https://64nrlt36wx.apigw.ntruss.com/custom/v1/38666/507f569ea5238517c3acbe956e508e06e94c2e71a4abf80fbb00d8d44f4da6c3/general"
-CLOVA_SECRET_KEY = "UEZYcllRRWRrWHl4YXpSaFlybVh0Smt6b0lQR2JyT1g="  # 환경 변수에서 API 키 가져오기
+# 🔽 추가할 내용
+clova_ocr_url = os.getenv("CLOVA_OCR_URL")
+clova_secret_key = os.getenv("CLOVA_OCR_SECRET_KEY")
 
 
 
@@ -73,7 +78,7 @@ def extract_text(image_path):
             image_data = base64.b64encode(image_file.read()).decode("utf-8")
 
         headers = {
-            "X-OCR-SECRET": CLOVA_SECRET_KEY,
+            "X-OCR-SECRET": clova_secret_key,
             "Content-Type": "application/json",
         }
 
@@ -90,7 +95,7 @@ def extract_text(image_path):
     ],
 }
 
-        response = requests.post(CLOVA_OCR_URL, headers=headers, json=payload)
+        response = requests.post(clova_ocr_url, headers=headers, json=payload)
 
         if response.status_code == 200:
             ocr_result = response.json()
